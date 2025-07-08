@@ -1,0 +1,62 @@
+[
+  {
+    "Id": "19fd785c-c51a-4ca4-a352-873369504246",
+    "Title": "dwad",
+    "Description": null,
+    "Category": "Work",
+    "DueDate": "2025-07-10T00:00:00",
+    "IsCompleted": true,
+    "AssignedTo": "Me",
+    "IsSuggestion": false,
+    "MediaPath": null,
+    "IsRecurring": false
+  },
+  {
+    "Id": "a80d4508-1387-47a7-aac0-8388e3bf8217",
+    "Title": "sdaw",
+    "Description": null,
+    "Category": "General",
+    "DueDate": "2025-07-02T00:00:00",
+    "IsCompleted": true,
+    "AssignedTo": "Me",
+    "IsSuggestion": false,
+    "MediaPath": null,
+    "IsRecurring": false
+  },
+  {
+    "Id": "a80d4508-1387-47a7-aac0-8388e3bf8211",
+    "Title": "sdaw",
+    "Description": null,
+    "Category": "General",
+    "DueDate": "2025-07-02T00:00:00",
+    "IsCompleted": true,
+    "AssignedTo": "Partner",
+    "IsSuggestion": false,
+    "MediaPath": null,
+    "IsRecurring": false
+  },
+  {
+    "Id": "93f42433-c753-4527-91c4-a22539e10107",
+    "Title": "movies",
+    "Description": null,
+    "Category": "Chores",
+    "DueDate": "2025-07-17T00:00:00",
+    "IsCompleted": false,
+    "AssignedTo": "Partner",
+    "IsSuggestion": false,
+    "MediaPath": null,
+    "IsRecurring": false
+  },
+  {
+    "Id": "3a140f1c-5f43-479c-89d0-50158bf3f625",
+    "Title": "dsdfea",
+    "Description": null,
+    "Category": "Fun",
+    "DueDate": "2025-07-07T00:00:00",
+    "IsCompleted": false,
+    "AssignedTo": "Me",
+    "IsSuggestion": false,
+    "MediaPath": null,
+    "IsRecurring": false
+  }
+]
