@@ -28,6 +28,8 @@ namespace TaskMate.Models
                 }
             }
         }
+        public string CreatedBy { get; set; } // UserId of sender
+        public bool Accepted { get; set; } = true; // Default true for self-created tasks
         private string assignedTo;
         public string AssignedTo{
             get => assignedTo;

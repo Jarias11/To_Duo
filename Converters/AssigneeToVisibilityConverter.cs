@@ -9,7 +9,6 @@ namespace TaskMate.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 {
-    Console.WriteLine($"[Converter] Value={value}, Param={parameter}");
     
     if (value == null || parameter == null)
         return Visibility.Collapsed;

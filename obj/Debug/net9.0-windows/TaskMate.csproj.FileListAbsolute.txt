@@ -42,3 +42,4 @@ C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\refint\TaskMate.dll
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.pdb
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.genruntimeconfig.cache
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\ref\TaskMate.dll
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.sourcelink.json
