@@ -392,6 +392,10 @@
                                         Command="{Binding DataContext.AcceptTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
                                         Margin="5"/>
+                                <Button Content="Decline" 
+                                        Command="{Binding DataContext.DeclineTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                        CommandParameter="{Binding}" 
+                                        Margin="5"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
