@@ -6,28 +6,23 @@ using Google.Cloud.Firestore;
 using TaskMate.Models;
 using TaskMate.Data.Repositories;
 
-namespace TaskMate.Sync
-{
-    public class FirestoreTaskRepository : ITaskRepository
-    {
+namespace TaskMate.Sync {
+    public class FirestoreTaskRepository : ITaskRepository {
         private static CollectionReference TasksCol(FirestoreDb db, string groupId) =>
             db.Collection("groups").Document(groupId).Collection("tasks");
 
-        public async Task<IList<TaskItem>> LoadAllAsync(string groupId)
-        {
+        public async Task<IList<TaskItem>> LoadAllAsync(string groupId) {
             var db = await FirestoreClient.GetDbAsync();
             var snap = await TasksCol(db, groupId).GetSnapshotAsync();
 
             var list = new List<TaskItem>();
-            foreach (var doc in snap.Documents)
-            {
+            foreach (var doc in snap.Documents) {
                 var dict = doc.ToDictionary();
 
                 // Helper to read value safely
                 object Get(string key) => dict.TryGetValue(key, out var v) ? v : null;
 
-                var item = new TaskItem
-                {
+                var item = new TaskItem {
                     Id = Guid.TryParse(Get("Id")?.ToString(), out var gid) ? gid : Guid.NewGuid(),
                     Title = Get("Title")?.ToString(),
                     Description = Get("Description")?.ToString(),
@@ -47,13 +42,11 @@ namespace TaskMate.Sync
             return list;
         }
 
-        public async Task UpsertAsync(string groupId, TaskItem item)
-        {
+        public async Task UpsertAsync(string groupId, TaskItem item) {
             var db = await FirestoreClient.GetDbAsync();
             var doc = TasksCol(db, groupId).Document(item.Id.ToString());
 
-            var data = new Dictionary<string, object?>
-            {
+            var data = new Dictionary<string, object?> {
                 ["Id"] = item.Id.ToString(),
                 ["Title"] = item.Title,
                 ["Description"] = item.Description,
@@ -72,12 +65,11 @@ namespace TaskMate.Sync
 
             await doc.SetAsync(data, SetOptions.MergeAll);
         }
-        public async Task DeleteAsync(string groupId, Guid id)
-{
-    var db = await FirestoreClient.GetDbAsync();
-    await db.Collection("groups").Document(groupId)
-            .Collection("tasks").Document(id.ToString())
-            .DeleteAsync();
-}
+        public async Task DeleteAsync(string groupId, Guid id) {
+            var db = await FirestoreClient.GetDbAsync();
+            await db.Collection("groups").Document(groupId)
+                    .Collection("tasks").Document(id.ToString())
+                    .DeleteAsync();
+        }
     }
 }
