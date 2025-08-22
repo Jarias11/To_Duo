@@ -2,15 +2,17 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Windows.Data;
 using TaskMate.Models;
 using TaskMate.Data;
 using TaskMate.Data.Repositories;
 using TaskMate.Sync;
+using TaskMate.Services;
 
 namespace TaskMate.ViewModels {
     public class MainViewModel : INotifyPropertyChanged {
 
-        private readonly ITaskRepository _cloudRepo = new FirestoreTaskRepository();
+        private readonly ITaskService _taskService;
         private UserSettings _userSettings;
         private string GroupId => string.Join("-", new[] { UserId ?? "", PartnerId ?? "" }.OrderBy(s => s));
         private string _newTaskTitle = string.Empty;
@@ -20,8 +22,10 @@ namespace TaskMate.ViewModels {
         private string? _newTaskAssignee = "Me";
         private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        public ObservableCollection<TaskItem> Tasks { get; set; } = [];
-        public ObservableCollection<TaskItem> PendingTasks { get; set; } = [];
+        public ICollectionView MyTasksView { get; }
+        public ICollectionView PartnerTasksView { get; }
+        public ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
+        public ObservableCollection<TaskItem> PendingTasks => _taskService.PendingTasks;
         public ObservableCollection<string> Categories { get; set; } = [
             "General", "Chores", "Work", "Fun", "Urgent"
         ];
@@ -34,34 +38,35 @@ namespace TaskMate.ViewModels {
         public ICommand SavePartnerCommand { get; }
         public ICommand DeclineTaskCommand { get; }
 
-        public MainViewModel() {
+        public MainViewModel() : this(new TaskService()) { }
 
+        public MainViewModel(ITaskService taskService) {
+
+            _taskService = taskService;
             _userSettings = UserSettings.Load();
-            SavePartnerCommand = new RelayCommand(_ => SavePartner());
+            MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
+            MyTasksView.Filter = o => {
+                var t = o as TaskItem;
+                return t != null && t.AssignedTo == "Me"; // your current field
+            };
+            PartnerTasksView = new CollectionViewSource { Source = Tasks }.View;
+            PartnerTasksView.Filter = o => {
+                var t = o as TaskItem;
+                return t != null && t.AssignedTo == "Partner";
+            };
 
             // Initialize commands
             AddTaskCommand = new RelayCommand(_ => AddTask());
-            DeleteTaskCommand = new RelayCommand<TaskItem>(DeleteTask);
-            AcceptTaskCommand = new RelayCommand<TaskItem>(AcceptTask);
-            DeclineTaskCommand = new RelayCommand<TaskItem>(DeclineTask);
-
+            DeleteTaskCommand = new RelayCommand<TaskItem>(t => _taskService.DeleteTask(t!, GroupId));
+            AcceptTaskCommand = new RelayCommand<TaskItem>(t => _taskService.AcceptTask(t!, GroupId));
+            DeclineTaskCommand = new RelayCommand<TaskItem>(t => _taskService.DeclineTask(t!, GroupId));
+            SavePartnerCommand = new RelayCommand(_ => SavePartner());
             // Load tasks from JSON
             var loadedTasks = TaskDataService.LoadTasks();
 
-            foreach(var task in loadedTasks) {
-                // Only add accepted tasks or those not assigned to me
-                if(task.Accepted || task.AssignedTo != "Me")
-                    Tasks.Add(task);
 
-                // Unaccepted tasks assigned to me go into pending
-                if(task.AssignedTo == "Partner" && !task.Accepted)
-                    PendingTasks.Add(task);
-            }
-
-            
-            _ = MergeCloudIntoLocalAsync(); // fire-and-forget on UI context
+            _ = _taskService.InitializeAsync(GroupId); // fire-and-forget on UI context
         }
-
         private void AddTask() {
             if(string.IsNullOrWhiteSpace(NewTaskTitle)) return;
             // Normalize assignee first
@@ -76,114 +81,25 @@ namespace TaskMate.ViewModels {
                 AssignedTo = assignee,
                 Description = NewTaskDescription,
                 CreatedBy = UserId,
-                Accepted = assignee != "Partner"
+                Accepted = assignee != "Partner",
+                UpdatedAt = DateTime.UtcNow,
+                AssignedToUserId = (assignee == "Me") ? UserId : PartnerId
             };
 
-            if(task.AssignedTo == "Me" || task.Accepted)
-                Tasks.Add(task);
-            else
-                PendingTasks.Add(task);
-            // Save the task regardless so it's synced/shared
-            var allTasks = TaskDataService.LoadTasks();
-            allTasks.Add(task);
-            TaskDataService.SaveTasks(allTasks);
-            _ = _cloudRepo.UpsertAsync(GroupId, task);
+            _taskService.AddTask(task, GroupId);
 
             NewTaskTitle = string.Empty;
             NewTaskDueDate = null;
             NewTaskDescription = string.Empty;
         }
 
-        private void DeleteTask(TaskItem? task) {
-            if(Tasks.Contains(task)) {
-                Tasks.Remove(task);
-                SaveAll();
-                _ = _cloudRepo.DeleteAsync(GroupId, task.Id);
-            }
-        }
-
-        private void AcceptTask(TaskItem? task) {
-            if(task is null) return;
-            task.Accepted = true;
-
-            // If it was rendered from Pending, drop it there
-            if(PendingTasks.Contains(task))
-                PendingTasks.Remove(task);
-            //Add to main task list if not already present
-            if(!Tasks.Contains(task))
-                Tasks.Add(task);
-
-            SaveAll();
-            _ = _cloudRepo.UpsertAsync(GroupId, task);
-        }
-
-        private void RefreshPendingTasks() {
-            PendingTasks.Clear();
-            foreach(var t in Tasks)
-                if(t.AssignedTo == "Partner" && !t.Accepted)
-                    PendingTasks.Add(t);
-
-            // If you also keep some items only in PendingTasks, keep them:
-            foreach(var t in PendingTasks.ToList())
-                if(!(t.AssignedTo == "Partner" && !t.Accepted))
-                    PendingTasks.Remove(t);
-        }
-
-        private void DeclineTask(TaskItem? task) {
-            // Hard delete for now:
-            if(PendingTasks.Contains(task)) PendingTasks.Remove(task);
-
-            // Also remove from Tasks if it somehow exists there
-            if(Tasks.Contains(task)) Tasks.Remove(task);
-
-            // Persist: load all, remove by Id, save back
-            var all = TaskDataService.LoadTasks();
-            all.RemoveAll(t => t.Id == task.Id);
-            TaskDataService.SaveTasks(all);
-
-            RefreshPendingTasks();
-        }
-
-        private void SaveAll() {
-            var all = new List<TaskItem>(Tasks);
-            foreach(var t in PendingTasks)
-                if(!all.Contains(t)) all.Add(t);
-
-            TaskDataService.SaveTasks(all);
-            _ = SyncAllToCloudAsync();
-        }
-
-        public void SaveTasks() => SaveAll();
-
-        private async Task SyncAllToCloudAsync() {
-            // push both lists; it's fine for now
-            foreach(var t in Tasks)
-                await _cloudRepo.UpsertAsync(GroupId, t);
-            foreach(var t in PendingTasks)
-                await _cloudRepo.UpsertAsync(GroupId, t);
-        }
-
-        private async Task MergeCloudIntoLocalAsync() {
-            try {
-                var cloud = await _cloudRepo.LoadAllAsync(GroupId);
-                var byId = Tasks.ToDictionary(t => t.Id);
-                foreach(var c in cloud) {
-                    if(byId.ContainsKey(c.Id)) continue;
-
-                    if(c.AssignedTo == "Partner" && !c.Accepted)
-                        PendingTasks.Add(c);
-                    else
-                        Tasks.Add(c);
-                }
-                TaskDataService.SaveTasks(new List<TaskItem>(Tasks)); // persist locally
-            }
-            catch(Exception) {
-            }
-        }
+        public void SaveTasks() => _taskService.SaveAll(GroupId);
 
         private void SavePartner() {
             UserSettings.Save(_userSettings);
             // Optional: refresh or sync partner tasks
+            // If partner changed, re-init to merge that group
+            _ = _taskService.InitializeAsync(GroupId);
         }
         public string PartnerId {
             get => _userSettings.PartnerId;
@@ -214,7 +130,6 @@ namespace TaskMate.ViewModels {
                 OnPropertyChanged();
             }
         }
-
         public string? NewTaskCategory {
             get => _newTaskCategory;
             set {
@@ -231,6 +146,4 @@ namespace TaskMate.ViewModels {
         }
 
     }
-
-
 }

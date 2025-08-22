@@ -14,10 +14,7 @@ public partial class App : Application
 {
     base.OnStartup(e);
     
-    if (Current.MainWindow is MainWindow window)
-    {
-        window.DataContext = new MainViewModel();
-    }
+    
 }
 }
 

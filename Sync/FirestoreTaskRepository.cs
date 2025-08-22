@@ -8,68 +8,84 @@ using TaskMate.Data.Repositories;
 
 namespace TaskMate.Sync {
     public class FirestoreTaskRepository : ITaskRepository {
-        private static CollectionReference TasksCol(FirestoreDb db, string groupId) =>
+        private static CollectionReference Col(FirestoreDb db, string groupId) =>
             db.Collection("groups").Document(groupId).Collection("tasks");
 
         public async Task<IList<TaskItem>> LoadAllAsync(string groupId) {
-            var db = await FirestoreClient.GetDbAsync();
-            var snap = await TasksCol(db, groupId).GetSnapshotAsync();
-
-            var list = new List<TaskItem>();
-            foreach (var doc in snap.Documents) {
-                var dict = doc.ToDictionary();
-
-                // Helper to read value safely
-                object Get(string key) => dict.TryGetValue(key, out var v) ? v : null;
-
-                var item = new TaskItem {
-                    Id = Guid.TryParse(Get("Id")?.ToString(), out var gid) ? gid : Guid.NewGuid(),
-                    Title = Get("Title")?.ToString(),
-                    Description = Get("Description")?.ToString(),
-                    Category = Get("Category")?.ToString(),
-                    DueDate = Get("DueDate") is Timestamp ts ? ts.ToDateTime() : null,
-                    IsCompleted = Get("IsCompleted") as bool? ?? false,
-                    CreatedBy = Get("CreatedBy")?.ToString(),
-                    Accepted = Get("Accepted") as bool? ?? true,
-                    AssignedTo = Get("AssignedTo")?.ToString(),
-                    IsSuggestion = Get("IsSuggestion") as bool? ?? false,
-                    MediaPath = Get("MediaPath")?.ToString(),
-                    IsRecurring = Get("IsRecurring") as bool? ?? false
-                };
-
-                list.Add(item);
-            }
-            return list;
+            var db = FirestoreClient.GetDb();
+            var snap = await Col(db, groupId).GetSnapshotAsync();
+            return snap.Documents.Select(MapFromDoc).ToList();
         }
 
         public async Task UpsertAsync(string groupId, TaskItem item) {
-            var db = await FirestoreClient.GetDbAsync();
-            var doc = TasksCol(db, groupId).Document(item.Id.ToString());
+            var db = FirestoreClient.GetDb();
+            var doc = Col(db, groupId).Document(item.Id.ToString());
 
             var data = new Dictionary<string, object?> {
                 ["Id"] = item.Id.ToString(),
                 ["Title"] = item.Title,
                 ["Description"] = item.Description,
                 ["Category"] = item.Category,
-                ["DueDate"] = item.DueDate.HasValue
-                                    ? Timestamp.FromDateTime(DateTime.SpecifyKind(item.DueDate.Value, DateTimeKind.Utc))
-                                    : null,
+                ["DueDate"] = item.DueDate is DateTime dt
+                    ? Timestamp.FromDateTime(DateTime.SpecifyKind(dt, DateTimeKind.Utc))
+                    : null,
                 ["IsCompleted"] = item.IsCompleted,
                 ["CreatedBy"] = item.CreatedBy,
                 ["Accepted"] = item.Accepted,
                 ["AssignedTo"] = item.AssignedTo,
+                ["AssignedToUserId"] = item.AssignedToUserId, // keep for future
                 ["IsSuggestion"] = item.IsSuggestion,
                 ["MediaPath"] = item.MediaPath,
-                ["IsRecurring"] = item.IsRecurring
+                ["IsRecurring"] = item.IsRecurring,
+                ["Deleted"] = item.Deleted,
+                ["UpdatedAt"] = Timestamp.GetCurrentTimestamp()
             };
 
             await doc.SetAsync(data, SetOptions.MergeAll);
         }
+
         public async Task DeleteAsync(string groupId, Guid id) {
-            var db = await FirestoreClient.GetDbAsync();
-            await db.Collection("groups").Document(groupId)
-                    .Collection("tasks").Document(id.ToString())
-                    .DeleteAsync();
+            var db = FirestoreClient.GetDb();
+            await Col(db, groupId).Document(id.ToString()).DeleteAsync();
+        }
+
+        // ✅ Returns IDisposable (FirestoreChangeListener)
+        public IDisposable ListenAll(string groupId, Action<IList<TaskItem>> onSnapshot) {
+            var db = FirestoreClient.GetDb();
+            var inner = Col(db, groupId).Listen(snap => {
+                var items = snap.Documents.Select(MapFromDoc).ToList();
+                onSnapshot(items);
+            });
+            return new FirestoreListenerHandle(inner);   // ← wrap it
+        }
+
+        private static TaskItem MapFromDoc(DocumentSnapshot doc) {
+            var d = doc.ToDictionary();
+
+            DateTime? ToDate(object? v) =>
+                v is Timestamp ts ? ts.ToDateTime() :
+                v is DateTime dt ? dt : (DateTime?)null;
+
+            bool B(object? v, bool def = false) => v is bool b ? b : def;
+            string? S(object? v) => v?.ToString();
+
+            return new TaskItem {
+                Id = Guid.TryParse(S(d.GetValueOrDefault("Id")), out var gid) ? gid : Guid.Parse(doc.Id),
+                Title = S(d.GetValueOrDefault("Title")),
+                Description = S(d.GetValueOrDefault("Description")),
+                Category = S(d.GetValueOrDefault("Category")),
+                DueDate = ToDate(d.GetValueOrDefault("DueDate")),
+                IsCompleted = B(d.GetValueOrDefault("IsCompleted")),
+                CreatedBy = S(d.GetValueOrDefault("CreatedBy")) ?? "",
+                Accepted = B(d.GetValueOrDefault("Accepted"), true),
+                AssignedTo = S(d.GetValueOrDefault("AssignedTo")),
+                AssignedToUserId = S(d.GetValueOrDefault("AssignedToUserId")) ?? "",
+                IsSuggestion = B(d.GetValueOrDefault("IsSuggestion")),
+                MediaPath = S(d.GetValueOrDefault("MediaPath")),
+                IsRecurring = B(d.GetValueOrDefault("IsRecurring")),
+                Deleted = B(d.GetValueOrDefault("Deleted")),
+                UpdatedAt = ToDate(d.GetValueOrDefault("UpdatedAt"))
+            };
         }
     }
 }

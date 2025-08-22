@@ -4,13 +4,20 @@ using System.Threading.Tasks;
 namespace TaskMate.Sync {
     public class FirestoreClient {
         private static FirestoreDb? _db;
+        private const string ProjectId = "taskmate-4777f";
 
-        public static async Task<FirestoreDb> GetDbAsync() {
-            if (_db != null) return _db;
-            string projectId = "taskmate-4777f";
-            _db = await FirestoreDb.CreateAsync(projectId);
-            return _db;
+
+
+        // Sync getter to avoid 'await' in non-async methods
+        public static FirestoreDb GetDb() {
+            return _db ??= FirestoreDb.Create(ProjectId);
         }
+
+        // keep your existing async if you want, but the repo will use GetDb()
+        public static Task<FirestoreDb> GetDbAsync()
+            => Task.FromResult(GetDb());
+    
+
         public static async Task WriteHealthCheckAsync() {
             var db = await GetDbAsync();
             var doc = db.Collection("health").Document("desktop");

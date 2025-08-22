@@ -7,401 +7,403 @@
         Height="600"
         Width="900"
         Background="#f2f2f2">
-    <Window.Resources>
-        <conv:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter"/>
-        <local:BoolToTextDecorationsConverter x:Key="BoolToTextDecorationsConverter"/>
+        <Window.Resources>
+                <conv:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter"/>
+                <local:BoolToTextDecorationsConverter x:Key="BoolToTextDecorationsConverter"/>
 
-        <Style TargetType="TextBox">
-            <Setter Property="Margin"
-                    Value="5"/>
-            <Setter Property="Padding"
-                    Value="5"/>
-            <Setter Property="FontSize"
-                    Value="14"/>
-            <Setter Property="BorderBrush"
-                    Value="#ccc"/>
-            <Setter Property="BorderThickness"
-                    Value="1"/>
-            <Setter Property="Height"
-                    Value="28"/>
-        </Style>
+                <Style TargetType="TextBox">
+                        <Setter Property="Margin"
+                                Value="5"/>
+                        <Setter Property="Padding"
+                                Value="5"/>
+                        <Setter Property="FontSize"
+                                Value="14"/>
+                        <Setter Property="BorderBrush"
+                                Value="#ccc"/>
+                        <Setter Property="BorderThickness"
+                                Value="1"/>
+                        <Setter Property="Height"
+                                Value="28"/>
+                </Style>
 
-        <Style TargetType="ComboBox">
-            <Setter Property="Margin"
-                    Value="5"/>
-            <Setter Property="Padding"
-                    Value="4"/>
-            <Setter Property="FontSize"
-                    Value="14"/>
-            <Setter Property="Height"
-                    Value="28"/>
-        </Style>
+                <Style TargetType="ComboBox">
+                        <Setter Property="Margin"
+                                Value="5"/>
+                        <Setter Property="Padding"
+                                Value="4"/>
+                        <Setter Property="FontSize"
+                                Value="14"/>
+                        <Setter Property="Height"
+                                Value="28"/>
+                </Style>
 
-        <Style TargetType="DatePicker">
-            <Setter Property="Margin"
-                    Value="5"/>
-            <Setter Property="FontSize"
-                    Value="14"/>
-            <Setter Property="Height"
-                    Value="28"/>
-        </Style>
-    </Window.Resources>
+                <Style TargetType="DatePicker">
+                        <Setter Property="Margin"
+                                Value="5"/>
+                        <Setter Property="FontSize"
+                                Value="14"/>
+                        <Setter Property="Height"
+                                Value="28"/>
+                </Style>
+        </Window.Resources>
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-
-        <StackPanel Grid.Row="0"
-                Margin="0,0,0,10">
-            <StackPanel Orientation="Horizontal"
-                    Margin="10,0,10,0">
-                <TextBlock Text="Partner Code:"
-                        VerticalAlignment="Center"/>
-                <TextBox Width="200"
-                        Text="{Binding PartnerId, UpdateSourceTrigger=PropertyChanged}"
-                        Margin="5,0"/>
-                <Button Content="Save Partner ID"
-                        Command="{Binding SavePartnerCommand}"
-                        Margin="5,0"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal"
-                    Margin="10,0,10,0">
-                <TextBlock Text="Your Code:"
-                        VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding UserId}"
-                        FontWeight="Bold"
-                        Margin="5,0"/>
-            </StackPanel>
-        </StackPanel>
-
-
-        <!-- INPUT FORM -->
-        <Border Grid.Row="0"
-                Background="White"
-                CornerRadius="8"
-                Padding="10"
-                Margin="0,70,0,10"
-                BorderBrush="#ddd"
-                BorderThickness="1">
-            <StackPanel Orientation="Horizontal"
-                    VerticalAlignment="Center">
-                <StackPanel>
-                    <TextBlock Text="Title"
-                            Margin="5,0,5,0"/>
-                    <TextBox Width="180"
-                            Text="{Binding NewTaskTitle}"/>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock Text="Description"
-                            Margin="5,0,5,0"/>
-                    <TextBox Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
-                            Width="180"
-                             ToolTip="Optional task description"/>
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock Text="Category"
-                            Margin="5,0,5,0"/>
-                    <ComboBox Width="100"
-                            ItemsSource="{Binding Categories}"
-                            SelectedItem="{Binding NewTaskCategory}"/>
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock Text="Due Date"
-                            Margin="5,0,5,0"/>
-                    <DatePicker Width="130"
-                            SelectedDate="{Binding NewTaskDueDate}"/>
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock Text="Assign To"
-                            Margin="5,0,5,0"/>
-                    <ComboBox Width="100"
-                            SelectedItem="{Binding NewTaskAssignee}">
-                        <ComboBoxItem Content="Me"/>
-                        <ComboBoxItem Content="Partner"/>
-                    </ComboBox>
-                </StackPanel>
-
-                <Button Content="Add Task"
-                        Width="100"
-                        Margin="10,15,0,0"
-                        Command="{Binding AddTaskCommand}"/>
-            </StackPanel>
-        </Border>
-
-        <!-- TASK LISTS -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- My Tasks -->
-            <StackPanel Grid.Column="0"
-                    Margin="5"
-                    Background="#E3F2FD">
-                <TextBlock Text="My Tasks"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        Margin="5"/>
-                <Grid>
-                    <Grid.RowDefinitions>
+        <Grid Margin="10">
+                <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <!-- Header row -->
                         <RowDefinition Height="*"/>
-                        <!-- Task items -->
-                    </Grid.RowDefinitions>
-
-                    <!-- Header Row -->
-                    <Grid Grid.Row="0"
-                            Background="#e0e0e0"
-                            Margin="4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="40"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="✓"
-                                Grid.Column="0"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="Task"
-                                Grid.Column="1"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="Category"
-                                Grid.Column="2"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="Due"
-                                Grid.Column="3"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="❌"
-                                Grid.Column="4"
-                                FontWeight="Bold"
-                                HorizontalAlignment="Center"/>
-                    </Grid>
-
-                    <!-- Task Items -->
-                    <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding Tasks}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="2"
-                                          ToolTip="{Binding Description}"
-                                          Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Me}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="30"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="40"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <CheckBox IsChecked="{Binding IsCompleted}"
-                                                Margin="2"
-                                                Checked="CheckBox_Changed"
-                                                Unchecked="CheckBox_Changed"/>
-
-                                        <TextBlock Grid.Column="1"
-                                                Text="{Binding Title}"
-                                                   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
-                                                   VerticalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AssignedTo}"
-                                                                Value="Me">
-                                                            <Setter Property="Foreground"
-                                                                    Value="Green"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding AssignedTo}"
-                                                                Value="Partner">
-                                                            <Setter Property="Foreground"
-                                                                    Value="Purple"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-
-                                        <TextBlock Grid.Column="2"
-                                                Text="{Binding Category}"
-                                                VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="3"
-                                                Text="{Binding DueDate, StringFormat=d}"
-                                                VerticalAlignment="Center"/>
-
-                                        <Button Grid.Column="4"
-                                                Content="✕"
-                                                Width="30"
-                                                Height="25"
-                                                Margin="2"
-                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </StackPanel>
-
-            <!-- Partner's Tasks -->
-            <StackPanel Grid.Column="1"
-                    Margin="5"
-                    Background="#F3E5F5">
-                <TextBlock Text="Partner's Tasks"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        Margin="5"/>
-                <Grid>
-                    <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <!-- Header row -->
-                        <RowDefinition Height="*"/>
-                        <!-- Task items -->
-                    </Grid.RowDefinitions>
+                </Grid.RowDefinitions>
 
-                    <!-- Header Row -->
-                    <Grid Grid.Row="0"
-                            Background="#e0e0e0"
-                            Margin="4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="40"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="✓"
-                                Grid.Column="0"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="Task"
-                                Grid.Column="1"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="Category"
-                                Grid.Column="2"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="Due"
-                                Grid.Column="3"
-                                FontWeight="Bold"/>
-                        <TextBlock Text="❌"
-                                Grid.Column="4"
-                                FontWeight="Bold"
-                                HorizontalAlignment="Center"/>
-                    </Grid>
 
-                    <!-- Task Items -->
-                    <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding Tasks}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="2"
-                                          ToolTip="{Binding Description}"
-                                          Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="30"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="40"/>
-                                        </Grid.ColumnDefinitions>
+                <StackPanel Grid.Row="0"
+                            Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="10,0,10,0">
+                                <TextBlock Text="Partner Code:"
+                                           VerticalAlignment="Center"/>
+                                <TextBox Width="200"
+                                         Text="{Binding PartnerId, UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="5,0"/>
+                                <Button Content="Save Partner ID"
+                                        Command="{Binding SavePartnerCommand}"
+                                        Margin="5,0"/>
+                        </StackPanel>
 
-                                        <CheckBox IsChecked="{Binding IsCompleted}"
-                                                Margin="2"
-                                                Checked="CheckBox_Changed"
-                                                Unchecked="CheckBox_Changed"/>
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="10,0,10,0">
+                                <TextBlock Text="Your Code:"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding UserId}"
+                                           FontWeight="Bold"
+                                           Margin="5,0"/>
+                        </StackPanel>
+                </StackPanel>
 
-                                        <TextBlock Grid.Column="1"
-                                                Text="{Binding Title}"
-                                                   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
-                                                   VerticalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding AssignedTo}"
-                                                                Value="Me">
-                                                            <Setter Property="Foreground"
-                                                                    Value="Green"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding AssignedTo}"
-                                                                Value="Partner">
-                                                            <Setter Property="Foreground"
-                                                                    Value="Purple"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
 
-                                        <TextBlock Grid.Column="2"
-                                                Text="{Binding Category}"
-                                                VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="3"
-                                                Text="{Binding DueDate, StringFormat=d}"
-                                                VerticalAlignment="Center"/>
-
-                                        <Button Grid.Column="4"
-                                                Content="✕"
-                                                Width="30"
-                                                Height="25"
-                                                Margin="2"
-                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </StackPanel>
-
-        </Grid>
-        <StackPanel Grid.Row="2"
-                Margin="5"
-                Background="#FFFDE7">
-            <TextBlock Text="Pending Partner Tasks"
-                    FontSize="16"
-                    FontWeight="Bold"
-                    Margin="5"/>
-            <ItemsControl ItemsSource="{Binding PendingTasks}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="#E0E0E0"
-                                BorderThickness="1"
-                                CornerRadius="5"
-                                Margin="5"
-                                Padding="5"
-                                Background="White">
-                            <StackPanel Orientation="Horizontal"
+                <!-- INPUT FORM -->
+                <Border Grid.Row="0"
+                        Background="White"
+                        CornerRadius="8"
+                        Padding="10"
+                        Margin="0,70,0,10"
+                        BorderBrush="#ddd"
+                        BorderThickness="1">
+                        <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Title}"
-                                        Margin="5"
-                                        VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding Category}"
-                                        Margin="5"
-                                        VerticalAlignment="Center"/>
-                                <Button Content="Accept"
-                                        Command="{Binding DataContext.AcceptTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Margin="5"/>
-                                <Button Content="Decline" 
-                                        Command="{Binding DataContext.DeclineTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                        CommandParameter="{Binding}" 
-                                        Margin="5"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-    </Grid>
+                                <StackPanel>
+                                        <TextBlock Text="Title"
+                                                   Margin="5,0,5,0"/>
+                                        <TextBox Width="180"
+                                                 Text="{Binding NewTaskTitle}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                        <TextBlock Text="Description"
+                                                   Margin="5,0,5,0"/>
+                                        <TextBox Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
+                                                 Width="180"
+                                                 ToolTip="Optional task description"/>
+                                </StackPanel>
+
+                                <StackPanel>
+                                        <TextBlock Text="Category"
+                                                   Margin="5,0,5,0"/>
+                                        <ComboBox Width="100"
+                                                  ItemsSource="{Binding Categories}"
+                                                  SelectedItem="{Binding NewTaskCategory}"/>
+                                </StackPanel>
+
+                                <StackPanel>
+                                        <TextBlock Text="Due Date"
+                                                   Margin="5,0,5,0"/>
+                                        <DatePicker Width="130"
+                                                    SelectedDate="{Binding NewTaskDueDate}"/>
+                                </StackPanel>
+
+                                <StackPanel>
+                                        <TextBlock Text="Assign To"
+                                                   Margin="5,0,5,0"/>
+                                        <ComboBox Width="100"
+                                                  SelectedItem="{Binding NewTaskAssignee}">
+                                                <ComboBoxItem Content="Me"/>
+                                                <ComboBoxItem Content="Partner"/>
+                                        </ComboBox>
+                                </StackPanel>
+
+                                <Button Content="Add Task"
+                                        Width="100"
+                                        Margin="10,15,0,0"
+                                        Command="{Binding AddTaskCommand}"/>
+                        </StackPanel>
+                </Border>
+
+                <!-- TASK LISTS -->
+                <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- My Tasks -->
+                        <StackPanel Grid.Column="0"
+                                    Margin="5"
+                                    Background="#E3F2FD">
+                                <TextBlock Text="My Tasks"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Margin="5"/>
+                                <Grid>
+                                        <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- Header row -->
+                                                <RowDefinition Height="*"/>
+                                                <!-- Task items -->
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Header Row -->
+                                        <Grid Grid.Row="0"
+                                              Background="#e0e0e0"
+                                              Margin="4">
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="30"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="✓"
+                                                           Grid.Column="0"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="Task"
+                                                           Grid.Column="1"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="Category"
+                                                           Grid.Column="2"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="Due"
+                                                           Grid.Column="3"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="❌"
+                                                           Grid.Column="4"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"/>
+                                        </Grid>
+
+                                        <!-- Task Items -->
+                                        <ScrollViewer Grid.Row="1">
+                                                <ItemsControl ItemsSource="{Binding MyTasksView}"
+                                                              ScrollViewer.CanContentScroll="True">
+                                                        <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                        <Grid Margin="2"
+                                                                              ToolTip="{Binding Description}"
+                                                                              Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Me}">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="30"/>
+                                                                                        <ColumnDefinition Width="*"/>
+                                                                                        <ColumnDefinition Width="120"/>
+                                                                                        <ColumnDefinition Width="120"/>
+                                                                                        <ColumnDefinition Width="40"/>
+                                                                                </Grid.ColumnDefinitions>
+
+                                                                                <CheckBox IsChecked="{Binding IsCompleted}"
+                                                                                          Margin="2"
+                                                                                          Checked="CheckBox_Changed"
+                                                                                          Unchecked="CheckBox_Changed"/>
+
+                                                                                <TextBlock Grid.Column="1"
+                                                                                           Text="{Binding Title}"
+                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
+                                                                                           VerticalAlignment="Center">
+                                                                                        <TextBlock.Style>
+                                                                                                <Style TargetType="TextBlock">
+                                                                                                        <Style.Triggers>
+                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
+                                                                                                                             Value="Me">
+                                                                                                                        <Setter Property="Foreground"
+                                                                                                                                Value="Green"/>
+                                                                                                                </DataTrigger>
+                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
+                                                                                                                             Value="Partner">
+                                                                                                                        <Setter Property="Foreground"
+                                                                                                                                Value="Purple"/>
+                                                                                                                </DataTrigger>
+                                                                                                        </Style.Triggers>
+                                                                                                </Style>
+                                                                                        </TextBlock.Style>
+                                                                                </TextBlock>
+
+                                                                                <TextBlock Grid.Column="2"
+                                                                                           Text="{Binding Category}"
+                                                                                           VerticalAlignment="Center"/>
+                                                                                <TextBlock Grid.Column="3"
+                                                                                           Text="{Binding DueDate, StringFormat=d}"
+                                                                                           VerticalAlignment="Center"/>
+
+                                                                                <Button Grid.Column="4"
+                                                                                        Content="✕"
+                                                                                        Width="30"
+                                                                                        Height="25"
+                                                                                        Margin="2"
+                                                                                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                        CommandParameter="{Binding}"/>
+                                                                        </Grid>
+                                                                </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                        </ScrollViewer>
+                                </Grid>
+                        </StackPanel>
+
+                        <!-- Partner's Tasks -->
+                        <StackPanel Grid.Column="1"
+                                    Margin="5"
+                                    Background="#F3E5F5">
+                                <TextBlock Text="Partner's Tasks"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Margin="5"/>
+                                <Grid>
+                                        <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- Header row -->
+                                                <RowDefinition Height="*"/>
+                                                <!-- Task items -->
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Header Row -->
+                                        <Grid Grid.Row="0"
+                                              Background="#e0e0e0"
+                                              Margin="4">
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="30"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="40"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="✓"
+                                                           Grid.Column="0"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="Task"
+                                                           Grid.Column="1"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="Category"
+                                                           Grid.Column="2"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="Due"
+                                                           Grid.Column="3"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="❌"
+                                                           Grid.Column="4"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"/>
+                                        </Grid>
+
+                                        <!-- Task Items -->
+                                        <ScrollViewer Grid.Row="1">
+                                                <ItemsControl ItemsSource="{Binding PartnerTasksView}"
+                                                                ScrollViewer.CanContentScroll="True">
+                                                        <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                        <Grid Margin="2"
+                                                                              ToolTip="{Binding Description}"
+                                                                              Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="30"/>
+                                                                                        <ColumnDefinition Width="*"/>
+                                                                                        <ColumnDefinition Width="120"/>
+                                                                                        <ColumnDefinition Width="120"/>
+                                                                                        <ColumnDefinition Width="40"/>
+                                                                                </Grid.ColumnDefinitions>
+
+                                                                                <CheckBox IsChecked="{Binding IsCompleted}"
+                                                                                          Margin="2"
+                                                                                          Checked="CheckBox_Changed"
+                                                                                          Unchecked="CheckBox_Changed"/>
+
+                                                                                <TextBlock Grid.Column="1"
+                                                                                           Text="{Binding Title}"
+                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
+                                                                                           VerticalAlignment="Center">
+                                                                                        <TextBlock.Style>
+                                                                                                <Style TargetType="TextBlock">
+                                                                                                        <Style.Triggers>
+                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
+                                                                                                                             Value="Me">
+                                                                                                                        <Setter Property="Foreground"
+                                                                                                                                Value="Green"/>
+                                                                                                                </DataTrigger>
+                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
+                                                                                                                             Value="Partner">
+                                                                                                                        <Setter Property="Foreground"
+                                                                                                                                Value="Purple"/>
+                                                                                                                </DataTrigger>
+                                                                                                        </Style.Triggers>
+                                                                                                </Style>
+                                                                                        </TextBlock.Style>
+                                                                                </TextBlock>
+
+                                                                                <TextBlock Grid.Column="2"
+                                                                                           Text="{Binding Category}"
+                                                                                           VerticalAlignment="Center"/>
+                                                                                <TextBlock Grid.Column="3"
+                                                                                           Text="{Binding DueDate, StringFormat=d}"
+                                                                                           VerticalAlignment="Center"/>
+
+                                                                                <Button Grid.Column="4"
+                                                                                        Content="✕"
+                                                                                        Width="30"
+                                                                                        Height="25"
+                                                                                        Margin="2"
+                                                                                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                        CommandParameter="{Binding}"/>
+                                                                        </Grid>
+                                                                </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                        </ScrollViewer>
+                                </Grid>
+                        </StackPanel>
+
+                </Grid>
+                <StackPanel Grid.Row="2"
+                            Margin="5"
+                            Background="#FFFDE7">
+                        <TextBlock Text="Pending Partner Tasks"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="5"/>
+                        <ItemsControl ItemsSource="{Binding PendingTasks}">
+                                <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                                <Border BorderBrush="#E0E0E0"
+                                                        BorderThickness="1"
+                                                        CornerRadius="5"
+                                                        Margin="5"
+                                                        Padding="5"
+                                                        Background="White">
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Title}"
+                                                                           Margin="5"
+                                                                           VerticalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding Category}"
+                                                                           Margin="5"
+                                                                           VerticalAlignment="Center"/>
+                                                                <Button Content="Accept"
+                                                                        Command="{Binding DataContext.AcceptTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Margin="5"/>
+                                                                <Button Content="Decline"
+                                                                        Command="{Binding DataContext.DeclineTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Margin="5"/>
+                                                        </StackPanel>
+                                                </Border>
+                                        </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                </StackPanel>
+        </Grid>
 </Window>
         

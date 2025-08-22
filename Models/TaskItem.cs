@@ -17,7 +17,7 @@ namespace TaskMate.Models {
         public bool IsCompleted {
             get => isCompleted;
             set {
-                if (isCompleted != value) {
+                if(isCompleted != value) {
                     isCompleted = value;
                     OnPropertyChanged();
                 }
@@ -29,7 +29,7 @@ namespace TaskMate.Models {
         public string? AssignedTo {
             get => assignedTo;
             set {
-                if (assignedTo != value) {
+                if(assignedTo != value) {
                     assignedTo = value;
                     OnPropertyChanged(nameof(AssignedTo)); // <- This must exist
                 }
@@ -38,5 +38,15 @@ namespace TaskMate.Models {
         public bool IsSuggestion { get; set; } = false;
         public string? MediaPath { get; set; }   // path to image/video
         public bool IsRecurring { get; set; } = false;
+        public DateTime? UpdatedAt { get; set; }    // for conflict/merge
+        public bool Deleted { get; set; }           // soft delete safety
+
+        // canonical assignee for cloud “requests” later
+        public string AssignedToUserId { get; set; }
+
+        public string DisplayAssignee(string myId, string partnerId) =>
+    AssignedToUserId == myId ? "Me" :
+    AssignedToUserId == partnerId ? "Partner" :
+    AssignedTo ?? "Me"; // fallback to legacy
     }
 }
