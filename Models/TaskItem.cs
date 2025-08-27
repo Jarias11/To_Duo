@@ -34,7 +34,7 @@ namespace TaskMate.Models {
                     OnPropertyChanged(nameof(AssignedTo)); // <- This must exist
                 }
             }
-        }  // e.g., "Jeremy" or "Brooke"
+        }  
         public bool IsSuggestion { get; set; } = false;
         public string? MediaPath { get; set; }   // path to image/video
         public bool IsRecurring { get; set; } = false;
