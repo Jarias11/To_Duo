@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using System.Windows;                 // <-- gives you Application.Current
+using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Data;
 using TaskMate.Models;
@@ -15,13 +15,16 @@ namespace TaskMate.ViewModels {
     public class MainViewModel : INotifyPropertyChanged, IDisposable {
 
         private readonly ITaskService _taskService;
-        private readonly IPersonalTaskRepo _personalRepo = new FirestorePersonalTaskRepository();
-        private readonly IRequestRepo _requestRepo = new FirestoreRequestRepository();
-        private UserSettings _userSettings;
+        private readonly IRequestService _requestService = new RequestService();
+        private readonly IPartnerService _partner;
+
         private IDisposable? _myHandle, _partnerHandle, _requestsHandle;
-        private string GroupId => string.IsNullOrWhiteSpace(PartnerId)
-            ? ""
-            : string.Join("-", new[] { UserId ?? "", PartnerId ?? "" }.OrderBy(s => s));
+
+        private bool _isPartnerVerified;
+        public bool ShowPartnerList => IsPartnerVerified;
+        public bool NeedsProfileSetup => _partner.NeedsProfileSetup;
+        public string UserId => _partner.UserId;
+        private string GroupId => _partner.GroupId;
         private string _newTaskTitle = string.Empty;
         private string _newTaskDescription = string.Empty;
         private DateTime? _newTaskDueDate;
@@ -36,21 +39,33 @@ namespace TaskMate.ViewModels {
         public ObservableCollection<string> Categories { get; set; } = [
             "General", "Chores", "Work", "Fun", "Urgent"
         ];
-        public string UserId => _userSettings.UserId;
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        /* MOVE THIS WHEN FEATURE IS WORKING */
+        private string? _newDisplayName;
+        public string? NewDisplayName {
+            get => _newDisplayName;
+            set {
+                if(_newDisplayName == value) return;
+                _newDisplayName = value;
+                OnPropertyChanged(nameof(NewDisplayName));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public ICommand SaveDisplayNameCommand { get; }
         public ICommand AddTaskCommand { get; }
         public ICommand DeleteTaskCommand { get; }
         public ICommand AcceptTaskCommand { get; }
-        public ICommand SavePartnerCommand { get; }
         public ICommand DeclineTaskCommand { get; }
 
-        public MainViewModel() : this(new TaskService()) { }
+        public MainViewModel() : this(new TaskService(), new PartnerService()) { }
 
-        public MainViewModel(ITaskService taskService) {
+        public MainViewModel(ITaskService taskService, IPartnerService partnerService) {
 
             _taskService = taskService;
-            _userSettings = UserSettings.Load();
+            _partner = partnerService;
+            OnPropertyChanged(nameof(PartnerId));
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
             MyTasksView.Filter = o => {
                 var t = o as TaskItem;
@@ -67,12 +82,18 @@ namespace TaskMate.ViewModels {
             DeleteTaskCommand = new RelayCommand<TaskItem>(t => DeleteTaskInternal(t!));
             AcceptTaskCommand = new RelayCommand<TaskItem>(t => AcceptTaskInternal(t!));
             DeclineTaskCommand = new RelayCommand<TaskItem>(t => DeclineTaskInternal(t!));
-            SavePartnerCommand = new RelayCommand(_ => SavePartner());
-            // Load tasks from JSON
-            var loadedTasks = TaskDataService.LoadTasks();
+            SaveDisplayNameCommand = new RelayCommand(
+                _ => SaveDisplayName(),
+                _ => !string.IsNullOrWhiteSpace(NewDisplayName)
+        );
+            _partner.PartnerChanged += async () => {
+                // This mirrors your current flow: recompute, save, and reattach listeners
+                await ReloadForNewPartnerAsync();
+                OnPropertyChanged(nameof(PartnerId));
+                OnPropertyChanged(nameof(NeedsProfileSetup));
+            };
 
-
-            //_ = _taskService.InitializeAsync(GroupId); // fire-and-forget on UI context
+            if(NeedsProfileSetup) NewDisplayName = string.Empty;
             _ = InitLiveAsync(); // fire-and-forget
         }
         private async void AddTask() {
@@ -101,15 +122,15 @@ namespace TaskMate.ViewModels {
 
             if(assignee == "Partner" && !string.IsNullOrWhiteSpace(PartnerId)) {
                 // Write to requests (group path)
-                await _requestRepo.UpsertAsync(task, GroupId);
+                await _requestService.UpsertRequestAsync(task, GroupId);
                 // Optimistic UI: show in Pending immediately (optional)
-                PendingTasks.Add(CloneForUi(task, "Partner", requestMode: true));
+                PendingTasks.Add(TaskCollectionHelpers.CloneForUi(task, "Partner", requestMode: true));
             }
             else {
                 // Write to personal list
-                await _personalRepo.UpsertAsync(task, myId);
+                await _requestService.UpsertPersonalAsync(task, myId);
                 // Optimistic UI: add to Tasks as "Me" so filters pick it up immediately
-                Tasks.Add(CloneForUi(task, "Me", requestMode: false));
+                Tasks.Add(TaskCollectionHelpers.CloneForUi(task, "Me", requestMode: false));
             }
 
             // Persist local cache (your TaskService also does saving; we can double-save safely)
@@ -122,12 +143,13 @@ namespace TaskMate.ViewModels {
         }
         public void SaveTasks() => _taskService.SaveAll(GroupId);
 
-        private void SavePartner() {
-            UserSettings.Save(_userSettings);
-            // Optional: refresh or sync partner tasks
-            // If partner changed, re-init to merge that group
-            _ = _taskService.InitializeAsync(GroupId);
+        private void SaveDisplayName() {
+            if(!string.IsNullOrWhiteSpace(NewDisplayName)) {
+                _partner.SaveDisplayName(NewDisplayName!);
+                OnPropertyChanged(nameof(NeedsProfileSetup));
+            }
         }
+
 
         private async Task InitLiveAsync() {
             // 1) Ensure we have IDs + Firestore ready
@@ -140,9 +162,9 @@ namespace TaskMate.ViewModels {
             //    If you want to reload into UI immediately, it's already available via _taskService.Tasks
 
             // 3) Start live listener for *my* personal list
-            _myHandle = _personalRepo.Listen(myId, cloud => {
+            _myHandle = _requestService.ListenPersonal(myId, cloud => {
                 Application.Current.Dispatcher.Invoke(() => {
-                    UpsertInto(Tasks, cloud, assignedTo: "Me", ownerUserId: myId);
+                    TaskCollectionHelpers.UpsertInto(Tasks, cloud, assignedTo: "Me", ownerUserId: myId);
                     TaskDataService.SaveTasks(Tasks.ToList());
                     OnPropertyChanged(nameof(Tasks));
                     MyTasksView.Refresh();
@@ -150,71 +172,52 @@ namespace TaskMate.ViewModels {
                 });
             });
 
-            _partnerHandle = _personalRepo.Listen(partnerId, cloud => {
+            _partnerHandle = _requestService.ListenPersonal(partnerId, cloud => {
                 Application.Current.Dispatcher.Invoke(() => {
-                    // however you update the partner view
-                    UpsertInto(Tasks, cloud, assignedTo: "Partner", ownerUserId: partnerId);
+
+                    IsPartnerVerified = !string.IsNullOrWhiteSpace(partnerId);
+                    TaskCollectionHelpers.UpsertInto(Tasks, cloud, assignedTo: "Partner", ownerUserId: partnerId);
                     OnPropertyChanged(nameof(Tasks));
                     PartnerTasksView.Refresh();
                 });
             });
 
-            _requestsHandle = _requestRepo.Listen(groupId, cloud => {
+            _requestsHandle = _requestService.ListenPersonal(groupId, cloud => {
                 Application.Current.Dispatcher.Invoke(() => {
-                    ReplaceAll(PendingTasks, cloud, assignedTo: "Partner", requestMode: true);
+                    TaskCollectionHelpers.ReplaceAll(PendingTasks, cloud, assignedTo: "Partner", requestMode: true);
                     OnPropertyChanged(nameof(PendingTasks));
                     // If any view is bound to PendingTasks, refresh it here
                 });
             });
         }
+        private async Task ReloadForNewPartnerAsync() {
+            try {
+                // Stop old listeners
+                _myHandle?.Dispose();
+                _partnerHandle?.Dispose();
+                _requestsHandle?.Dispose();
+                _myHandle = _partnerHandle = _requestsHandle = null;
 
-        private static void ReplaceAll(ObservableCollection<TaskItem> target, IList<TaskItem> incoming, string? assignedTo = null, bool requestMode = false) {
-            target.Clear();
-            foreach(var inc in incoming) {
-                var copy = CloneForUi(inc, assignedTo, requestMode);
-                target.Add(copy);
+                // Clear partner-sourced UI
+                var mine = Tasks.Where(t => t.AssignedTo == "Me").ToList();
+                Tasks.Clear();
+                foreach(var t in mine) Tasks.Add(t);
+                PendingTasks.Clear();
+
+                // Re-attach listeners for the new PartnerId/GroupId
+                await InitLiveAsync();
+
+                // Refresh the views
+                Application.Current.Dispatcher.Invoke(() => {
+                    OnPropertyChanged(nameof(Tasks));
+                    OnPropertyChanged(nameof(PendingTasks));
+                    MyTasksView.Refresh();
+                    PartnerTasksView.Refresh();
+                });
             }
-        }
-
-        private static void UpsertInto(ObservableCollection<TaskItem> target, IList<TaskItem> incoming, string assignedTo, string ownerUserId) {
-            // Build index for faster upsert
-            var index = target.ToDictionary(t => t.Id);
-
-            foreach(var inc in incoming) {
-                var mapped = CloneForUi(inc, assignedTo, requestMode: false);
-                if(index.TryGetValue(mapped.Id, out var existing)) {
-                    var oldTime = existing.UpdatedAt ?? DateTime.MinValue;
-                    var newTime = mapped.UpdatedAt ?? DateTime.MinValue;
-                    if(newTime > oldTime) {
-                        var pos = target.IndexOf(existing);
-                        target[pos] = mapped;
-                    }
-                }
-                else {
-                    target.Add(mapped);
-                }
+            catch(Exception ex) {
+                Console.WriteLine($"ReloadForNewPartnerAsync error: {ex}");
             }
-        }
-        private static TaskItem CloneForUi(TaskItem inc, string? assignedTo, bool requestMode) {
-            // We preserve your current UI fields: AssignedTo ("Me"/"Partner") and Accepted flag.
-            // Requests show Accepted=false until moved.
-            return new TaskItem {
-                Id = inc.Id,
-                Title = inc.Title,
-                Description = inc.Description,
-                Category = inc.Category,
-                DueDate = inc.DueDate,
-                IsCompleted = inc.IsCompleted,
-                CreatedBy = inc.CreatedBy,
-                UpdatedAt = inc.UpdatedAt,
-                AssignedToUserId = inc.AssignedToUserId,
-                AssignedTo = assignedTo ?? inc.AssignedTo,
-                Accepted = requestMode ? false : true, // Personal list items are implicitly accepted
-                IsSuggestion = inc.IsSuggestion,
-                MediaPath = inc.MediaPath,
-                IsRecurring = inc.IsRecurring,
-                Deleted = inc.Deleted
-            };
         }
 
 
@@ -222,7 +225,7 @@ namespace TaskMate.ViewModels {
         // Accept task that lives in Requests (PendingTasks)
         private async void AcceptTaskInternal(TaskItem t) {
             if(t is null) return;
-            await _requestRepo.AcceptAsync(t, GroupId, UserId);
+            await _requestService.AcceptRequestAsync(t, GroupId, UserId);
             // UI will update via listeners; remove from Pending optimistically:
             PendingTasks.Remove(t);
         }
@@ -230,7 +233,7 @@ namespace TaskMate.ViewModels {
         // Decline (delete from requests)
         private async void DeclineTaskInternal(TaskItem t) {
             if(t is null) return;
-            await _requestRepo.DeleteAsync(t.Id, GroupId);
+            await _requestService.DeleteRequestAsync(t.Id, GroupId);
             PendingTasks.Remove(t);
         }
 
@@ -240,11 +243,11 @@ namespace TaskMate.ViewModels {
 
             if(t.AssignedTo == "Partner") {
                 // If this is a pending request shown in PendingTasks, delete there:
-                await _requestRepo.DeleteAsync(t.Id, GroupId);
+                await _requestService.DeleteRequestAsync(t.Id, GroupId);
                 PendingTasks.Remove(t);
             }
             else {
-                await _personalRepo.DeleteAsync(t.Id, UserId);
+                await _requestService.DeletePersonalAsync(t.Id, UserId);
                 Tasks.Remove(t);
             }
             TaskDataService.SaveTasks(Tasks.ToList());
@@ -258,12 +261,22 @@ namespace TaskMate.ViewModels {
             _requestsHandle?.Dispose();
         }
 
-        public string PartnerId {
-            get => _userSettings.PartnerId;
+        public string? PartnerId {
+            get => _partner.PartnerId;
             set {
-                _userSettings.PartnerId = value;
-                UserSettings.Save(_userSettings);
-                OnPropertyChanged();
+                if(_partner.PartnerId == value?.Trim()) return;
+                _partner.PartnerId = value;           // service saves + recomputes + raises PartnerChanged
+                OnPropertyChanged(nameof(PartnerId)); // update bindings
+                                                      // no RecomputeGroupId(), no ReloadForNewPartnerAsync() here
+            }
+        }
+        public bool IsPartnerVerified {
+            get => _isPartnerVerified;
+            private set {
+                if(_isPartnerVerified == value) return;
+                _isPartnerVerified = value;
+                OnPropertyChanged(nameof(IsPartnerVerified));
+                OnPropertyChanged(nameof(ShowPartnerList));
             }
         }
         public string NewTaskTitle {

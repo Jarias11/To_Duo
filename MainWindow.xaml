@@ -8,6 +8,7 @@
         Width="900"
         Background="#f2f2f2">
         <Window.Resources>
+                <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
                 <conv:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter"/>
                 <local:BoolToTextDecorationsConverter x:Key="BoolToTextDecorationsConverter"/>
 
@@ -147,16 +148,31 @@
                         <StackPanel Grid.Column="0"
                                     Margin="5"
                                     Background="#E3F2FD">
+
+                                <!-- make this StackPanel span both columns when partner is hidden -->
+                                <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                                <Setter Property="Grid.ColumnSpan"
+                                                        Value="1"/>
+                                                <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ShowPartnerList}"
+                                                                     Value="False">
+                                                                <Setter Property="Grid.ColumnSpan"
+                                                                        Value="2"/>
+                                                        </DataTrigger>
+                                                </Style.Triggers>
+                                        </Style>
+                                </StackPanel.Style>
+
                                 <TextBlock Text="My Tasks"
                                            FontSize="16"
                                            FontWeight="Bold"
                                            Margin="5"/>
+
                                 <Grid>
                                         <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
-                                                <!-- Header row -->
                                                 <RowDefinition Height="*"/>
-                                                <!-- Task items -->
                                         </Grid.RowDefinitions>
 
                                         <!-- Header Row -->
@@ -195,8 +211,7 @@
                                                         <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
                                                                         <Grid Margin="2"
-                                                                              ToolTip="{Binding Description}"
-                                                                              Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Me}">
+                                                                              ToolTip="{Binding Description}">
                                                                                 <Grid.ColumnDefinitions>
                                                                                         <ColumnDefinition Width="30"/>
                                                                                         <ColumnDefinition Width="*"/>
@@ -257,7 +272,8 @@
                         <!-- Partner's Tasks -->
                         <StackPanel Grid.Column="1"
                                     Margin="5"
-                                    Background="#F3E5F5">
+                                    Background="#F3E5F5"
+                                    Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="Partner's Tasks"
                                            FontSize="16"
                                            FontWeight="Bold"
@@ -302,7 +318,7 @@
                                         <!-- Task Items -->
                                         <ScrollViewer Grid.Row="1">
                                                 <ItemsControl ItemsSource="{Binding PartnerTasksView}"
-                                                                ScrollViewer.CanContentScroll="True">
+                                                              ScrollViewer.CanContentScroll="True">
                                                         <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
                                                                         <Grid Margin="2"
@@ -404,6 +420,33 @@
                                 </ItemsControl.ItemTemplate>
                         </ItemsControl>
                 </StackPanel>
+
+                <!-- First-run Welcome Overlay -->
+                <Grid Visibility="{Binding NeedsProfileSetup, Converter={StaticResource BoolToVisibility}}">
+                        <Rectangle Fill="#80000000"/>
+                        <Border Background="White"
+                                        Padding="24"
+                                        CornerRadius="10"
+                                        Width="400"
+                                HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <StackPanel>
+                                        <TextBlock Text="Welcome to To-Duo"
+                                                        FontSize="20"
+                                                        FontWeight="Bold"
+                                                        Margin="0,0,0,10"/>
+                                        <TextBlock Text="Enter your name:"
+                                                        Margin="0,0,0,8"/>
+                                        <TextBox Text="{Binding NewDisplayName, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <Button Content="Continue"
+                                                        Command="{Binding SaveDisplayNameCommand}"
+                                                        Margin="0,10,0,0"/>
+                                </StackPanel>
+                        </Border>
+                </Grid>
+
+
+
         </Grid>
 </Window>
         
