@@ -17,8 +17,9 @@ namespace TaskMate.ViewModels {
         private readonly ITaskService _taskService;
         private readonly IRequestService _requestService = new RequestService();
         private readonly IPartnerService _partner;
+        private readonly IPartnerRequestService _partnerReqs = new PartnerRequestService();
 
-        private IDisposable? _myHandle, _partnerHandle, _requestsHandle;
+        private IDisposable? _myHandle, _partnerHandle, _requestsHandle, _incomingReqsHandle, _outgoingReqsHandle;
 
         private bool _isPartnerVerified;
         public bool ShowPartnerList => IsPartnerVerified;
@@ -40,6 +41,23 @@ namespace TaskMate.ViewModels {
             "General", "Chores", "Work", "Fun", "Urgent"
         ];
         public event PropertyChangedEventHandler? PropertyChanged;
+        public string? PartnerId => _partner.PartnerId;
+        private string? _enteredPartnerCode;
+        public string? EnteredPartnerCode {
+            get => _enteredPartnerCode;
+            set { _enteredPartnerCode = value?.Trim(); OnPropertyChanged(); CommandManager.InvalidateRequerySuggested(); }
+        }
+        public ObservableCollection<PartnerRequest> IncomingPartnerRequests { get; } = new();
+        public ObservableCollection<PartnerRequest> OutgoingPartnerRequests { get; } = new();
+
+        public ICommand SendPartnerRequestCommand { get; }
+        public ICommand AcceptPartnerInviteCommand { get; }
+        public ICommand DeclinePartnerInviteCommand { get; }
+        public ICommand CancelPartnerRequestCommand { get; }
+
+
+
+
 
         /* MOVE THIS WHEN FEATURE IS WORKING */
         private string? _newDisplayName;
@@ -67,6 +85,7 @@ namespace TaskMate.ViewModels {
             _partner = partnerService;
             OnPropertyChanged(nameof(PartnerId));
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
+            IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
             MyTasksView.Filter = o => {
                 var t = o as TaskItem;
                 return t != null && t.AssignedTo == "Me"; // your current field
@@ -76,6 +95,23 @@ namespace TaskMate.ViewModels {
                 var t = o as TaskItem;
                 return t != null && t.AssignedTo == "Partner";
             };
+
+
+            SendPartnerRequestCommand = new RelayCommand(
+            async _ => await SendPartnerRequestAsync(),
+            _ => !string.IsNullOrWhiteSpace(EnteredPartnerCode) && EnteredPartnerCode != UserId
+            );
+
+            AcceptPartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await AcceptPartnerInviteAsync(r!));
+            DeclinePartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await DeclinePartnerInviteAsync(r!));
+            CancelPartnerRequestCommand = new RelayCommand<PartnerRequest>(async r => await CancelPartnerRequestAsync(r!));
+
+
+
+
+
+
+
 
             // Initialize commands
             AddTaskCommand = new RelayCommand(_ => AddTask());
@@ -88,10 +124,12 @@ namespace TaskMate.ViewModels {
         );
             _partner.PartnerChanged += async () => {
                 // This mirrors your current flow: recompute, save, and reattach listeners
+                IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
                 await ReloadForNewPartnerAsync();
                 OnPropertyChanged(nameof(PartnerId));
                 OnPropertyChanged(nameof(NeedsProfileSetup));
             };
+
 
             if(NeedsProfileSetup) NewDisplayName = string.Empty;
             _ = InitLiveAsync(); // fire-and-forget
@@ -172,23 +210,51 @@ namespace TaskMate.ViewModels {
                 });
             });
 
-            _partnerHandle = _requestService.ListenPersonal(partnerId, cloud => {
+            // 4) Start partner-request listeners (new)
+            _incomingReqsHandle = _partnerReqs.ListenIncoming(myId, list => {
                 Application.Current.Dispatcher.Invoke(() => {
-
-                    IsPartnerVerified = !string.IsNullOrWhiteSpace(partnerId);
-                    TaskCollectionHelpers.UpsertInto(Tasks, cloud, assignedTo: "Partner", ownerUserId: partnerId);
-                    OnPropertyChanged(nameof(Tasks));
-                    PartnerTasksView.Refresh();
+                    IncomingPartnerRequests.Clear();
+                    foreach(var r in list.Where(x => x.Status == "pending"))
+                        IncomingPartnerRequests.Add(r);
                 });
             });
 
-            _requestsHandle = _requestService.ListenPersonal(groupId, cloud => {
+            _outgoingReqsHandle = _partnerReqs.ListenOutgoing(myId, list => {
                 Application.Current.Dispatcher.Invoke(() => {
-                    TaskCollectionHelpers.ReplaceAll(PendingTasks, cloud, assignedTo: "Partner", requestMode: true);
-                    OnPropertyChanged(nameof(PendingTasks));
-                    // If any view is bound to PendingTasks, refresh it here
+                    OutgoingPartnerRequests.Clear();
+                    foreach(var r in list)
+                        OutgoingPartnerRequests.Add(r);
+
+                    // If recipient accepted our outgoing request, auto-connect
+                    var accepted = list.FirstOrDefault(x => x.Status == "accepted");
+                    if(accepted != null) {
+                        // Figure out the “other” user id
+                        var other = accepted.ToUserId == myId ? accepted.FromUserId : accepted.ToUserId;
+                        if(!string.IsNullOrWhiteSpace(other) && PartnerId != other) {
+                            _partner.PartnerId = other;   // persists + raises PartnerChanged
+                            IsPartnerVerified = true;     // turn on partner UI + enable syncing
+                        }
+                    }
                 });
             });
+
+            // 5) Attach partner + group listeners ONLY when verified
+            if(IsPartnerVerified && !string.IsNullOrWhiteSpace(partnerId)) {
+                _partnerHandle = _requestService.ListenPersonal(partnerId, cloud => {
+                    Application.Current.Dispatcher.Invoke(() => {
+                        TaskCollectionHelpers.UpsertInto(Tasks, cloud, assignedTo: "Partner", ownerUserId: partnerId);
+                        OnPropertyChanged(nameof(Tasks));
+                        PartnerTasksView.Refresh();
+                    });
+                });
+
+                _requestsHandle = _requestService.ListenRequests(groupId, cloud => {
+                    Application.Current.Dispatcher.Invoke(() => {
+                        TaskCollectionHelpers.ReplaceAll(PendingTasks, cloud, assignedTo: "Partner", requestMode: true);
+                        OnPropertyChanged(nameof(PendingTasks));
+                    });
+                });
+            }
         }
         private async Task ReloadForNewPartnerAsync() {
             try {
@@ -254,22 +320,47 @@ namespace TaskMate.ViewModels {
         }
 
 
+        private async Task SendPartnerRequestAsync() {
+            if(string.IsNullOrWhiteSpace(EnteredPartnerCode) || EnteredPartnerCode == UserId) return;
+
+            var myName = _partner.DisplayName ?? "Someone";
+            await _partnerReqs.SendAsync(UserId, EnteredPartnerCode, myName);
+            EnteredPartnerCode = string.Empty;
+        }
+
+        private async Task AcceptPartnerInviteAsync(PartnerRequest r) {
+            if(r is null) return;
+
+            await _partnerReqs.AcceptAsync(UserId, r.FromUserId);
+
+            // Set local partner & mark verified; this triggers your PartnerChanged flow
+
+            IsPartnerVerified = true;
+            _partner.PartnerId = r.FromUserId;
+        }
+
+        private async Task DeclinePartnerInviteAsync(PartnerRequest r) {
+            if(r is null) return;
+            await _partnerReqs.DeclineAsync(UserId, r.FromUserId);
+        }
+
+        private async Task CancelPartnerRequestAsync(PartnerRequest r) {
+            if(r is null) return;
+
+            var target = r.ToUserId == UserId ? r.FromUserId : r.ToUserId;
+            await _partnerReqs.CancelAsync(UserId, target);
+        }
+
+
 
         public void Dispose() {
             _myHandle?.Dispose();
             _partnerHandle?.Dispose();
             _requestsHandle?.Dispose();
+            _incomingReqsHandle?.Dispose();
+            _outgoingReqsHandle?.Dispose();
         }
 
-        public string? PartnerId {
-            get => _partner.PartnerId;
-            set {
-                if(_partner.PartnerId == value?.Trim()) return;
-                _partner.PartnerId = value;           // service saves + recomputes + raises PartnerChanged
-                OnPropertyChanged(nameof(PartnerId)); // update bindings
-                                                      // no RecomputeGroupId(), no ReloadForNewPartnerAsync() here
-            }
-        }
         public bool IsPartnerVerified {
             get => _isPartnerVerified;
             private set {

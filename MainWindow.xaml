@@ -4,7 +4,7 @@
         xmlns:conv="clr-namespace:TaskMate.Converters"
         xmlns:local="clr-namespace:TaskMate.ViewModels"
         Title="TaskMate"
-        Height="600"
+        Height="800"
         Width="900"
         Background="#f2f2f2">
         <Window.Resources>
@@ -57,27 +57,79 @@
 
 
                 <StackPanel Grid.Row="0"
-                            Margin="0,0,0,10">
+                            Margin="0,0,0,10"
+                            Background="#FAFAFA"
+                            Orientation="Vertical">
+
+                        <!-- Your own code -->
                         <StackPanel Orientation="Horizontal"
-                                    Margin="10,0,10,0">
-                                <TextBlock Text="Partner Code:"
-                                           VerticalAlignment="Center"/>
+                                        Margin="0,0,5,0">
+                                <TextBlock Text="Your Code:"
+                                                VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding UserId}"
+                                                FontWeight="Bold"
+                                                Margin="5,0"/>
+                        </StackPanel>
+
+                        <!-- Enter partner code -->
+                        <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,5">
+                                <TextBlock Text="Enter Partner Code:"
+                                                VerticalAlignment="Center"/>
                                 <TextBox Width="200"
-                                         Text="{Binding PartnerId, UpdateSourceTrigger=PropertyChanged}"
+                                         Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="5,0"/>
-                                <Button Content="Save Partner ID"
-                                        Command="{Binding SavePartnerCommand}"
+                                <Button Content="Send Request"
+                                        Command="{Binding SendPartnerRequestCommand}"
                                         Margin="5,0"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal"
-                                    Margin="10,0,10,0">
-                                <TextBlock Text="Your Code:"
-                                           VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding UserId}"
-                                           FontWeight="Bold"
-                                           Margin="5,0"/>
-                        </StackPanel>
+                        <!-- Incoming requests -->
+                        <GroupBox Header="Incoming Requests"
+                                        Margin="0,5,0,5">
+                                <ItemsControl ItemsSource="{Binding IncomingPartnerRequests}">
+                                        <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                        Margin="5">
+                                                                <TextBlock Text="{Binding FromDisplayName}"
+                                                                                FontWeight="Bold"
+                                                                                Margin="0,0,10,0"/>
+                                                                <Button Content="Accept"
+                                                                        Command="{Binding DataContext.AcceptPartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}"/>
+                                                                <Button Content="Decline"
+                                                                        Command="{Binding DataContext.DeclinePartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}"
+                                                                                Margin="5,0,0,0"/>
+                                                        </StackPanel>
+                                                </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                        </GroupBox>
+
+                        <!-- Outgoing requests -->
+                        <GroupBox Header="Outgoing Requests"
+                                        Margin="0,5,0,0">
+                                <ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
+                                        <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                        Margin="5">
+                                                                <TextBlock Text="{Binding ToUserId}"
+                                                                                FontWeight="Bold"
+                                                                                Margin="0,0,10,0"/>
+                                                                <TextBlock Text="{Binding Status}"
+                                                                                Margin="0,0,10,0"/>
+                                                                <Button Content="Cancel"
+                                                                        Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}"/>
+                                                        </StackPanel>
+                                                </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                        </GroupBox>
+
                 </StackPanel>
 
 
@@ -86,7 +138,7 @@
                         Background="White"
                         CornerRadius="8"
                         Padding="10"
-                        Margin="0,70,0,10"
+                        Margin="0,200,0,10"
                         BorderBrush="#ddd"
                         BorderThickness="1">
                         <StackPanel Orientation="Horizontal"
@@ -425,22 +477,22 @@
                 <Grid Visibility="{Binding NeedsProfileSetup, Converter={StaticResource BoolToVisibility}}">
                         <Rectangle Fill="#80000000"/>
                         <Border Background="White"
-                                        Padding="24"
-                                        CornerRadius="10"
-                                        Width="400"
+                                Padding="24"
+                                CornerRadius="10"
+                                Width="400"
                                 HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
+                                VerticalAlignment="Center">
                                 <StackPanel>
                                         <TextBlock Text="Welcome to To-Duo"
-                                                        FontSize="20"
-                                                        FontWeight="Bold"
-                                                        Margin="0,0,0,10"/>
+                                                   FontSize="20"
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,0,10"/>
                                         <TextBlock Text="Enter your name:"
-                                                        Margin="0,0,0,8"/>
+                                                   Margin="0,0,0,8"/>
                                         <TextBox Text="{Binding NewDisplayName, UpdateSourceTrigger=PropertyChanged}"/>
                                         <Button Content="Continue"
-                                                        Command="{Binding SaveDisplayNameCommand}"
-                                                        Margin="0,10,0,0"/>
+                                                Command="{Binding SaveDisplayNameCommand}"
+                                                Margin="0,10,0,0"/>
                                 </StackPanel>
                         </Border>
                 </Grid>
