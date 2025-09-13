@@ -10,6 +10,7 @@ namespace TaskMate.Models {
         public string PartnerId { get; set; } = "";
         public string GroupId { get; set; } = "";
         public string? DisplayName { get; set; } = "";
+        public string Theme { get; set; } = "Light"; // "Light" or "Dark"
 
         private static readonly string FilePath = "user_settings.json";
 
@@ -20,7 +21,7 @@ namespace TaskMate.Models {
                     PartnerId = "",
                     GroupId = ""
                 };
-                
+
                 Save(settings);
                 settings.DisplayName ??= string.Empty;
                 return settings;

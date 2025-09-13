@@ -3,16 +3,67 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:TaskMate.Converters"
         xmlns:local="clr-namespace:TaskMate.ViewModels"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="TaskMate"
-        Height="800"
-        Width="900"
-        Background="#f2f2f2">
+        Height="900"
+        Width="1000"
+        Background="{DynamicResource WindowBackgroundBrush}">
         <Window.Resources>
                 <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
                 <conv:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter"/>
                 <local:BoolToTextDecorationsConverter x:Key="BoolToTextDecorationsConverter"/>
 
-                <Style TargetType="TextBox">
+                <SolidColorBrush x:Key="MeTaskTextBrush"
+                                 Color="#4CAF50"/>
+                <SolidColorBrush x:Key="PartnerTaskTextBrush"
+                                 Color="#E91E63"/>
+                <Style x:Key="TaskRowTextStyle"
+                       TargetType="TextBlock"
+                       BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <!-- default (theme) -->
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <!-- override by owner -->
+                        <Style.Triggers>
+                                <DataTrigger Binding="{Binding AssignedTo}"
+                                             Value="Me">
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource MeTaskTextBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding AssignedTo}"
+                                             Value="Partner">
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource PartnerTaskTextBrush}"/>
+                                </DataTrigger>
+                        </Style.Triggers>
+                </Style>
+
+                <Style TargetType="{x:Type Control}">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                </Style>
+                <Style TargetType="GroupBox">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                </Style>
+                <Style TargetType="CheckBox">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                </Style>
+                <Style TargetType="Button">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                </Style>
+                <Style TargetType="TextBlock">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                </Style>
+                <Style TargetType="TextBox"
+                       BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                Value="{DynamicResource ControlBackgroundBrush}"/>
                         <Setter Property="Margin"
                                 Value="5"/>
                         <Setter Property="Padding"
@@ -20,31 +71,304 @@
                         <Setter Property="FontSize"
                                 Value="14"/>
                         <Setter Property="BorderBrush"
-                                Value="#ccc"/>
+                                Value="{DynamicResource ControlBorderBrush}"/>
                         <Setter Property="BorderThickness"
                                 Value="1"/>
                         <Setter Property="Height"
                                 Value="28"/>
                 </Style>
 
-                <Style TargetType="ComboBox">
-                        <Setter Property="Margin"
-                                Value="5"/>
+                <Style TargetType="ComboBox"
+                       BasedOn="{StaticResource {x:Type ComboBox}}">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                Value="{DynamicResource ControlBackgroundBrush}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource ControlBorderBrush}"/>
                         <Setter Property="Padding"
                                 Value="4"/>
+                        <Setter Property="Height"
+                                Value="28"/>
+                        <Setter Property="Template">
+                                <Setter.Value>
+                                        <ControlTemplate TargetType="ComboBox">
+                                                <Grid>
+                                                        <!-- the box you see when it's closed -->
+                                                        <Border x:Name="Bd"
+                                                                Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="4"/>
+
+                                                        <!-- content -->
+                                                        <ContentPresenter Margin="8,0,28,0"
+                                                                          VerticalAlignment="Center"
+                                                                          HorizontalAlignment="Left"/>
+
+                                                        <!-- dropdown button -->
+                                                        <ToggleButton Grid.Column="1"
+                                                                      Focusable="False"
+                                                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                      ClickMode="Press"
+                                                                      Background="{TemplateBinding Background}"
+                                                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                                                      BorderThickness="0"
+                                                                      HorizontalAlignment="Right"
+                                                                      Width="22"
+                                                                      Padding="0">
+                                                                <Path Data="M 0 0 L 5 5 L 10 0 Z"
+                                                                      Width="10"
+                                                                      Height="6"
+                                                                      Stretch="Uniform"
+                                                                      Margin="0,0,0,2"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"
+                                                                      Fill="{DynamicResource PrimaryTextBrush}"/>
+                                                        </ToggleButton>
+
+                                                        <!-- popup -->
+                                                        <Popup x:Name="Popup"
+                                                               Placement="Bottom"
+                                                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                                                               AllowsTransparency="True"
+                                                               Focusable="False"
+                                                               PopupAnimation="Slide">
+                                                                <Border Background="{DynamicResource ControlBackgroundBrush}"
+                                                                        BorderBrush="{DynamicResource ControlBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        SnapsToDevicePixels="True"
+                                                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                                        MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                                                                        <!-- key line -->
+                                                                        <ScrollViewer>
+                                                                                <ItemsPresenter/>
+                                                                        </ScrollViewer>
+                                                                </Border>
+                                                        </Popup>
+                                                </Grid>
+
+                                                <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                                 Value="True">
+                                                                <Setter TargetName="Bd"
+                                                                        Property="BorderBrush"
+                                                                        Value="{DynamicResource HoverBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsKeyboardFocusWithin"
+                                                                 Value="True">
+                                                                <Setter TargetName="Bd"
+                                                                        Property="BorderBrush"
+                                                                        Value="{DynamicResource PressedBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsEnabled"
+                                                                 Value="False">
+                                                                <Setter Property="Opacity"
+                                                                        Value="0.6"/>
+                                                        </Trigger>
+                                                </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                </Setter.Value>
+                        </Setter>
+                </Style>
+                <Style TargetType="ComboBoxItem">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                Value="{DynamicResource ControlBackgroundBrush}"/>
+                        <Style.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource HoverBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected"
+                                         Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource PressedBrush}"/>
+                                </Trigger>
+                        </Style.Triggers>
+                </Style>
+
+                <Style TargetType="DatePicker"
+                       BasedOn="{StaticResource {x:Type DatePicker}}">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                Value="{DynamicResource ControlBackgroundBrush}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource ControlBorderBrush}"/>
+                        <Setter Property="Margin"
+                                Value="5"/>
                         <Setter Property="FontSize"
                                 Value="14"/>
                         <Setter Property="Height"
                                 Value="28"/>
                 </Style>
+                <!-- DatePicker text box (was white) -->
+                <Style TargetType="{x:Type DatePickerTextBox}">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                Value="{DynamicResource ControlBackgroundBrush}"/>
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource ControlBorderBrush}"/>
+                </Style>
+                <!-- Calendar popup (was white) -->
+                <Style TargetType="{x:Type Calendar}">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                Value="{DynamicResource ControlBackgroundBrush}"/>
+                </Style>
 
-                <Style TargetType="DatePicker">
+                <!-- Generic white card -->
+                <Style x:Key="Card"
+                       TargetType="Border">
+                        <Setter Property="Background"
+                                Value="{DynamicResource CardBackgroundBrush}"/>
+                        <Setter Property="CornerRadius"
+                                Value="10"/>
+                        <Setter Property="Padding"
+                                Value="12"/>
+                        <Setter Property="Margin"
+                                Value="0,0,0,10"/>
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource CardBorderBrush}"/>
+                        <Setter Property="BorderThickness"
+                                Value="1"/>
+                        <Setter Property="Effect">
+                                <Setter.Value>
+                                        <DropShadowEffect BlurRadius="10"
+                                                          ShadowDepth="2"
+                                                          Opacity="0.15"/>
+                                </Setter.Value>
+                        </Setter>
+                </Style>
+
+                <!-- Card-looking Expander: header = full-width clickable row, content = inside a card -->
+                <Style x:Key="CardExpander"
+                       TargetType="Expander">
+                        <Setter Property="IsExpanded"
+                                Value="False"/>
+                        <Setter Property="Margin"
+                                Value="0,0,0,1"/>
+                        <Setter Property="Template">
+                                <Setter.Value>
+                                        <ControlTemplate TargetType="Expander">
+                                                <Border Style="{StaticResource Card}"
+                                                        Padding="0">
+                                                        <StackPanel>
+                                                                <!-- Header row (full row clickable) -->
+                                                                <ToggleButton x:Name="HeaderSite"
+                                                                              Content="{TemplateBinding Header}"
+                                                                              FontWeight="Bold"
+                                                                              Focusable="False"
+                                                                              HorizontalContentAlignment="Left"
+                                                                              IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                              OverridesDefaultStyle="True">
+                                                                        <ToggleButton.Template>
+                                                                                <ControlTemplate TargetType="ToggleButton">
+                                                                                        <!-- no theme chrome = no blue -->
+                                                                                        <Border x:Name="HeaderBg"
+                                                                                                Background="Transparent"
+                                                                                                Padding="12,6"
+                                                                                                BorderThickness="0"
+                                                                                                CornerRadius="10">
+
+                                                                                                <ContentPresenter VerticalAlignment="Center"/>
+                                                                                        </Border>
+                                                                                        <!-- optional: subtle hover/pressed you control -->
+                                                                                        <ControlTemplate.Triggers>
+                                                                                                <Trigger Property="IsMouseOver"
+                                                                                                         Value="True">
+                                                                                                        <Setter TargetName="HeaderBg"
+                                                                                                                Property="Background"
+                                                                                                                Value="{DynamicResource HoverBrush}"/>
+                                                                                                </Trigger>
+                                                                                                <Trigger Property="IsPressed"
+                                                                                                         Value="True">
+                                                                                                        <Setter TargetName="HeaderBg"
+                                                                                                                Property="Background"
+                                                                                                                Value="{DynamicResource PressedBrush}"/>
+                                                                                                </Trigger>
+                                                                                                <Trigger Property="IsChecked"
+                                                                                                         Value="True">
+                                                                                                        <Setter TargetName="HeaderBg"
+                                                                                                                Property="Background"
+                                                                                                                Value="Transparent"/>
+                                                                                                </Trigger>
+                                                                                        </ControlTemplate.Triggers>
+                                                                                </ControlTemplate>
+                                                                        </ToggleButton.Template>
+                                                                </ToggleButton>
+                                                                <!-- Expand/collapse content -->
+                                                                <ContentPresenter x:Name="ExpandSite"
+                                                                                  Visibility="Collapsed"
+                                                                                  Margin="12,0,12,12"/>
+                                                        </StackPanel>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                        <Trigger SourceName="HeaderSite"
+                                                                 Property="IsChecked"
+                                                                 Value="True">
+                                                                <Setter TargetName="ExpandSite"
+                                                                        Property="Visibility"
+                                                                        Value="Visible"/>
+                                                        </Trigger>
+                                                </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                </Setter.Value>
+                        </Setter>
+                </Style>
+
+
+
+
+                <!-- Inner section card (for each list column) -->
+                <Style x:Key="SubCard"
+                       TargetType="Border"
+                       BasedOn="{StaticResource Card}">
+                        <Setter Property="Padding"
+                                Value="10"/>
                         <Setter Property="Margin"
                                 Value="5"/>
+                </Style>
+
+                <!-- Individual task “bubble” -->
+                <Style x:Key="TaskItemCard"
+                       TargetType="Border">
+                        <Setter Property="Background"
+                                Value="{DynamicResource TaskItemBackgroundBrush}"/>
+                        <Setter Property="CornerRadius"
+                                Value="8"/>
+                        <Setter Property="Padding"
+                                Value="6"/>
+                        <Setter Property="Margin"
+                                Value="4,3"/>
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource CardBorderBrush}"/>
+                        <Setter Property="BorderThickness"
+                                Value="1"/>
+                        <Setter Property="Effect">
+                                <Setter.Value>
+                                        <DropShadowEffect BlurRadius="6"
+                                                          ShadowDepth="1"
+                                                          Opacity="0.12"/>
+                                </Setter.Value>
+                        </Setter>
+                </Style>
+
+                <!-- Section header -->
+                <Style x:Key="SectionHeader"
+                       TargetType="TextBlock"
+                       BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Setter Property="FontSize"
-                                Value="14"/>
-                        <Setter Property="Height"
-                                Value="28"/>
+                                Value="16"/>
+                        <Setter Property="FontWeight"
+                                Value="Bold"/>
+                        <Setter Property="Margin"
+                                Value="0,0,0,8"/>
                 </Style>
         </Window.Resources>
 
@@ -56,384 +380,500 @@
                 </Grid.RowDefinitions>
 
 
+                <!-- === TOP SECTIONS: Dashboard, Connections, Task Builder === -->
                 <StackPanel Grid.Row="0"
-                            Margin="0,0,0,10"
-                            Background="#FAFAFA"
-                            Orientation="Vertical">
+                            Margin="0,0,0,10">
 
-                        <!-- Your own code -->
-                        <StackPanel Orientation="Horizontal"
-                                        Margin="0,0,5,0">
-                                <TextBlock Text="Your Code:"
-                                                VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding UserId}"
+                        <!-- DASHBOARD (no title) -->
+                        <Border Style="{StaticResource Card}">
+                                <Grid>
+                                        <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Greeting (left) -->
+                                        <TextBlock
+                                                Text="{Binding DisplayName, StringFormat=Welcome Back {0}!}"
+                                                FontSize="22"
                                                 FontWeight="Bold"
-                                                Margin="5,0"/>
-                        </StackPanel>
+                                                VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                        <Style TargetType="TextBlock"
+                                                               BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                                <Setter Property="Visibility"
+                                                                        Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding NeedsProfileSetup}"
+                                                                                     Value="True">
+                                                                                <Setter Property="Visibility"
+                                                                                        Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                </Style.Triggers>
+                                                        </Style>
+                                                </TextBlock.Style>
+                                        </TextBlock>
 
-                        <!-- Enter partner code -->
-                        <StackPanel Orientation="Horizontal"
-                                        Margin="0,0,0,5">
-                                <TextBlock Text="Enter Partner Code:"
-                                                VerticalAlignment="Center"/>
-                                <TextBox Width="200"
-                                         Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
-                                         Margin="5,0"/>
-                                <Button Content="Send Request"
-                                        Command="{Binding SendPartnerRequestCommand}"
-                                        Margin="5,0"/>
-                        </StackPanel>
+                                        <!-- Date/Time + 3 buttons (right) -->
+                                        <StackPanel Grid.Column="1"
+                                                    Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock
+                                                        Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat={}{0:dddd, MMM d • h:mm tt}}"
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Opacity="0.8"/>
+                                                <Button Content="{Binding ThemeButtonText}"
+                                                        MinWidth="110"
+                                                        Command="{Binding ToggleThemeCommand}"/>
+                                                <Button Content="button"
+                                                        MinWidth="90"/>
+                                                <Button Content="Refresh"
+                                                        MinWidth="85"/>
+                                        </StackPanel>
+                                </Grid>
+                        </Border>
 
-                        <!-- Incoming requests -->
-                        <GroupBox Header="Incoming Requests"
-                                        Margin="0,5,0,5">
-                                <ItemsControl ItemsSource="{Binding IncomingPartnerRequests}">
-                                        <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal"
-                                                                        Margin="5">
-                                                                <TextBlock Text="{Binding FromDisplayName}"
-                                                                                FontWeight="Bold"
-                                                                                Margin="0,0,10,0"/>
-                                                                <Button Content="Accept"
-                                                                        Command="{Binding DataContext.AcceptPartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding}"/>
-                                                                <Button Content="Decline"
-                                                                        Command="{Binding DataContext.DeclinePartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding}"
-                                                                                Margin="5,0,0,0"/>
-                                                        </StackPanel>
-                                                </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                        </GroupBox>
+                        <!-- CONNECTIONS -->
+                        <Expander Style="{StaticResource CardExpander}">
+                                <Expander.Header>
+                                        <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Connections"
+                                                           Style="{StaticResource SectionHeader}"
+                                                           Margin="0"/>
+                                                <!-- optional chevron or hint on the right -->
+                                                <TextBlock Grid.Column="1"
+                                                           Text="▼"
+                                                           Opacity="0.6"
+                                                           Margin="8,0,0,0"/>
+                                        </Grid>
+                                </Expander.Header>
 
-                        <!-- Outgoing requests -->
-                        <GroupBox Header="Outgoing Requests"
-                                        Margin="0,5,0,0">
-                                <ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
-                                        <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal"
-                                                                        Margin="5">
-                                                                <TextBlock Text="{Binding ToUserId}"
-                                                                                FontWeight="Bold"
-                                                                                Margin="0,0,10,0"/>
-                                                                <TextBlock Text="{Binding Status}"
-                                                                                Margin="0,0,10,0"/>
-                                                                <Button Content="Cancel"
-                                                                        Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding}"/>
-                                                        </StackPanel>
-                                                </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                        </GroupBox>
+                                <!-- Content shown when expanded (your existing Connections content WITHOUT the title) -->
+                                <StackPanel>
+                                        <!-- Codes Row (aligned halves) -->
+                                        <Grid Margin="0,0,0,8"
+                                              Grid.IsSharedSizeScope="True">
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- LEFT: Your Code -->
+                                                <Grid Grid.Column="0">
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="130"
+                                                                                  SharedSizeGroup="ConnLabels"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="Your Code:"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBox Grid.Column="1"
+                                                                 Text="{Binding UserId, Mode=OneWay}"
+                                                                 IsReadOnly="True"
+                                                                 BorderThickness="0"
+                                                                 Background="{x:Null}"
+                                                                 Padding="0"
+                                                                 FontWeight="Bold"
+                                                                 VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <!-- RIGHT: Enter Partner Code -->
+                                                <Grid Grid.Column="1">
+                                                        <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="130"
+                                                                                  SharedSizeGroup="ConnLabels"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="Enter Partner Code:"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBox Grid.Column="1"
+                                                                 Width="200"
+                                                                 Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
+                                                                 Margin="5,0"
+                                                                 VerticalAlignment="Center"/>
+                                                        <Button Grid.Column="2"
+                                                                Content="Send Request"
+                                                                Command="{Binding SendPartnerRequestCommand}"
+                                                                Margin="5,0"
+                                                                VerticalAlignment="Center"/>
+                                                </Grid>
+                                        </Grid>
+
+                                        <!-- Requests Row -->
+                                        <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <GroupBox Grid.Column="0"
+                                                          Header="Incoming Requests"
+                                                          Margin="0,0,5,0">
+                                                        <ItemsControl ItemsSource="{Binding IncomingPartnerRequests}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                                <StackPanel Orientation="Horizontal"
+                                                                                            Margin="5">
+                                                                                        <TextBlock Text="{Binding FromDisplayName}"
+                                                                                                   FontWeight="Bold"
+                                                                                                   Margin="0,0,10,0"/>
+                                                                                        <Button Content="Accept"
+                                                                                                Command="{Binding DataContext.AcceptPartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                CommandParameter="{Binding}"/>
+                                                                                        <Button Content="Decline"
+                                                                                                Command="{Binding DataContext.DeclinePartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                CommandParameter="{Binding}"
+                                                                                                Margin="5,0,0,0"/>
+                                                                                </StackPanel>
+                                                                        </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                </GroupBox>
+
+                                                <GroupBox Grid.Column="1"
+                                                          Header="Outgoing Requests"
+                                                          Margin="5,0,0,0">
+                                                        <ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                                <StackPanel Orientation="Horizontal"
+                                                                                            Margin="5">
+                                                                                        <TextBlock Text="{Binding ToUserId}"
+                                                                                                   FontWeight="Bold"
+                                                                                                   Margin="0,0,10,0"/>
+                                                                                        <TextBlock Text="{Binding Status}"
+                                                                                                   Margin="0,0,10,0"/>
+                                                                                        <Button Content="Cancel"
+                                                                                                Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                CommandParameter="{Binding}"/>
+                                                                                </StackPanel>
+                                                                        </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                </GroupBox>
+                                        </Grid>
+                                </StackPanel>
+                        </Expander>
+
+                        <!-- TASK BUILDER -->
+                        <Expander Style="{StaticResource CardExpander}">
+                                <Expander.Header>
+                                        <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Task Builder"
+                                                           Style="{StaticResource SectionHeader}"
+                                                           Margin="0"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="▼"
+                                                           Opacity="0.6"
+                                                           Margin="8,0,0,0"/>
+                                        </Grid>
+                                </Expander.Header>
+
+                                <!-- Content when expanded (your existing Task Builder content WITHOUT the title) -->
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                        <StackPanel>
+                                                <TextBlock Text="Title"
+                                                           Margin="5,0,5,0"/>
+                                                <TextBox Width="180"
+                                                         Text="{Binding NewTaskTitle}"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                                <TextBlock Text="Description"
+                                                           Margin="5,0,5,0"/>
+                                                <TextBox Width="180"
+                                                         Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
+                                                         ToolTip="Optional task description"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                                <TextBlock Text="Category"
+                                                           Margin="5,0,5,0"/>
+                                                <ComboBox Width="120"
+                                                          ItemsSource="{Binding Categories}"
+                                                          SelectedItem="{Binding NewTaskCategory}"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                                <TextBlock Text="Due Date"
+                                                           Margin="5,0,5,0"/>
+                                                <DatePicker Width="130"
+                                                            SelectedDate="{Binding NewTaskDueDate}"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                                <TextBlock Text="Assign To"
+                                                           Margin="5,0,5,0"/>
+                                                <ComboBox Width="120"
+                                                          SelectedItem="{Binding NewTaskAssignee}">
+                                                        <ComboBoxItem Content="Me"/>
+                                                        <ComboBoxItem Content="Partner"/>
+                                                </ComboBox>
+                                        </StackPanel>
+                                        <Button Content="Add Task"
+                                                Width="100"
+                                                Margin="10,15,0,0"
+                                                Command="{Binding AddTaskCommand}"/>
+                                </StackPanel>
+                        </Expander>
 
                 </StackPanel>
 
 
-                <!-- INPUT FORM -->
-                <Border Grid.Row="0"
-                        Background="White"
-                        CornerRadius="8"
-                        Padding="10"
-                        Margin="0,200,0,10"
-                        BorderBrush="#ddd"
-                        BorderThickness="1">
-                        <StackPanel Orientation="Horizontal"
-                                    VerticalAlignment="Center">
-                                <StackPanel>
-                                        <TextBlock Text="Title"
-                                                   Margin="5,0,5,0"/>
-                                        <TextBox Width="180"
-                                                 Text="{Binding NewTaskTitle}"/>
-                                </StackPanel>
-                                <StackPanel>
-                                        <TextBlock Text="Description"
-                                                   Margin="5,0,5,0"/>
-                                        <TextBox Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
-                                                 Width="180"
-                                                 ToolTip="Optional task description"/>
-                                </StackPanel>
 
-                                <StackPanel>
-                                        <TextBlock Text="Category"
-                                                   Margin="5,0,5,0"/>
-                                        <ComboBox Width="100"
-                                                  ItemsSource="{Binding Categories}"
-                                                  SelectedItem="{Binding NewTaskCategory}"/>
-                                </StackPanel>
+                <!-- TASK LISTS in a big card -->
+                <Border Grid.Row="1"
+                        Style="{StaticResource Card}">
+                        <Grid>
+                                <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <!-- Title row -->
+                                        <RowDefinition Height="*"/>
+                                        <!-- Lists -->
+                                </Grid.RowDefinitions>
+                                <!-- Section title -->
+                                <TextBlock Grid.Row="0"
+                                           Text="Task Board"
+                                           Style="{StaticResource SectionHeader}"/>
 
-                                <StackPanel>
-                                        <TextBlock Text="Due Date"
-                                                   Margin="5,0,5,0"/>
-                                        <DatePicker Width="130"
-                                                    SelectedDate="{Binding NewTaskDueDate}"/>
-                                </StackPanel>
+                                <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
-                                <StackPanel>
-                                        <TextBlock Text="Assign To"
-                                                   Margin="5,0,5,0"/>
-                                        <ComboBox Width="100"
-                                                  SelectedItem="{Binding NewTaskAssignee}">
-                                                <ComboBoxItem Content="Me"/>
-                                                <ComboBoxItem Content="Partner"/>
-                                        </ComboBox>
-                                </StackPanel>
 
-                                <Button Content="Add Task"
-                                        Width="100"
-                                        Margin="10,15,0,0"
-                                        Command="{Binding AddTaskCommand}"/>
-                        </StackPanel>
+                                        <!-- MY TASKS (left sub-card) -->
+                                        <Border Grid.Column="0"
+                                                Style="{StaticResource SubCard}"
+                                                Background="{DynamicResource SubCardLeftBrush}">
+                                                <Grid>
+                                                        <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock Grid.Row="0"
+                                                                   Text="My Tasks"
+                                                                   Style="{StaticResource SectionHeader}"/>
+
+                                                        <!-- Column headers (optional—keep your current look) -->
+                                                        <Grid Grid.Row="1"
+                                                              Background="{DynamicResource HeaderRowBackgroundBrush}"
+                                                              Margin="0,0,0,6">
+                                                                <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="30"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="140"/>
+                                                                        <ColumnDefinition Width="140"/>
+                                                                        <ColumnDefinition Width="40"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Text="✓"
+                                                                           Grid.Column="0"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="Task"
+                                                                           Grid.Column="1"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="Category"
+                                                                           Grid.Column="2"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="Due"
+                                                                           Grid.Column="3"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="❌"
+                                                                           Grid.Column="4"
+                                                                           FontWeight="Bold"
+                                                                           HorizontalAlignment="Center"/>
+                                                        </Grid>
+
+                                                        <!-- Items as mini-cards -->
+                                                        <ScrollViewer Grid.Row="2"
+                                                                      VerticalScrollBarVisibility="Auto">
+                                                                <ItemsControl ItemsSource="{Binding MyTasksView}">
+                                                                        <ItemsControl.Resources>
+                                                                                <Style TargetType="TextBlock"
+                                                                                       BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                                                        <Setter Property="Foreground"
+                                                                                                Value="{DynamicResource PrimaryTextBrush}"/>
+                                                                                </Style>
+                                                                        </ItemsControl.Resources>
+                                                                        <ItemsControl.ItemsPanel>
+                                                                                <ItemsPanelTemplate>
+                                                                                        <StackPanel/>
+                                                                                </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                        <Border Style="{StaticResource TaskItemCard}"
+                                                                                                ToolTip="{Binding Description}">
+                                                                                                <Grid>
+                                                                                                        <Grid.ColumnDefinitions>
+                                                                                                                <ColumnDefinition Width="30"/>
+                                                                                                                <ColumnDefinition Width="*"/>
+                                                                                                                <ColumnDefinition Width="140"/>
+                                                                                                                <ColumnDefinition Width="140"/>
+                                                                                                                <ColumnDefinition Width="40"/>
+                                                                                                        </Grid.ColumnDefinitions>
+
+                                                                                                        <CheckBox IsChecked="{Binding IsCompleted}"
+                                                                                                                  Margin="2"
+                                                                                                                  Checked="CheckBox_Changed"
+                                                                                                                  Unchecked="CheckBox_Changed"/>
+
+                                                                                                        <TextBlock Grid.Column="1"
+                                                                                                                   Style="{StaticResource TaskRowTextStyle}"
+                                                                                                                   Text="{Binding Title}"
+                                                                                                                   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
+                                                                                                                   VerticalAlignment="Center">
+
+                                                                                                        </TextBlock>
+
+                                                                                                        <TextBlock Grid.Column="2"
+                                                                                                                   Style="{StaticResource TaskRowTextStyle}"
+                                                                                                                   Text="{Binding Category}"
+                                                                                                                   VerticalAlignment="Center"/>
+                                                                                                        <TextBlock Grid.Column="3"
+                                                                                                                   Style="{StaticResource TaskRowTextStyle}"
+                                                                                                                   Text="{Binding DueDate, StringFormat=d}"
+                                                                                                                   VerticalAlignment="Center"/>
+
+                                                                                                        <Button Grid.Column="4"
+                                                                                                                Content="✕"
+                                                                                                                Width="30"
+                                                                                                                Height="25"
+                                                                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                                CommandParameter="{Binding}"/>
+                                                                                                </Grid>
+                                                                                        </Border>
+                                                                                </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                        </ScrollViewer>
+                                                </Grid>
+                                        </Border>
+
+                                        <!-- PARTNER TASKS (right sub-card) -->
+                                        <Border Grid.Column="1"
+                                                Style="{StaticResource SubCard}"
+                                                Background="{DynamicResource SubCardRightBrush}"
+                                                Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
+                                                <Grid>
+                                                        <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock Grid.Row="0"
+                                                                   Text="Partner's Tasks"
+                                                                   Style="{StaticResource SectionHeader}"/>
+
+                                                        <Grid Grid.Row="1"
+                                                              Background="{DynamicResource HeaderRowBackgroundBrush}"
+                                                              Margin="0,0,0,6">
+                                                                <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="30"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="140"/>
+                                                                        <ColumnDefinition Width="140"/>
+                                                                        <ColumnDefinition Width="40"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Text="✓"
+                                                                           Grid.Column="0"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="Task"
+                                                                           Grid.Column="1"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="Category"
+                                                                           Grid.Column="2"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="Due"
+                                                                           Grid.Column="3"
+                                                                           FontWeight="Bold"/>
+                                                                <TextBlock Text="❌"
+                                                                           Grid.Column="4"
+                                                                           FontWeight="Bold"
+                                                                           HorizontalAlignment="Center"/>
+                                                        </Grid>
+
+                                                        <ScrollViewer Grid.Row="2"
+                                                                      VerticalScrollBarVisibility="Auto">
+                                                                <ItemsControl ItemsSource="{Binding PartnerTasksView}">
+                                                                        <ItemsControl.Resources>
+                                                                                <Style TargetType="TextBlock"
+                                                                                       BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                                                        <Setter Property="Foreground"
+                                                                                                Value="{DynamicResource PrimaryTextBrush}"/>
+                                                                                </Style>
+                                                                        </ItemsControl.Resources>
+                                                                        <ItemsControl.ItemsPanel>
+                                                                                <ItemsPanelTemplate>
+                                                                                        <StackPanel/>
+                                                                                </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                        <Border Style="{StaticResource TaskItemCard}"
+                                                                                                ToolTip="{Binding Description}"
+                                                                                                Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}">
+                                                                                                <Grid>
+                                                                                                        <Grid.ColumnDefinitions>
+                                                                                                                <ColumnDefinition Width="30"/>
+                                                                                                                <ColumnDefinition Width="*"/>
+                                                                                                                <ColumnDefinition Width="140"/>
+                                                                                                                <ColumnDefinition Width="140"/>
+                                                                                                                <ColumnDefinition Width="40"/>
+                                                                                                        </Grid.ColumnDefinitions>
+
+                                                                                                        <CheckBox IsChecked="{Binding IsCompleted}"
+                                                                                                                  Margin="2"
+                                                                                                                  Checked="CheckBox_Changed"
+                                                                                                                  Unchecked="CheckBox_Changed"/>
+
+                                                                                                        <TextBlock Grid.Column="1"
+                                                                                                                   Style="{StaticResource TaskRowTextStyle}"
+                                                                                                                   Text="{Binding Title}"
+                                                                                                                   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
+                                                                                                                   VerticalAlignment="Center">
+
+                                                                                                        </TextBlock>
+
+                                                                                                        <TextBlock Grid.Column="2"
+                                                                                                                   Style="{StaticResource TaskRowTextStyle}"
+                                                                                                                   Text="{Binding Category}"
+                                                                                                                   VerticalAlignment="Center"/>
+                                                                                                        <TextBlock Grid.Column="3"
+                                                                                                                   Style="{StaticResource TaskRowTextStyle}"
+                                                                                                                   Text="{Binding DueDate, StringFormat=d}"
+                                                                                                                   VerticalAlignment="Center"/>
+
+                                                                                                        <Button Grid.Column="4"
+                                                                                                                Content="✕"
+                                                                                                                Width="30"
+                                                                                                                Height="25"
+                                                                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                                CommandParameter="{Binding}"/>
+                                                                                                </Grid>
+                                                                                        </Border>
+                                                                                </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                        </ScrollViewer>
+                                                </Grid>
+                                        </Border>
+                                </Grid>
+                        </Grid>
                 </Border>
-
-                <!-- TASK LISTS -->
-                <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- My Tasks -->
-                        <StackPanel Grid.Column="0"
-                                    Margin="5"
-                                    Background="#E3F2FD">
-
-                                <!-- make this StackPanel span both columns when partner is hidden -->
-                                <StackPanel.Style>
-                                        <Style TargetType="StackPanel">
-                                                <Setter Property="Grid.ColumnSpan"
-                                                        Value="1"/>
-                                                <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ShowPartnerList}"
-                                                                     Value="False">
-                                                                <Setter Property="Grid.ColumnSpan"
-                                                                        Value="2"/>
-                                                        </DataTrigger>
-                                                </Style.Triggers>
-                                        </Style>
-                                </StackPanel.Style>
-
-                                <TextBlock Text="My Tasks"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Margin="5"/>
-
-                                <Grid>
-                                        <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-
-                                        <!-- Header Row -->
-                                        <Grid Grid.Row="0"
-                                              Background="#e0e0e0"
-                                              Margin="4">
-                                                <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="30"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                        <ColumnDefinition Width="40"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="✓"
-                                                           Grid.Column="0"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="Task"
-                                                           Grid.Column="1"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="Category"
-                                                           Grid.Column="2"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="Due"
-                                                           Grid.Column="3"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="❌"
-                                                           Grid.Column="4"
-                                                           FontWeight="Bold"
-                                                           HorizontalAlignment="Center"/>
-                                        </Grid>
-
-                                        <!-- Task Items -->
-                                        <ScrollViewer Grid.Row="1">
-                                                <ItemsControl ItemsSource="{Binding MyTasksView}"
-                                                              ScrollViewer.CanContentScroll="True">
-                                                        <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                        <Grid Margin="2"
-                                                                              ToolTip="{Binding Description}">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="30"/>
-                                                                                        <ColumnDefinition Width="*"/>
-                                                                                        <ColumnDefinition Width="120"/>
-                                                                                        <ColumnDefinition Width="120"/>
-                                                                                        <ColumnDefinition Width="40"/>
-                                                                                </Grid.ColumnDefinitions>
-
-                                                                                <CheckBox IsChecked="{Binding IsCompleted}"
-                                                                                          Margin="2"
-                                                                                          Checked="CheckBox_Changed"
-                                                                                          Unchecked="CheckBox_Changed"/>
-
-                                                                                <TextBlock Grid.Column="1"
-                                                                                           Text="{Binding Title}"
-                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
-                                                                                           VerticalAlignment="Center">
-                                                                                        <TextBlock.Style>
-                                                                                                <Style TargetType="TextBlock">
-                                                                                                        <Style.Triggers>
-                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
-                                                                                                                             Value="Me">
-                                                                                                                        <Setter Property="Foreground"
-                                                                                                                                Value="Green"/>
-                                                                                                                </DataTrigger>
-                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
-                                                                                                                             Value="Partner">
-                                                                                                                        <Setter Property="Foreground"
-                                                                                                                                Value="Purple"/>
-                                                                                                                </DataTrigger>
-                                                                                                        </Style.Triggers>
-                                                                                                </Style>
-                                                                                        </TextBlock.Style>
-                                                                                </TextBlock>
-
-                                                                                <TextBlock Grid.Column="2"
-                                                                                           Text="{Binding Category}"
-                                                                                           VerticalAlignment="Center"/>
-                                                                                <TextBlock Grid.Column="3"
-                                                                                           Text="{Binding DueDate, StringFormat=d}"
-                                                                                           VerticalAlignment="Center"/>
-
-                                                                                <Button Grid.Column="4"
-                                                                                        Content="✕"
-                                                                                        Width="30"
-                                                                                        Height="25"
-                                                                                        Margin="2"
-                                                                                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                        CommandParameter="{Binding}"/>
-                                                                        </Grid>
-                                                                </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                        </ScrollViewer>
-                                </Grid>
-                        </StackPanel>
-
-                        <!-- Partner's Tasks -->
-                        <StackPanel Grid.Column="1"
-                                    Margin="5"
-                                    Background="#F3E5F5"
-                                    Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="Partner's Tasks"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Margin="5"/>
-                                <Grid>
-                                        <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <!-- Header row -->
-                                                <RowDefinition Height="*"/>
-                                                <!-- Task items -->
-                                        </Grid.RowDefinitions>
-
-                                        <!-- Header Row -->
-                                        <Grid Grid.Row="0"
-                                              Background="#e0e0e0"
-                                              Margin="4">
-                                                <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="30"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                        <ColumnDefinition Width="40"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="✓"
-                                                           Grid.Column="0"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="Task"
-                                                           Grid.Column="1"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="Category"
-                                                           Grid.Column="2"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="Due"
-                                                           Grid.Column="3"
-                                                           FontWeight="Bold"/>
-                                                <TextBlock Text="❌"
-                                                           Grid.Column="4"
-                                                           FontWeight="Bold"
-                                                           HorizontalAlignment="Center"/>
-                                        </Grid>
-
-                                        <!-- Task Items -->
-                                        <ScrollViewer Grid.Row="1">
-                                                <ItemsControl ItemsSource="{Binding PartnerTasksView}"
-                                                              ScrollViewer.CanContentScroll="True">
-                                                        <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                        <Grid Margin="2"
-                                                                              ToolTip="{Binding Description}"
-                                                                              Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="30"/>
-                                                                                        <ColumnDefinition Width="*"/>
-                                                                                        <ColumnDefinition Width="120"/>
-                                                                                        <ColumnDefinition Width="120"/>
-                                                                                        <ColumnDefinition Width="40"/>
-                                                                                </Grid.ColumnDefinitions>
-
-                                                                                <CheckBox IsChecked="{Binding IsCompleted}"
-                                                                                          Margin="2"
-                                                                                          Checked="CheckBox_Changed"
-                                                                                          Unchecked="CheckBox_Changed"/>
-
-                                                                                <TextBlock Grid.Column="1"
-                                                                                           Text="{Binding Title}"
-                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
-                                                                                           VerticalAlignment="Center">
-                                                                                        <TextBlock.Style>
-                                                                                                <Style TargetType="TextBlock">
-                                                                                                        <Style.Triggers>
-                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
-                                                                                                                             Value="Me">
-                                                                                                                        <Setter Property="Foreground"
-                                                                                                                                Value="Green"/>
-                                                                                                                </DataTrigger>
-                                                                                                                <DataTrigger Binding="{Binding AssignedTo}"
-                                                                                                                             Value="Partner">
-                                                                                                                        <Setter Property="Foreground"
-                                                                                                                                Value="Purple"/>
-                                                                                                                </DataTrigger>
-                                                                                                        </Style.Triggers>
-                                                                                                </Style>
-                                                                                        </TextBlock.Style>
-                                                                                </TextBlock>
-
-                                                                                <TextBlock Grid.Column="2"
-                                                                                           Text="{Binding Category}"
-                                                                                           VerticalAlignment="Center"/>
-                                                                                <TextBlock Grid.Column="3"
-                                                                                           Text="{Binding DueDate, StringFormat=d}"
-                                                                                           VerticalAlignment="Center"/>
-
-                                                                                <Button Grid.Column="4"
-                                                                                        Content="✕"
-                                                                                        Width="30"
-                                                                                        Height="25"
-                                                                                        Margin="2"
-                                                                                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                        CommandParameter="{Binding}"/>
-                                                                        </Grid>
-                                                                </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                        </ScrollViewer>
-                                </Grid>
-                        </StackPanel>
-
-                </Grid>
                 <StackPanel Grid.Row="2"
                             Margin="5"
                             Background="#FFFDE7">
@@ -476,7 +916,7 @@
                 <!-- First-run Welcome Overlay -->
                 <Grid Visibility="{Binding NeedsProfileSetup, Converter={StaticResource BoolToVisibility}}">
                         <Rectangle Fill="#80000000"/>
-                        <Border Background="White"
+                        <Border Background="{DynamicResource OverlayPanelBrush}"
                                 Padding="24"
                                 CornerRadius="10"
                                 Width="400"

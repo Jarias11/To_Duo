@@ -18,9 +18,12 @@ namespace TaskMate.ViewModels {
         private readonly IRequestService _requestService = new RequestService();
         private readonly IPartnerService _partner;
         private readonly IPartnerRequestService _partnerReqs = new PartnerRequestService();
+        private readonly IThemeService _themeService;
 
         private IDisposable? _myHandle, _partnerHandle, _requestsHandle, _incomingReqsHandle, _outgoingReqsHandle;
 
+        private UserSettings Settings { get; } = UserSettings.Load();
+        private void SaveSettings() => UserSettings.Save(Settings);
         private bool _isPartnerVerified;
         public bool ShowPartnerList => IsPartnerVerified;
         public bool NeedsProfileSetup => _partner.NeedsProfileSetup;
@@ -42,13 +45,17 @@ namespace TaskMate.ViewModels {
         ];
         public event PropertyChangedEventHandler? PropertyChanged;
         public string? PartnerId => _partner.PartnerId;
+        public string? DisplayName => _partner.DisplayName;
         private string? _enteredPartnerCode;
+        private string _themeButtonText = "Dark Mode"; // when in Light, offer Dark
         public string? EnteredPartnerCode {
             get => _enteredPartnerCode;
             set { _enteredPartnerCode = value?.Trim(); OnPropertyChanged(); CommandManager.InvalidateRequerySuggested(); }
         }
         public ObservableCollection<PartnerRequest> IncomingPartnerRequests { get; } = new();
         public ObservableCollection<PartnerRequest> OutgoingPartnerRequests { get; } = new();
+
+        public RelayCommand ToggleThemeCommand { get; }
 
         public ICommand SendPartnerRequestCommand { get; }
         public ICommand AcceptPartnerInviteCommand { get; }
@@ -77,12 +84,13 @@ namespace TaskMate.ViewModels {
         public ICommand AcceptTaskCommand { get; }
         public ICommand DeclineTaskCommand { get; }
 
-        public MainViewModel() : this(new TaskService(), new PartnerService()) { }
+        public MainViewModel() : this(new TaskService(), new PartnerService(), new ThemeService()) { }
 
-        public MainViewModel(ITaskService taskService, IPartnerService partnerService) {
+        public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService? themeService = null) {
 
             _taskService = taskService;
             _partner = partnerService;
+            _themeService = themeService ?? new ThemeService();
             OnPropertyChanged(nameof(PartnerId));
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
             IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
@@ -95,7 +103,12 @@ namespace TaskMate.ViewModels {
                 var t = o as TaskItem;
                 return t != null && t.AssignedTo == "Partner";
             };
+            // Apply saved theme on startup
+            var saved = (Settings?.Theme ?? "Light").Equals("Dark", StringComparison.OrdinalIgnoreCase)
+                ? AppTheme.Dark : AppTheme.Light;
 
+            _themeService.Apply(saved);
+            ThemeButtonText = saved == AppTheme.Light ? "Dark Mode" : "Light Mode";
 
             SendPartnerRequestCommand = new RelayCommand(
             async _ => await SendPartnerRequestAsync(),
@@ -105,6 +118,12 @@ namespace TaskMate.ViewModels {
             AcceptPartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await AcceptPartnerInviteAsync(r!));
             DeclinePartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await DeclinePartnerInviteAsync(r!));
             CancelPartnerRequestCommand = new RelayCommand<PartnerRequest>(async r => await CancelPartnerRequestAsync(r!));
+            ToggleThemeCommand = new RelayCommand(_ => {
+                var next = _themeService.Toggle();
+                Settings.Theme = next == AppTheme.Dark ? "Dark" : "Light";
+                SaveSettings(); // call your existing method that persists UserSettings
+                ThemeButtonText = next == AppTheme.Light ? "Dark Mode" : "Light Mode";
+            });
 
 
 
@@ -128,6 +147,7 @@ namespace TaskMate.ViewModels {
                 await ReloadForNewPartnerAsync();
                 OnPropertyChanged(nameof(PartnerId));
                 OnPropertyChanged(nameof(NeedsProfileSetup));
+                OnPropertyChanged(nameof(DisplayName));
             };
 
 
@@ -185,6 +205,7 @@ namespace TaskMate.ViewModels {
             if(!string.IsNullOrWhiteSpace(NewDisplayName)) {
                 _partner.SaveDisplayName(NewDisplayName!);
                 OnPropertyChanged(nameof(NeedsProfileSetup));
+                OnPropertyChanged(nameof(DisplayName));
             }
         }
 
@@ -404,6 +425,10 @@ namespace TaskMate.ViewModels {
                 _newTaskAssignee = value;
                 OnPropertyChanged();
             }
+        }
+        public string ThemeButtonText {
+            get => _themeButtonText;
+            set { if(_themeButtonText == value) return; _themeButtonText = value; OnPropertyChanged(nameof(ThemeButtonText)); }
         }
 
     }

@@ -67,3 +67,5 @@ C:\Users\Jarias\Documents\To-Duo\bin\Debug\net9.0-windows\System.Management.dll
 C:\Users\Jarias\Documents\To-Duo\bin\Debug\net9.0-windows\runtimes\win\lib\net7.0\System.Management.dll
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.csproj.AssemblyReference.cache
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.csproj.Up2Date
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\Themes\Theme.Dark.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\Themes\Theme.Light.baml

@@ -4,6 +4,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <local:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter" />
-</Application.Resources>
+        <ResourceDictionary>
+            <!-- Merge the default (Light) theme at app startup -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Theme.Light.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- App-wide resources still go here -->
+            <local:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+
 </Application>
