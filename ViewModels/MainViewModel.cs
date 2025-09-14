@@ -7,27 +7,38 @@ using System.Windows.Threading;
 using System.Windows.Data;
 using TaskMate.Models;
 using TaskMate.Data;
-using TaskMate.Data.Repositories;
 using TaskMate.Sync;
 using TaskMate.Services;
 
 namespace TaskMate.ViewModels {
     public class MainViewModel : INotifyPropertyChanged, IDisposable {
-
+        //Readonly services
         private readonly ITaskService _taskService;
         private readonly IRequestService _requestService = new RequestService();
         private readonly IPartnerService _partner;
         private readonly IPartnerRequestService _partnerReqs = new PartnerRequestService();
         private readonly IThemeService _themeService;
+        private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
 
+        // Firestore listener handles
         private IDisposable? _myHandle, _partnerHandle, _requestsHandle, _incomingReqsHandle, _outgoingReqsHandle;
 
+        // Backing fields + properties
+        private DateTime _now = DateTime.Now;
         private UserSettings Settings { get; } = UserSettings.Load();
         private void SaveSettings() => UserSettings.Save(Settings);
+        private string? _newDisplayName;
         private bool _isPartnerVerified;
+        private bool _hasPendingOutgoing;
         public bool ShowPartnerList => IsPartnerVerified;
         public bool NeedsProfileSetup => _partner.NeedsProfileSetup;
         public string UserId => _partner.UserId;
+        public string? PartnerId => _partner.PartnerId;
+        public string? DisplayName => _partner.DisplayName;
+        private string? _enteredPartnerCode;
+        private string _themeButtonText = "Dark Mode"; // when in Light, offer Dark
+        public string ConnectionSummary =>
+            IsPartnerVerified ? $"Connected to: {PartnerId}" : "No partner connected yet";
         private string GroupId => _partner.GroupId;
         private string _newTaskTitle = string.Empty;
         private string _newTaskDescription = string.Empty;
@@ -36,6 +47,9 @@ namespace TaskMate.ViewModels {
         private string? _newTaskAssignee = "Me";
         private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+
+        // INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler? PropertyChanged;
         public ICollectionView MyTasksView { get; }
         public ICollectionView PartnerTasksView { get; }
         public ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
@@ -43,41 +57,17 @@ namespace TaskMate.ViewModels {
         public ObservableCollection<string> Categories { get; set; } = [
             "General", "Chores", "Work", "Fun", "Urgent"
         ];
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public string? PartnerId => _partner.PartnerId;
-        public string? DisplayName => _partner.DisplayName;
-        private string? _enteredPartnerCode;
-        private string _themeButtonText = "Dark Mode"; // when in Light, offer Dark
-        public string? EnteredPartnerCode {
-            get => _enteredPartnerCode;
-            set { _enteredPartnerCode = value?.Trim(); OnPropertyChanged(); CommandManager.InvalidateRequerySuggested(); }
-        }
         public ObservableCollection<PartnerRequest> IncomingPartnerRequests { get; } = new();
         public ObservableCollection<PartnerRequest> OutgoingPartnerRequests { get; } = new();
 
-        public RelayCommand ToggleThemeCommand { get; }
+        // Commands
 
+        public RelayCommand ToggleThemeCommand { get; }
         public ICommand SendPartnerRequestCommand { get; }
         public ICommand AcceptPartnerInviteCommand { get; }
         public ICommand DeclinePartnerInviteCommand { get; }
         public ICommand CancelPartnerRequestCommand { get; }
-
-
-
-
-
-        /* MOVE THIS WHEN FEATURE IS WORKING */
-        private string? _newDisplayName;
-        public string? NewDisplayName {
-            get => _newDisplayName;
-            set {
-                if(_newDisplayName == value) return;
-                _newDisplayName = value;
-                OnPropertyChanged(nameof(NewDisplayName));
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
+        public ICommand DisconnectPartnerCommand { get; }
         public ICommand SaveDisplayNameCommand { get; }
         public ICommand AddTaskCommand { get; }
         public ICommand DeleteTaskCommand { get; }
@@ -91,6 +81,8 @@ namespace TaskMate.ViewModels {
             _taskService = taskService;
             _partner = partnerService;
             _themeService = themeService ?? new ThemeService();
+            _clock.Tick += (_, __) => Now = DateTime.Now;
+            _clock.Start();
             OnPropertyChanged(nameof(PartnerId));
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
             IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
@@ -124,13 +116,7 @@ namespace TaskMate.ViewModels {
                 SaveSettings(); // call your existing method that persists UserSettings
                 ThemeButtonText = next == AppTheme.Light ? "Dark Mode" : "Light Mode";
             });
-
-
-
-
-
-
-
+            OutgoingPartnerRequests.CollectionChanged += (_, __) => RecomputeOutgoingFlags();
 
             // Initialize commands
             AddTaskCommand = new RelayCommand(_ => AddTask());
@@ -141,6 +127,7 @@ namespace TaskMate.ViewModels {
                 _ => SaveDisplayName(),
                 _ => !string.IsNullOrWhiteSpace(NewDisplayName)
         );
+            DisconnectPartnerCommand = new RelayCommand(_ => DisconnectPartner());
             _partner.PartnerChanged += async () => {
                 // This mirrors your current flow: recompute, save, and reattach listeners
                 IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
@@ -154,6 +141,7 @@ namespace TaskMate.ViewModels {
             if(NeedsProfileSetup) NewDisplayName = string.Empty;
             _ = InitLiveAsync(); // fire-and-forget
         }
+
         private async void AddTask() {
             if(string.IsNullOrWhiteSpace(NewTaskTitle)) return;
 
@@ -208,7 +196,10 @@ namespace TaskMate.ViewModels {
                 OnPropertyChanged(nameof(DisplayName));
             }
         }
-
+        void RecomputeOutgoingFlags() {
+            HasPendingOutgoing = OutgoingPartnerRequests.Any(r => r.Status == "pending");
+            OnPropertyChanged(nameof(ConnectionSummary));
+        }
 
         private async Task InitLiveAsync() {
             // 1) Ensure we have IDs + Firestore ready
@@ -237,6 +228,21 @@ namespace TaskMate.ViewModels {
                     IncomingPartnerRequests.Clear();
                     foreach(var r in list.Where(x => x.Status == "pending"))
                         IncomingPartnerRequests.Add(r);
+                    var disconnected = list.FirstOrDefault(x => x.Status == "disconnected");
+                    if(disconnected != null) {
+                        var other = disconnected.FromUserId; // incoming doc id is requester
+                        if(!string.IsNullOrWhiteSpace(other)) {
+                            _ = _partnerReqs.PurgePairAsync(myId, other);
+
+                            _partner.PartnerId = string.Empty;
+                            IsPartnerVerified = false;
+                            OnPropertyChanged(nameof(ConnectionSummary));
+
+                            OutgoingPartnerRequests.Clear();
+                            IncomingPartnerRequests.Clear();
+                            RecomputeOutgoingFlags();
+                        }
+                    }
                 });
             });
 
@@ -254,6 +260,21 @@ namespace TaskMate.ViewModels {
                         if(!string.IsNullOrWhiteSpace(other) && PartnerId != other) {
                             _partner.PartnerId = other;   // persists + raises PartnerChanged
                             IsPartnerVerified = true;     // turn on partner UI + enable syncing
+                        }
+                    }
+                    var disconnected = list.FirstOrDefault(x => x.Status == "disconnected");
+                    if(disconnected != null) {
+                        var other = disconnected.FromUserId; // incoming doc id is requester
+                        if(!string.IsNullOrWhiteSpace(other)) {
+                            _ = _partnerReqs.PurgePairAsync(myId, other);
+
+                            _partner.PartnerId = string.Empty;
+                            IsPartnerVerified = false;
+                            OnPropertyChanged(nameof(ConnectionSummary));
+
+                            OutgoingPartnerRequests.Clear();
+                            IncomingPartnerRequests.Clear();
+                            RecomputeOutgoingFlags();
                         }
                     }
                 });
@@ -340,7 +361,19 @@ namespace TaskMate.ViewModels {
             TaskDataService.SaveTasks(Tasks.ToList());
         }
 
+        private async void DisconnectPartner() {
+            var pid = PartnerId;
+            if(string.IsNullOrWhiteSpace(pid)) return;
 
+            // Tell Firestore first so BOTH sides flip right away
+            await _partnerReqs.DisconnectAsync(UserId, pid);
+            _ = _partnerReqs.PurgePairAsync(UserId, pid);
+
+            // Clear local state
+            _partner.PartnerId = string.Empty;      // persists + raises PartnerChanged
+            IsPartnerVerified = false;
+            OnPropertyChanged(nameof(ConnectionSummary));
+        }
         private async Task SendPartnerRequestAsync() {
             if(string.IsNullOrWhiteSpace(EnteredPartnerCode) || EnteredPartnerCode == UserId) return;
 
@@ -373,8 +406,12 @@ namespace TaskMate.ViewModels {
         }
 
 
-
+        public DateTime Now {
+            get => _now;
+            private set { _now = value; OnPropertyChanged(nameof(Now)); }
+        }
         public void Dispose() {
+            _clock.Stop();
             _myHandle?.Dispose();
             _partnerHandle?.Dispose();
             _requestsHandle?.Dispose();
@@ -429,6 +466,23 @@ namespace TaskMate.ViewModels {
         public string ThemeButtonText {
             get => _themeButtonText;
             set { if(_themeButtonText == value) return; _themeButtonText = value; OnPropertyChanged(nameof(ThemeButtonText)); }
+        }
+        public bool HasPendingOutgoing {
+            get => _hasPendingOutgoing;
+            private set { if(_hasPendingOutgoing == value) return; _hasPendingOutgoing = value; OnPropertyChanged(nameof(HasPendingOutgoing)); }
+        }
+        public string? EnteredPartnerCode {
+            get => _enteredPartnerCode;
+            set { _enteredPartnerCode = value?.Trim(); OnPropertyChanged(); CommandManager.InvalidateRequerySuggested(); }
+        }
+        public string? NewDisplayName {
+            get => _newDisplayName;
+            set {
+                if(_newDisplayName == value) return;
+                _newDisplayName = value;
+                OnPropertyChanged(nameof(NewDisplayName));
+                CommandManager.InvalidateRequerySuggested();
+            }
         }
 
     }

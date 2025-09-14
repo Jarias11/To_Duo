@@ -10,6 +10,8 @@ namespace TaskMate.Sync {
 		Task AcceptAsync(string myUserId, string requesterUserId);
 		Task DeclineAsync(string myUserId, string requesterUserId);
 		Task CancelAsync(string myUserId, string targetUserId);
+		Task DisconnectAsync(string myUserId, string partnerUserId);
+		Task PurgePairAsync(string userA, string userB);
 	}
 
 	public sealed class FirestorePartnerRequestRepository : IPartnerRequestRepo {
@@ -115,6 +117,40 @@ namespace TaskMate.Sync {
 				CreatedAt = T("CreatedAt") ?? DateTime.MinValue,
 				UpdatedAt = T("UpdatedAt")
 			};
+		}
+		public async Task DisconnectAsync(string myUserId, string partnerUserId) {
+			var db = FirestoreClient.GetDb();
+			var now = Timestamp.GetCurrentTimestamp();
+
+			// We update BOTH directions, both in/out, so either side's listener will see it.
+			var myIn = IncomingCol(db, myUserId).Document(partnerUserId);
+			var myOut = OutgoingCol(db, myUserId).Document(partnerUserId);
+			var theirIn = IncomingCol(db, partnerUserId).Document(myUserId);
+			var theirOut = OutgoingCol(db, partnerUserId).Document(myUserId);
+
+			var payload = new Dictionary<string, object?> { ["Status"] = "disconnected", ["UpdatedAt"] = now };
+
+			var batch = db.StartBatch();
+			batch.Set(myIn, payload, SetOptions.MergeAll);
+			batch.Set(myOut, payload, SetOptions.MergeAll);
+			batch.Set(theirIn, payload, SetOptions.MergeAll);
+			batch.Set(theirOut, payload, SetOptions.MergeAll);
+			await batch.CommitAsync();
+		}
+		public async Task PurgePairAsync(string userA, string userB) {
+			var db = FirestoreClient.GetDb();
+
+			var a_in = IncomingCol(db, userA).Document(userB);
+			var a_out = OutgoingCol(db, userA).Document(userB);
+			var b_in = IncomingCol(db, userB).Document(userA);
+			var b_out = OutgoingCol(db, userB).Document(userA);
+
+			var batch = db.StartBatch();
+			batch.Delete(a_in);
+			batch.Delete(a_out);
+			batch.Delete(b_in);
+			batch.Delete(b_out);
+			await batch.CommitAsync();
 		}
 	}
 }

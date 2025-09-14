@@ -25,5 +25,11 @@ namespace TaskMate.Services {
 
 		public Task CancelAsync(string myUserId, string targetUserId)
 			=> _repo.CancelAsync(myUserId, targetUserId);
+
+		public Task DisconnectAsync(string myUserId, string partnerUserId)
+			=> _repo.DisconnectAsync(myUserId, partnerUserId);
+
+		public Task PurgePairAsync(string userA, string userB)
+    		=> _repo.PurgePairAsync(userA, userB);
 	}
 }

@@ -419,7 +419,7 @@
                                                     Orientation="Horizontal"
                                                     VerticalAlignment="Center">
                                                 <TextBlock
-                                                        Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat={}{0:dddd, MMM d • h:mm tt}}"
+                                                        Text="{Binding Now, StringFormat={}{0:dddd, MMM d • h:mm tt}}"
                                                         Margin="0,0,8,0"
                                                         VerticalAlignment="Center"
                                                         Opacity="0.8"/>
@@ -483,27 +483,154 @@
                                                                  VerticalAlignment="Center"/>
                                                 </Grid>
 
-                                                <!-- RIGHT: Enter Partner Code -->
+                                                <!-- RIGHT: Connection area (three states) -->
                                                 <Grid Grid.Column="1">
-                                                        <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="130"
-                                                                                  SharedSizeGroup="ConnLabels"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0"
-                                                                   Text="Enter Partner Code:"
-                                                                   VerticalAlignment="Center"/>
-                                                        <TextBox Grid.Column="1"
-                                                                 Width="200"
-                                                                 Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
-                                                                 Margin="5,0"
-                                                                 VerticalAlignment="Center"/>
-                                                        <Button Grid.Column="2"
-                                                                Content="Send Request"
-                                                                Command="{Binding SendPartnerRequestCommand}"
-                                                                Margin="5,0"
-                                                                VerticalAlignment="Center"/>
+                                                        <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <!-- STATE A: Enter partner code -->
+                                                        <Grid x:Name="EnterCodeRow">
+                                                                <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="130"
+                                                                                          SharedSizeGroup="ConnLabels"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- show when NOT connected AND NO pending outgoing -->
+                                                                <Grid.Style>
+                                                                        <Style TargetType="Grid">
+                                                                                <Setter Property="Visibility"
+                                                                                        Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                        <MultiDataTrigger>
+                                                                                                <MultiDataTrigger.Conditions>
+                                                                                                        <Condition Binding="{Binding IsPartnerVerified}"
+                                                                                                                   Value="False"/>
+                                                                                                        <Condition Binding="{Binding HasPendingOutgoing}"
+                                                                                                                   Value="False"/>
+                                                                                                </MultiDataTrigger.Conditions>
+                                                                                                <Setter Property="Visibility"
+                                                                                                        Value="Visible"/>
+                                                                                        </MultiDataTrigger>
+                                                                                </Style.Triggers>
+                                                                        </Style>
+                                                                </Grid.Style>
+
+                                                                <TextBlock Grid.Column="0"
+                                                                           Text="Enter Partner Code:"
+                                                                           VerticalAlignment="Center"/>
+                                                                <TextBox Grid.Column="1"
+                                                                         Width="200"
+                                                                         Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Margin="5,0"
+                                                                         VerticalAlignment="Center"/>
+                                                                <Button Grid.Column="2"
+                                                                        Content="Send Request"
+                                                                        Command="{Binding SendPartnerRequestCommand}"
+                                                                        Margin="5,0"
+                                                                        VerticalAlignment="Center"/>
+                                                        </Grid>
+
+                                                        <!-- STATE B: Waiting message -->
+                                                        <Border x:Name="WaitingRow"
+                                                                CornerRadius="6"
+                                                                Padding="8"
+                                                                Margin="0,0,0,0"
+                                                                Background="{DynamicResource CardBackgroundBrush}"
+                                                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                                                BorderThickness="1">
+                                                                <!-- show when NOT connected AND HAS pending outgoing -->
+                                                                <Border.Style>
+                                                                        <Style TargetType="Border">
+                                                                                <Setter Property="Visibility"
+                                                                                        Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                        <MultiDataTrigger>
+                                                                                                <MultiDataTrigger.Conditions>
+                                                                                                        <Condition Binding="{Binding IsPartnerVerified}"
+                                                                                                                   Value="False"/>
+                                                                                                        <Condition Binding="{Binding HasPendingOutgoing}"
+                                                                                                                   Value="True"/>
+                                                                                                </MultiDataTrigger.Conditions>
+                                                                                                <Setter Property="Visibility"
+                                                                                                        Value="Visible"/>
+                                                                                        </MultiDataTrigger>
+                                                                                </Style.Triggers>
+                                                                        </Style>
+                                                                </Border.Style>
+
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            VerticalAlignment="Center">
+                                                                        <ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
+                                                                                <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                                <Grid>
+                                                                                                        <Grid.ColumnDefinitions>
+                                                                                                                <ColumnDefinition Width="*"/>
+                                                                                                                <ColumnDefinition Width="Auto"/>
+                                                                                                        </Grid.ColumnDefinitions>
+
+                                                                                                        <!-- Only show 'pending' rows -->
+                                                                                                        <Grid.Style>
+                                                                                                                <Style TargetType="Grid">
+                                                                                                                        <Setter Property="Visibility"
+                                                                                                                                Value="Collapsed"/>
+                                                                                                                        <Style.Triggers>
+                                                                                                                                <DataTrigger Binding="{Binding Status}"
+                                                                                                                                             Value="pending">
+                                                                                                                                        <Setter Property="Visibility"
+                                                                                                                                                Value="Visible"/>
+                                                                                                                                </DataTrigger>
+                                                                                                                        </Style.Triggers>
+                                                                                                                </Style>
+                                                                                                        </Grid.Style>
+
+                                                                                                        <TextBlock Grid.Column="0"
+                                                                                                                   VerticalAlignment="Center"
+                                                                                                                   Text="{Binding ToUserId, StringFormat=Waiting for {0} to accept…}"/>
+                                                                                                        <Button Grid.Column="1"
+                                                                                                                Content="Cancel Request"
+                                                                                                                Margin="8,0,0,0"
+                                                                                                                Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                                CommandParameter="{Binding}"/>
+                                                                                                </Grid>
+                                                                                        </DataTemplate>
+                                                                                </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                </StackPanel>
+                                                        </Border>
+
+                                                        <!-- STATE C: Connected summary -->
+                                                        <StackPanel x:Name="ConnectedRow"
+                                                                    Orientation="Horizontal">
+                                                                <StackPanel.Style>
+                                                                        <Style TargetType="StackPanel">
+                                                                                <Setter Property="Visibility"
+                                                                                                Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding IsPartnerVerified}"
+                                                                                                        Value="True">
+                                                                                                <Setter Property="Visibility"
+                                                                                                                Value="Visible"/>
+                                                                                        </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                        </Style>
+                                                                </StackPanel.Style>
+
+                                                                <TextBlock Text="{Binding ConnectionSummary}"
+                                                                           FontWeight="Bold"
+                                                                           FontSize="16"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,8,0"/>
+
+                                                                <!-- New: Disconnect button -->
+                                                                <Button Content="Disconnect"
+                                                                        FontSize="16"
+                                                                        Command="{Binding DisconnectPartnerCommand}"
+                                                                        VerticalAlignment="Center"/>
+                                                        </StackPanel>
                                                 </Grid>
                                         </Grid>
 

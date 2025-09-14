@@ -9,5 +9,7 @@ namespace TaskMate.Services {
 		Task AcceptAsync(string myUserId, string requesterUserId);
 		Task DeclineAsync(string myUserId, string requesterUserId);
 		Task CancelAsync(string myUserId, string targetUserId);
+		Task DisconnectAsync(string myUserId, string partnerUserId);
+		Task PurgePairAsync(string userA, string userB);
 	}
 }
