@@ -7,12 +7,13 @@ namespace TaskMate.Services {
 
 		public PartnerService() {
 			_settings = UserSettings.Load();
-			// Ensure GroupId is in-sync on startup
+			// Keep GroupId in sync on startup
 			_settings.GroupId = ComputeGroupId(_settings.UserId, _settings.PartnerId);
 			UserSettings.Save(_settings);
 		}
 
 		public string UserId => _settings.UserId;
+
 		public string? PartnerId {
 			get => _settings.PartnerId;
 			set {
@@ -22,10 +23,8 @@ namespace TaskMate.Services {
 				_settings.PartnerId = next;
 				_settings.GroupId = ComputeGroupId(_settings.UserId, _settings.PartnerId);
 
-				// Persist and broadcast
 				UserSettings.Save(_settings);
-
-				// If you keep FirestoreClient in sync with ids:
+				// Keep any Firestore-aware singletons in sync if you use them:
 				FirestoreClient.SavePartnerAndGroup(_settings.PartnerId, _settings.GroupId);
 
 				PartnerChanged?.Invoke();
@@ -34,20 +33,7 @@ namespace TaskMate.Services {
 
 		public string GroupId => _settings.GroupId ?? ComputeGroupId(_settings.UserId, _settings.PartnerId);
 
-		public string? DisplayName => _settings.DisplayName;
-		public bool NeedsProfileSetup => string.IsNullOrWhiteSpace(_settings.DisplayName);
-
 		public void Save() => UserSettings.Save(_settings);
-
-		public void SaveDisplayName(string name) {
-			var trimmed = name?.Trim();
-			if(string.IsNullOrWhiteSpace(trimmed)) return;
-
-			_settings.DisplayName = trimmed;
-			UserSettings.Save(_settings);
-			// No event needed for partner; VM will re-check NeedsProfileSetup via binding if you raise it.
-			// If you prefer a push model, you could add a separate event like ProfileChanged.
-		}
 
 		public event Action? PartnerChanged;
 

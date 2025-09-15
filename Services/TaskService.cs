@@ -6,17 +6,19 @@ namespace TaskMate.Services {
 	using TaskMate.Sync;                // if your repo types live here
 	using System.Linq;
 	using System;
+	using TaskMate.Models.Enums;
 
 	public class TaskService : ITaskService {
 		private readonly ITaskRepository _cloudRepo;
 		public ObservableCollection<TaskItem> Tasks { get; } = new();
 		public ObservableCollection<TaskItem> PendingTasks { get; } = new();
 		private IDisposable? _listener;
-
+		private readonly object _saveLock = new();
+		private CancellationTokenSource? _saveCts;
 
 		public TaskService(ITaskRepository? cloudRepo = null) {
 			// Allow injecting a mock for tests; default to Firestore implementation
-			_cloudRepo = cloudRepo ?? new FirestoreTaskRepository();
+			
 		}
 
 		public async Task InitializeAsync(string groupId) {
@@ -27,32 +29,13 @@ namespace TaskMate.Services {
 
 
 			foreach(var t in local) {
-				if(t.AssignedTo == "Me" && !t.Accepted)
+				if(t.AssignedTo == Assignee.Me && !t.Accepted)
 					PendingTasks.Add(t);          // tasks I must accept
 				else
 					Tasks.Add(t);
 			}
 
-			// Merge from cloud
-			try {
-				var cloud = await _cloudRepo.LoadAllAsync(groupId);
-				var byId = Tasks.Concat(PendingTasks).ToDictionary(t => t.Id);
 
-				foreach(var c in cloud) {
-					if(byId.ContainsKey(c.Id)) continue;
-
-					if(c.AssignedTo == "Me" && !c.Accepted)
-						PendingTasks.Add(c);
-					else
-						Tasks.Add(c);
-				}
-
-				// Persist merged set locally
-				SaveAll(groupId);
-			}
-			catch {
-				// swallow for now; you could log
-			}
 
 			_listener?.Dispose();
 			_listener = _cloudRepo.ListenAll(groupId, cloudItems => {
@@ -71,7 +54,7 @@ namespace TaskMate.Services {
 						if(Tasks.Contains(existing)) Tasks.Remove(existing);
 					}
 
-					if(c.AssignedTo == "Me" && !c.Accepted) PendingTasks.Add(c);
+					if(c.AssignedTo == Assignee.Me && !c.Accepted) PendingTasks.Add(c);
 					else Tasks.Add(c);
 				}
 				SaveAll(groupId);
@@ -84,11 +67,11 @@ namespace TaskMate.Services {
 		public TaskItem AddTask(TaskItem task, string groupId) {
 			if(task is null) return null!;
 
-			if(task.AssignedTo == "Me" && !task.Accepted) {
+			if(task.AssignedTo == Assignee.Me && !task.Accepted) {
 				// Incoming-to-me style pending (e.g., if you later support “suggest to self then accept”)
 				PendingTasks.Add(task);
 			}
-			else if(task.AssignedTo == "Me" || task.Accepted) {
+			else if(task.AssignedTo == Assignee.Me || task.Accepted) {
 				// My own tasks (accepted or not) belong in my main list; unaccepted ones will also be in Pending
 				Tasks.Add(task);
 			}
@@ -102,7 +85,6 @@ namespace TaskMate.Services {
 			var all = TaskDataService.LoadTasks();
 			all.Add(task);
 			TaskDataService.SaveTasks(all);
-			_ = _cloudRepo.UpsertAsync(groupId, task);
 
 			return task;
 		}
@@ -122,8 +104,6 @@ namespace TaskMate.Services {
 			all.RemoveAll(t => t.Id == task.Id);
 			TaskDataService.SaveTasks(all);
 
-			// Cloud
-			_ = _cloudRepo.DeleteAsync(groupId, task.Id);
 		}
 
 		public void AcceptTask(TaskItem task, string groupId) {
@@ -137,8 +117,6 @@ namespace TaskMate.Services {
 			if(!Tasks.Contains(task))
 				Tasks.Add(task);
 
-			SaveAll(groupId);
-			_ = _cloudRepo.UpsertAsync(groupId, task);
 		}
 
 		public void DeclineTask(TaskItem task, string groupId) {
@@ -153,15 +131,11 @@ namespace TaskMate.Services {
 		}
 
 		public void SaveAll(string groupId) {
-			var all = Tasks.ToList();
-
-			foreach(var t in PendingTasks)
-				if(!all.Contains(t)) all.Add(t);
-
-			TaskDataService.SaveTasks(all);
-
-			// fire & forget full sync (optional)
-			_ = SyncAllToCloudAsync(groupId);
+			var snapshot = Tasks.Concat(PendingTasks).ToList();
+			_ = Task.Run(async () => {
+				TaskDataService.SaveTasks(snapshot);      // file I/O off UI thread
+				await SyncAllToCloudAsync(groupId).ConfigureAwait(false);
+			});
 		}
 
 		private async Task SyncAllToCloudAsync(string groupId) {
@@ -170,5 +144,6 @@ namespace TaskMate.Services {
 			foreach(var t in PendingTasks)
 				await _cloudRepo.UpsertAsync(groupId, t);
 		}
+
 	}
 }

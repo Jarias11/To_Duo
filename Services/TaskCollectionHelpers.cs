@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using TaskMate.Models;
+using TaskMate.Models.Enums;
 
 namespace TaskMate.Services
 {
@@ -14,7 +15,7 @@ namespace TaskMate.Services
         public static void ReplaceAll(
             ObservableCollection<TaskItem> target,
             IList<TaskItem> incoming,
-            string? assignedTo = null,
+            Assignee? assignedTo = null,
             bool requestMode = false)
         {
             target.Clear();
@@ -31,7 +32,7 @@ namespace TaskMate.Services
         public static void UpsertInto(
             ObservableCollection<TaskItem> target,
             IList<TaskItem> incoming,
-            string assignedTo,
+            Assignee assignedTo,
             string ownerUserId)
         {
             var index = target.ToDictionary(t => t.Id);
@@ -59,7 +60,7 @@ namespace TaskMate.Services
         /// <summary>
         /// Make a UI-facing copy while normalizing flags (AssignedTo/Accepted) for list views.
         /// </summary>
-        public static TaskItem CloneForUi(TaskItem inc, string? assignedTo, bool requestMode)
+        public static TaskItem CloneForUi(TaskItem inc, Assignee? assignedTo, bool requestMode)
         {
             return new TaskItem
             {

@@ -6,6 +6,7 @@ using Google.Cloud.Firestore;
 using TaskMate.Models;
 using TaskMate.Data.Repositories;
 using TaskMate.Sync;
+using TaskMate.Models.Enums;
 
 namespace TaskMate.Sync {
 	public class FirestoreRequestRepository : IRequestRepo {
@@ -73,7 +74,7 @@ namespace TaskMate.Sync {
 				["IsCompleted"] = item.IsCompleted,
 				["CreatedBy"] = item.CreatedBy,
 				["Accepted"] = item.Accepted,
-				["AssignedTo"] = item.AssignedTo,
+				["AssignedTo"] = item.AssignedTo.ToString(),
 				["AssignedToUserId"] = item.AssignedToUserId,
 				["IsSuggestion"] = item.IsSuggestion,
 				["MediaPath"] = item.MediaPath,
@@ -93,6 +94,13 @@ namespace TaskMate.Sync {
 			bool B(object? v, bool def = false) => v is bool b ? b : def;
 			string? S(object? v) => v?.ToString();
 
+			static Assignee ParseAssignee(object? v) {
+				var s = v?.ToString();
+				return string.Equals(s, "Partner", StringComparison.OrdinalIgnoreCase)
+					? Assignee.Partner
+					: Assignee.Me; // default/fallback for old/empty docs
+			}
+
 			return new TaskItem {
 				Id = Guid.TryParse(S(d.GetValueOrDefault("Id")), out var gid) ? gid : Guid.Parse(doc.Id),
 				Title = S(d.GetValueOrDefault("Title")),
@@ -102,7 +110,7 @@ namespace TaskMate.Sync {
 				IsCompleted = B(d.GetValueOrDefault("IsCompleted")),
 				CreatedBy = S(d.GetValueOrDefault("CreatedBy")) ?? "",
 				Accepted = B(d.GetValueOrDefault("Accepted"), false),
-				AssignedTo = S(d.GetValueOrDefault("AssignedTo")),
+				AssignedTo = ParseAssignee(d.GetValueOrDefault("AssignedTo")),
 				AssignedToUserId = S(d.GetValueOrDefault("AssignedToUserId")) ?? "",
 				IsSuggestion = B(d.GetValueOrDefault("IsSuggestion")),
 				MediaPath = S(d.GetValueOrDefault("MediaPath")),

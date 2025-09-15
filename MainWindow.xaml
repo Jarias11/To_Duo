@@ -608,12 +608,12 @@
                                                                 <StackPanel.Style>
                                                                         <Style TargetType="StackPanel">
                                                                                 <Setter Property="Visibility"
-                                                                                                Value="Collapsed"/>
+                                                                                        Value="Collapsed"/>
                                                                                 <Style.Triggers>
                                                                                         <DataTrigger Binding="{Binding IsPartnerVerified}"
-                                                                                                        Value="True">
+                                                                                                     Value="True">
                                                                                                 <Setter Property="Visibility"
-                                                                                                                Value="Visible"/>
+                                                                                                        Value="Visible"/>
                                                                                         </DataTrigger>
                                                                                 </Style.Triggers>
                                                                         </Style>
@@ -741,9 +741,8 @@
                                                 <TextBlock Text="Assign To"
                                                            Margin="5,0,5,0"/>
                                                 <ComboBox Width="120"
-                                                          SelectedItem="{Binding NewTaskAssignee}">
-                                                        <ComboBoxItem Content="Me"/>
-                                                        <ComboBoxItem Content="Partner"/>
+                                                          ItemsSource="{Binding Assignees}"
+                                                          SelectedItem="{Binding NewTaskAssignee, Mode=TwoWay}">                                                        
                                                 </ComboBox>
                                         </StackPanel>
                                         <Button Content="Add Task"

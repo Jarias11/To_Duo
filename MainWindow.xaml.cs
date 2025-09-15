@@ -9,7 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TaskMate.ViewModels;
-
+using TaskMate.Services;
+using TaskMate.ViewModels;
 
 
 namespace TaskMate;
@@ -17,25 +18,31 @@ namespace TaskMate;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
-{
-    public MainWindow()
-    {
+public partial class MainWindow : Window {
+    public MainWindow() {
         InitializeComponent();
 
-        try
-        {
-            DataContext = new MainViewModel();
+
+
+        // Compose services
+        var taskSvc = new TaskService();
+        var partnerSvc = new PartnerService();
+        var themeSvc = new ThemeService();
+        var settingsSvc = new SettingsService();
+        var requestSvc = new RequestService();
+        var partnerReqs = new PartnerRequestService();
+        var live = new LiveSyncCoordinator(requestSvc, partnerReqs, partnerSvc);
+
+        var taskActions = new TaskActions(requestSvc, taskSvc, Dispatcher);
+        try {
+            DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, requestSvc, partnerReqs, live, taskActions);
         }
-        catch (Exception ex)
-        {
+        catch(Exception ex) {
             Console.WriteLine($"Error setting DataContext: {ex.Message}");
         }
     }
-    private void CheckBox_Changed(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm)
-        {
+    private void CheckBox_Changed(object sender, RoutedEventArgs e) {
+        if(DataContext is MainViewModel vm) {
             vm.SaveTasks();
         }
     }
