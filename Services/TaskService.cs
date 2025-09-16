@@ -18,7 +18,7 @@ namespace TaskMate.Services {
 
 		public TaskService(ITaskRepository? cloudRepo = null) {
 			// Allow injecting a mock for tests; default to Firestore implementation
-			
+
 		}
 
 		public async Task InitializeAsync(string groupId) {

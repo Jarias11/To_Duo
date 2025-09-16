@@ -435,3 +435,5 @@ C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\TaskMate.gen
 C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\ref\TaskMate.dll
 C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Themes\Theme.Dark.baml
 C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Themes\Theme.Light.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TaskDetailsWindow.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TaskDetailsWindow.g.cs

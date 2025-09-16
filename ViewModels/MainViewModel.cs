@@ -7,6 +7,7 @@ using System.Windows.Data;
 using TaskMate.Models;
 using TaskMate.Services;
 using TaskMate.Models.Enums;
+using TaskMate.Orchestration;
 
 namespace TaskMate.ViewModels {
     public class MainViewModel : INotifyPropertyChanged, IDisposable {
@@ -24,12 +25,12 @@ namespace TaskMate.ViewModels {
         private readonly ILiveSyncCoordinator _live;
         private readonly ITaskService _taskService;
         private readonly ITaskActions _actions;
-        private readonly IRequestService _requestService;
         private readonly IPartnerService _partner;
-        private readonly IPartnerRequestService _partnerReqs;
         private readonly IThemeService _themeService;
         private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
         private readonly ISettingsService _settings;
+        private readonly IPairingOrchestrator _pairing;
+        private readonly ITaskDialogService _dialogs;
 
         // Backing fields + properties
         private DateTime _now = DateTime.Now;
@@ -70,23 +71,24 @@ namespace TaskMate.ViewModels {
         public ICommand DeleteTaskCommand { get; }
         public ICommand AcceptTaskCommand { get; }
         public ICommand DeclineTaskCommand { get; }
+        public ICommand ShowTaskDetailsCommand { get; }
 
 
-        public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, IRequestService requestService, IPartnerRequestService partnerReqs, ILiveSyncCoordinator live, ITaskActions actions) {
+        public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs) {
 
             // Dependency injection of services
-            _requestService = requestService;
             _taskService = taskService;
             _actions = actions;
             _partner = partnerService;
-            _partnerReqs = partnerReqs;
             _themeService = themeService;
             _settings = settingsService;
+            _pairing = pairing;
+            _dialogs = dialogs;
             _live = live;
             _clock.Tick += (_, __) => Now = DateTime.Now;
             _clock.Start();
-            _ = _taskService.InitializeAsync(GroupId);
             OnPropertyChanged(nameof(PartnerId));
+
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
             IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
             MyTasksView.Filter = o => (o as TaskItem)?.AssignedTo == Assignee.Me;
@@ -100,13 +102,49 @@ namespace TaskMate.ViewModels {
             _live.Attach(Tasks, PendingTasks, IncomingPartnerRequests, OutgoingPartnerRequests, MyTasksView, PartnerTasksView);
             _live.PartnerDisconnected += () => {
                 IsPartnerVerified = false;
+                HasPendingOutgoing = _pairing.HasPendingOutgoing; // stay in sync
                 OnPropertyChanged(nameof(ConnectionSummary));
-                RecomputeOutgoingFlags();
             };
+
+            // Bind orchestrator to the VM-owned collections
+            _pairing.Attach(IncomingPartnerRequests, OutgoingPartnerRequests);
+
+            // Keep HasPendingOutgoing + ConnectionSummary updated without VM list math
+            _pairing.OutgoingChanged += () => {
+                HasPendingOutgoing = _pairing.HasPendingOutgoing;
+                OnPropertyChanged(nameof(ConnectionSummary));
+            };
+
+            // If partner changes at runtime, realign everything (pairing + UI)
+            _partner.PartnerChanged += async () => {
+                IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
+                await _pairing.ReloadForPartnerAsync();
+                OnPropertyChanged(nameof(PartnerId));
+                OnPropertyChanged(nameof(NeedsProfileSetup));
+                OnPropertyChanged(nameof(DisplayName));
+                OnPropertyChanged(nameof(ConnectionSummary));
+
+                if(IsPartnerVerified) {
+                    // NEW: Clear stale incoming/outgoing rows
+                    _pairing.ClearRequests();
+
+                    // Optional: also purge server-side partner requests between the pair
+                    try { await _pairing.PurgePairAsync(UserId, PartnerId!); }
+                    catch { /* log if you want; non-fatal */ }
+                }
+            };
+
+            // Kick off pairing listeners (after we know UserId)
+            _pairing.Start(UserId);
             // Initialize commands
-            AcceptPartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await AcceptPartnerInviteAsync(r!));
-            DeclinePartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await DeclinePartnerInviteAsync(r!));
-            CancelPartnerRequestCommand = new RelayCommand<PartnerRequest>(async r => await CancelPartnerRequestAsync(r!));
+            AcceptPartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.AcceptAsync(UserId, r!));
+            DeclinePartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.DeclineAsync(UserId, r!));
+            CancelPartnerRequestCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.CancelAsync(UserId, r!));
+            DisconnectPartnerCommand = new RelayCommand(async _ => await _pairing.DisconnectAsync(UserId, PartnerId ?? string.Empty));
+            SendPartnerRequestCommand = new RelayCommand(async _ => await _pairing.SendAsync(UserId, EnteredPartnerCode!, DisplayName ?? "Someone"),
+                _ => !string.IsNullOrWhiteSpace(EnteredPartnerCode) && EnteredPartnerCode != UserId
+            );
+
             AddTaskCommand = new RelayCommand(async _ => {
                 await _actions.AddAsync(
                     NewTaskTitle,
@@ -123,14 +161,13 @@ namespace TaskMate.ViewModels {
                 NewTaskDescription = string.Empty;
                 NewTaskDueDate = null;
             });
-            DeleteTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.DeleteAsync(t!, UserId, _partner.GroupId));
-            AcceptTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.AcceptAsync(t!, UserId, _partner.GroupId));
-            DeclineTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.DeclineAsync(t!, _partner.GroupId));
-            DisconnectPartnerCommand = new RelayCommand(async _ => await DisconnectPartnerAsync());
-            SendPartnerRequestCommand = new RelayCommand(
-           async _ => await SendPartnerRequestAsync(),
-           _ => !string.IsNullOrWhiteSpace(EnteredPartnerCode) && EnteredPartnerCode != UserId
-           );
+            DeleteTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.DeleteAsync(t!, UserId, _partner.GroupId), t => t?.CanDecide == true);
+            AcceptTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.AcceptAsync(t!, UserId, _partner.GroupId), t => t?.CanDecide == true);
+            DeclineTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.DeclineAsync(t!, _partner.GroupId), t => t?.CanDecide == true);
+            ShowTaskDetailsCommand = new RelayCommand<TaskItem>(
+    async t => { if(t != null) await _dialogs.ShowTaskDetailsAsync(t); },
+    t => t != null
+);
             ToggleThemeCommand = new RelayCommand(_ => {
                 var next = _themeService.Toggle();
                 _settings.Theme = next;
@@ -141,20 +178,12 @@ namespace TaskMate.ViewModels {
                 _ => SaveDisplayName(),
                 _ => !string.IsNullOrWhiteSpace(NewDisplayName)
         );
-            OutgoingPartnerRequests.CollectionChanged += (_, __) => RecomputeOutgoingFlags();
-            _partner.PartnerChanged += async () => {
-                IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
-                await _live.ReloadForPartnerAsync();
-                OnPropertyChanged(nameof(PartnerId));
-                OnPropertyChanged(nameof(NeedsProfileSetup));
-                OnPropertyChanged(nameof(DisplayName));
-            };
             // If profile not set up yet, prompt for display name
             if(NeedsProfileSetup) NewDisplayName = string.Empty;
             _ = _live.StartAsync(); // fire-and-forget
         }
 
-        
+
         public void SaveTasks() => _taskService.SaveAll(GroupId);
         private void SaveDisplayName() {
             if(!string.IsNullOrWhiteSpace(NewDisplayName)) {
@@ -164,54 +193,7 @@ namespace TaskMate.ViewModels {
                 OnPropertyChanged(nameof(DisplayName));
             }
         }
-        void RecomputeOutgoingFlags() {
-            HasPendingOutgoing = OutgoingPartnerRequests.Any(r => r.Status == "pending");
-            OnPropertyChanged(nameof(ConnectionSummary));
-        }
 
-        private async Task DisconnectPartnerAsync() {
-            var pid = PartnerId;
-            if(string.IsNullOrWhiteSpace(pid)) return;
-
-            // Tell Firestore first so BOTH sides flip right away
-            await _partnerReqs.DisconnectAsync(UserId, pid);
-            _ = _partnerReqs.PurgePairAsync(UserId, pid);
-
-            // Clear local state
-            _partner.PartnerId = string.Empty;      // persists + raises PartnerChanged
-            IsPartnerVerified = false;
-            OnPropertyChanged(nameof(ConnectionSummary));
-        }
-        private async Task SendPartnerRequestAsync() {
-            if(string.IsNullOrWhiteSpace(EnteredPartnerCode) || EnteredPartnerCode == UserId) return;
-
-            var myName = _settings.DisplayName ?? "Someone";
-            await _partnerReqs.SendAsync(UserId, EnteredPartnerCode, myName);
-            EnteredPartnerCode = string.Empty;
-        }
-
-        private async Task AcceptPartnerInviteAsync(PartnerRequest r) {
-            if(r is null) return;
-
-            await _partnerReqs.AcceptAsync(UserId, r.FromUserId);
-
-            // Set local partner & mark verified; this triggers your PartnerChanged flow
-
-            IsPartnerVerified = true;
-            _partner.PartnerId = r.FromUserId;
-        }
-
-        private async Task DeclinePartnerInviteAsync(PartnerRequest r) {
-            if(r is null) return;
-            await _partnerReqs.DeclineAsync(UserId, r.FromUserId);
-        }
-
-        private async Task CancelPartnerRequestAsync(PartnerRequest r) {
-            if(r is null) return;
-
-            var target = r.ToUserId == UserId ? r.FromUserId : r.ToUserId;
-            await _partnerReqs.CancelAsync(UserId, target);
-        }
 
         public DateTime Now {
             get => _now;

@@ -16,11 +16,17 @@ namespace TaskMate.Models {
         public string? Category { get; set; }
         public DateTime? DueDate { get; set; }
 
+        private bool _canDecide;
+        public bool CanDecide {
+            get => _canDecide;
+            set { if(_canDecide == value) return; _canDecide = value; OnPropertyChanged(); }
+        }
+
         private bool _isCompleted;
         public bool IsCompleted {
             get => _isCompleted;
             set {
-                if (_isCompleted == value) return;
+                if(_isCompleted == value) return;
                 _isCompleted = value;
                 OnPropertyChanged();
             }
@@ -33,7 +39,7 @@ namespace TaskMate.Models {
         public Assignee AssignedTo {
             get => _assignedTo;
             set {
-                if (_assignedTo == value) return;
+                if(_assignedTo == value) return;
                 _assignedTo = value;
                 OnPropertyChanged();
             }
@@ -56,5 +62,7 @@ namespace TaskMate.Models {
             AssignedToUserId == myId ? "Me" :
             AssignedToUserId == partnerId ? "Partner" :
             AssignedTo.ToString();
+
+
     }
 }

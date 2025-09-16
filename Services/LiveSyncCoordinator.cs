@@ -69,6 +69,10 @@ namespace TaskMate.Services {
 			_incomingHandle = _partnerReqs.ListenIncoming(myId, list => {
 				Application.Current.Dispatcher.Invoke(() => {
 					if(_incoming is null) return;
+					if(!string.IsNullOrWhiteSpace(_partner.PartnerId)) {
+						_incoming.Clear();
+						return;
+					}
 					_incoming.Clear();
 					foreach(var r in list.Where(x => x.Status == "pending"))
 						_incoming.Add(r);
@@ -89,6 +93,10 @@ namespace TaskMate.Services {
 			_outgoingHandle = _partnerReqs.ListenOutgoing(myId, list => {
 				Application.Current.Dispatcher.Invoke(() => {
 					if(_outgoing is null) return;
+					if(!string.IsNullOrWhiteSpace(_partner.PartnerId)) {
+						_outgoing.Clear();
+						return;
+					}
 					_outgoing.Clear();
 					foreach(var r in list)
 						_outgoing.Add(r);
@@ -155,9 +163,40 @@ namespace TaskMate.Services {
 			_groupHandle = _requests.ListenRequests(groupId, cloud => {
 				Application.Current.Dispatcher.Invoke(() => {
 					if(_pending is null) return;
-					TaskCollectionHelpers.ReplaceAll(_pending, cloud, assignedTo: Assignee.Partner, requestMode: true);
+
+					var myId = TaskMate.Sync.FirestoreClient.CurrentUserId;
+					var partnerId = _partner.PartnerId;
+
+					bool IsMineToDecide(TaskItem t) {
+						if(!string.IsNullOrWhiteSpace(t.AssignedToUserId))
+							return string.Equals(t.AssignedToUserId, myId, StringComparison.OrdinalIgnoreCase);
+
+						// Fallback when AssignedToUserId isn't set
+						if(t.AssignedTo == TaskMate.Models.Enums.Assignee.Me)
+							return string.Equals(t.CreatedBy, partnerId, StringComparison.OrdinalIgnoreCase);
+
+						if(t.AssignedTo == TaskMate.Models.Enums.Assignee.Partner)
+							return string.Equals(t.CreatedBy, myId, StringComparison.OrdinalIgnoreCase) == false;
+
+						return false;
+					}
+
+					var mine = cloud.Where(IsMineToDecide).ToList(); // 👈 actually use the helper
+
+					foreach(var t in cloud) t.CanDecide = false;
+					foreach(var t in mine) t.CanDecide = true;
+
+					TaskCollectionHelpers.ReplaceAll(
+						_pending,
+						mine,
+						assignedTo: TaskMate.Models.Enums.Assignee.Partner,
+						requestMode: true
+					);
+					foreach(var t in _pending)
+						t.CanDecide = true;
 				});
 			});
+
 		}
 
 		private void TearDownPartnerListenersAndClearUi() {

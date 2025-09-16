@@ -20,12 +20,20 @@ namespace TaskMate.Services {
 				var next = value?.Trim() ?? "";
 				if(_settings.PartnerId == next) return;
 
-				_settings.PartnerId = next;
-				_settings.GroupId = ComputeGroupId(_settings.UserId, _settings.PartnerId);
+				// >>> NEW: reload from disk to merge any recent DisplayName/Theme changes
+				var fresh = UserSettings.Load();
 
-				UserSettings.Save(_settings);
-				// Keep any Firestore-aware singletons in sync if you use them:
-				FirestoreClient.SavePartnerAndGroup(_settings.PartnerId, _settings.GroupId);
+				fresh.PartnerId = next;
+				fresh.GroupId = ComputeGroupId(fresh.UserId, fresh.PartnerId);
+
+				// Save the merged copy (keeps DisplayName intact)
+				UserSettings.Save(fresh);
+
+				// Update our in-memory copy to the fresh one
+				_settings = fresh;
+
+				// >>> CHANGE: don't re-save a second time; just refresh FirestoreClient cache
+				FirestoreClient.ReloadSettings();
 
 				PartnerChanged?.Invoke();
 			}

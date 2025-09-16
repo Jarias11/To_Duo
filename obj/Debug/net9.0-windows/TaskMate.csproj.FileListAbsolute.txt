@@ -69,3 +69,5 @@ C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.csproj.Assemb
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\TaskMate.csproj.Up2Date
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\Themes\Theme.Dark.baml
 C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\Themes\Theme.Light.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\Views\TaskDetailsWindow.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net9.0-windows\Views\TaskDetailsWindow.g.cs

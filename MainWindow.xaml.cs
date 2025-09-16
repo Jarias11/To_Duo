@@ -11,6 +11,7 @@ using System.Windows.Shapes;
 using TaskMate.ViewModels;
 using TaskMate.Services;
 using TaskMate.ViewModels;
+using TaskMate.Orchestration;
 
 
 namespace TaskMate;
@@ -33,9 +34,13 @@ public partial class MainWindow : Window {
         var partnerReqs = new PartnerRequestService();
         var live = new LiveSyncCoordinator(requestSvc, partnerReqs, partnerSvc);
 
+
         var taskActions = new TaskActions(requestSvc, taskSvc, Dispatcher);
+
+        var dialogs = new TaskDialogService(taskActions, partnerSvc);
+        var pairing = new PairingOrchestrator(partnerReqs, partnerSvc, live, Dispatcher);
         try {
-            DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, requestSvc, partnerReqs, live, taskActions);
+            DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, live, taskActions, pairing, dialogs);
         }
         catch(Exception ex) {
             Console.WriteLine($"Error setting DataContext: {ex.Message}");

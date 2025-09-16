@@ -39,6 +39,7 @@ namespace TaskMate.Services {
 		/// Decline a pending partner task request (delete request) and remove from Pending UI.
 		/// </summary>
 		Task DeclineAsync(TaskItem item, string groupId);
+		Task UpdateAsync(TaskItem item, string myUserId, string groupId);
 	}
 
 	/// <summary>
@@ -86,12 +87,17 @@ namespace TaskMate.Services {
 				CreatedBy = myUserId,
 				UpdatedAt = now,
 				Accepted = assignee != Assignee.Partner,
-				AssignedToUserId = (assignee == Assignee.Me) ? myUserId : partnerId
+				AssignedToUserId = assignee switch {
+					Assignee.Me => myUserId,
+					Assignee.Partner => partnerId ?? string.Empty,
+					_ => string.Empty
+				},
 			};
 
 			if(assignee == Assignee.Partner && !string.IsNullOrWhiteSpace(partnerId)) {
 				await _requests.UpsertRequestAsync(newTask, groupId);
 				var pendingUi = TaskCollectionHelpers.CloneForUi(newTask, Assignee.Partner, requestMode: true);
+				pendingUi.CanDecide = false;
 				_ui.Invoke(() => Pending.Add(pendingUi));
 			}
 			else {
@@ -125,5 +131,27 @@ namespace TaskMate.Services {
 			await _requests.DeleteRequestAsync(item.Id, groupId);
 			_ui.Invoke(() => Pending.Remove(item));
 		}
+		public async Task UpdateAsync(TaskItem item, string myUserId, string groupId) {
+			if(item is null) return;
+
+			item.UpdatedAt = DateTime.UtcNow;
+
+			// If it's a partner-request (not accepted yet), it lives under "requests"
+			if(item.AssignedTo == Assignee.Partner && item.Accepted == false) {
+				await _requests.UpsertRequestAsync(item, groupId);
+				// Pending collection already holds a reference — no extra UI work needed
+			}
+			else {
+				// Personal list (mine or accepted tasks)
+				await _requests.UpsertPersonalAsync(item, myUserId);
+
+				// Replace in Tasks by Id so CollectionViews refresh seamlessly
+				_ui.Invoke(() => {
+					var idx = Tasks.ToList().FindIndex(t => t.Id == item.Id);
+					if(idx >= 0) Tasks[idx] = TaskCollectionHelpers.CloneForUi(item, item.AssignedTo, requestMode: false);
+				});
+			}
+		}
+
 	}
 }
