@@ -15,6 +15,7 @@ namespace TaskMate.Models {
         public string? Description { get; set; }
         public string? Category { get; set; }
         public DateTime? DueDate { get; set; }
+        public DateTime? CompletedAt { get; set; }
 
         private bool _canDecide;
         public bool CanDecide {
@@ -28,7 +29,12 @@ namespace TaskMate.Models {
             set {
                 if(_isCompleted == value) return;
                 _isCompleted = value;
-                OnPropertyChanged();
+                CompletedAt = _isCompleted ? (CompletedAt ?? DateTime.UtcNow) : null;
+
+                UpdatedAt = DateTime.UtcNow;
+                OnPropertyChanged();                 // IsCompleted
+                OnPropertyChanged(nameof(CompletedAt));
+                OnPropertyChanged(nameof(UpdatedAt));           // reset if unchecked
             }
         }
 

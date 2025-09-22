@@ -10,7 +10,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TaskMate.ViewModels;
 using TaskMate.Services;
-using TaskMate.ViewModels;
 using TaskMate.Orchestration;
 
 
@@ -39,6 +38,7 @@ public partial class MainWindow : Window {
 
         var dialogs = new TaskDialogService(taskActions, partnerSvc);
         var pairing = new PairingOrchestrator(partnerReqs, partnerSvc, live, Dispatcher);
+        
         try {
             DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, live, taskActions, pairing, dialogs);
         }

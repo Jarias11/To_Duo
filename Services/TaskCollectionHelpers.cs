@@ -5,10 +5,8 @@ using System.Linq;
 using TaskMate.Models;
 using TaskMate.Models.Enums;
 
-namespace TaskMate.Services
-{
-    public static class TaskCollectionHelpers
-    {
+namespace TaskMate.Services {
+    public static class TaskCollectionHelpers {
         /// <summary>
         /// Replace target with incoming (optionally remapping AssignedTo and request-mode Accepted flag).
         /// </summary>
@@ -16,11 +14,9 @@ namespace TaskMate.Services
             ObservableCollection<TaskItem> target,
             IList<TaskItem> incoming,
             Assignee? assignedTo = null,
-            bool requestMode = false)
-        {
+            bool requestMode = false) {
             target.Clear();
-            foreach (var inc in incoming)
-            {
+            foreach(var inc in incoming) {
                 var copy = CloneForUi(inc, assignedTo, requestMode);
                 target.Add(copy);
             }
@@ -33,25 +29,20 @@ namespace TaskMate.Services
             ObservableCollection<TaskItem> target,
             IList<TaskItem> incoming,
             Assignee assignedTo,
-            string ownerUserId)
-        {
+            string ownerUserId) {
             var index = target.ToDictionary(t => t.Id);
-            foreach (var inc in incoming)
-            {
+            foreach(var inc in incoming) {
                 var mapped = CloneForUi(inc, assignedTo, requestMode: false);
 
-                if (index.TryGetValue(mapped.Id, out var existing))
-                {
+                if(index.TryGetValue(mapped.Id, out var existing)) {
                     var oldTime = existing.UpdatedAt ?? DateTime.MinValue;
                     var newTime = mapped.UpdatedAt ?? DateTime.MinValue;
-                    if (newTime > oldTime)
-                    {
+                    if(newTime > oldTime) {
                         var pos = target.IndexOf(existing);
                         target[pos] = mapped;
                     }
                 }
-                else
-                {
+                else {
                     target.Add(mapped);
                 }
             }
@@ -60,10 +51,8 @@ namespace TaskMate.Services
         /// <summary>
         /// Make a UI-facing copy while normalizing flags (AssignedTo/Accepted) for list views.
         /// </summary>
-        public static TaskItem CloneForUi(TaskItem inc, Assignee? assignedTo, bool requestMode)
-        {
-            return new TaskItem
-            {
+        public static TaskItem CloneForUi(TaskItem inc, Assignee? assignedTo, bool requestMode) {
+            return new TaskItem {
                 Id = inc.Id,
                 Title = inc.Title,
                 Description = inc.Description,
@@ -72,6 +61,7 @@ namespace TaskMate.Services
                 IsCompleted = inc.IsCompleted,
                 CreatedBy = inc.CreatedBy,
                 UpdatedAt = inc.UpdatedAt,
+                CompletedAt = inc.CompletedAt,
                 AssignedToUserId = inc.AssignedToUserId,
                 AssignedTo = assignedTo ?? inc.AssignedTo,
                 Accepted = requestMode ? false : true, // personal list items are implicitly accepted

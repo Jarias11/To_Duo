@@ -72,6 +72,9 @@ namespace TaskMate.Sync {
 					? Timestamp.FromDateTime(DateTime.SpecifyKind(dt, DateTimeKind.Utc))
 					: null,
 				["IsCompleted"] = item.IsCompleted,
+				["CompletedAt"] = item.CompletedAt is DateTime cdt
+					? Timestamp.FromDateTime(DateTime.SpecifyKind(cdt, DateTimeKind.Utc))
+					: null,
 				["CreatedBy"] = item.CreatedBy,
 				["Accepted"] = item.Accepted,
 				["AssignedTo"] = item.AssignedTo.ToString(),
@@ -108,6 +111,7 @@ namespace TaskMate.Sync {
 				Category = S(d.GetValueOrDefault("Category")),
 				DueDate = ToDate(d.GetValueOrDefault("DueDate")),
 				IsCompleted = B(d.GetValueOrDefault("IsCompleted")),
+				CompletedAt = ToDate(d.GetValueOrDefault("CompletedAt")),
 				CreatedBy = S(d.GetValueOrDefault("CreatedBy")) ?? "",
 				Accepted = B(d.GetValueOrDefault("Accepted"), false),
 				AssignedTo = ParseAssignee(d.GetValueOrDefault("AssignedTo")),

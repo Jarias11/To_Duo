@@ -1,0 +1,14 @@
+<UserControl x:Class="TaskMate.Views.TaskBoardSection"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- paste your previous ScrollViewer (Task Board + Completed Tasks) into Grid.Row=0, unchanged -->
+
+		<!-- paste your previous Pending Partner Tasks StackPanel into Grid.Row=1, unchanged -->
+	</Grid>
+</UserControl>

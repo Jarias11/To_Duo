@@ -108,8 +108,11 @@ namespace TaskMate.Sync {
 			string S(string key) => dict.TryGetValue(key, out var v) ? v?.ToString() ?? "" : "";
 			DateTime? T(string key) => dict.TryGetValue(key, out var v) && v is Timestamp ts ? ts.ToDateTime() : null;
 
+			var idField = S("Id");
+			var effectiveId = string.IsNullOrWhiteSpace(idField) ? d.Id : idField;
+
 			return new PartnerRequest {
-				Id = S("Id"),
+				Id = effectiveId,
 				FromUserId = S("FromUserId"),
 				FromDisplayName = S("FromDisplayName"),
 				ToUserId = S("ToUserId"),
@@ -122,19 +125,45 @@ namespace TaskMate.Sync {
 			var db = FirestoreClient.GetDb();
 			var now = Timestamp.GetCurrentTimestamp();
 
-			// We update BOTH directions, both in/out, so either side's listener will see it.
 			var myIn = IncomingCol(db, myUserId).Document(partnerUserId);
 			var myOut = OutgoingCol(db, myUserId).Document(partnerUserId);
 			var theirIn = IncomingCol(db, partnerUserId).Document(myUserId);
 			var theirOut = OutgoingCol(db, partnerUserId).Document(myUserId);
 
-			var payload = new Dictionary<string, object?> { ["Status"] = "disconnected", ["UpdatedAt"] = now };
+			var payload_myIn = new Dictionary<string, object?> {
+				["Id"] = partnerUserId,
+				["FromUserId"] = partnerUserId,
+				["ToUserId"] = myUserId,
+				["Status"] = "disconnected",
+				["UpdatedAt"] = now
+			};
+			var payload_myOut = new Dictionary<string, object?> {
+				["Id"] = partnerUserId,
+				["FromUserId"] = myUserId,
+				["ToUserId"] = partnerUserId,
+				["Status"] = "disconnected",
+				["UpdatedAt"] = now
+			};
+			var payload_theirIn = new Dictionary<string, object?> {
+				["Id"] = myUserId,
+				["FromUserId"] = myUserId,
+				["ToUserId"] = partnerUserId,
+				["Status"] = "disconnected",
+				["UpdatedAt"] = now
+			};
+			var payload_theirOut = new Dictionary<string, object?> {
+				["Id"] = myUserId,
+				["FromUserId"] = partnerUserId,
+				["ToUserId"] = myUserId,
+				["Status"] = "disconnected",
+				["UpdatedAt"] = now
+			};
 
 			var batch = db.StartBatch();
-			batch.Set(myIn, payload, SetOptions.MergeAll);
-			batch.Set(myOut, payload, SetOptions.MergeAll);
-			batch.Set(theirIn, payload, SetOptions.MergeAll);
-			batch.Set(theirOut, payload, SetOptions.MergeAll);
+			batch.Set(myIn, payload_myIn, SetOptions.MergeAll);
+			batch.Set(myOut, payload_myOut, SetOptions.MergeAll);
+			batch.Set(theirIn, payload_theirIn, SetOptions.MergeAll);
+			batch.Set(theirOut, payload_theirOut, SetOptions.MergeAll);
 			await batch.CommitAsync();
 		}
 		public async Task PurgePairAsync(string userA, string userB) {

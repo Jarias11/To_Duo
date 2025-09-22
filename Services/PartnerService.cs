@@ -34,6 +34,7 @@ namespace TaskMate.Services {
 
 				// >>> CHANGE: don't re-save a second time; just refresh FirestoreClient cache
 				FirestoreClient.ReloadSettings();
+				_ = FirestoreClient.EnsureGroupDocExistsAsync();
 
 				PartnerChanged?.Invoke();
 			}

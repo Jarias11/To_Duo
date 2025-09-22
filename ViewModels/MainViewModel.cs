@@ -18,8 +18,7 @@ namespace TaskMate.ViewModels {
         public string UserId => _partner.UserId;
         public string? PartnerId => _partner.PartnerId;
         public string? DisplayName => _settings.DisplayName;
-        public string ConnectionSummary =>
-            IsPartnerVerified ? $"Connected to: {PartnerId}" : "No partner connected yet";
+        public string ConnectionSummary => IsPartnerVerified ? $"Connected to: {PartnerId}" : "No partner connected yet";
 
         //Readonly services
         private readonly ILiveSyncCoordinator _live;
@@ -52,6 +51,8 @@ namespace TaskMate.ViewModels {
         public event PropertyChangedEventHandler? PropertyChanged;
         public ICollectionView MyTasksView { get; }
         public ICollectionView PartnerTasksView { get; }
+        public ICollectionView MyCompletedTasks { get; }
+        public ICollectionView PartnerCompletedTasks { get; }
         public ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
         public ObservableCollection<TaskItem> PendingTasks => _taskService.PendingTasks;
         public ObservableCollection<string> Categories { get; set; } = [
@@ -72,6 +73,7 @@ namespace TaskMate.ViewModels {
         public ICommand AcceptTaskCommand { get; }
         public ICommand DeclineTaskCommand { get; }
         public ICommand ShowTaskDetailsCommand { get; }
+        public ICommand ToggleCompleteCommand { get; }
 
 
         public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs) {
@@ -91,16 +93,23 @@ namespace TaskMate.ViewModels {
 
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
             IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
-            MyTasksView.Filter = o => (o as TaskItem)?.AssignedTo == Assignee.Me;
+            MyTasksView.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Me && !t.IsCompleted;
             PartnerTasksView = new CollectionViewSource { Source = Tasks }.View;
-            PartnerTasksView.Filter = o => (o as TaskItem)?.AssignedTo == Assignee.Partner;
+            PartnerTasksView.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Partner && !t.IsCompleted;
+
+            MyCompletedTasks = new CollectionViewSource { Source = Tasks }.View;
+            MyCompletedTasks.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Me && t.IsCompleted;
+
+            PartnerCompletedTasks = new CollectionViewSource { Source = Tasks }.View;
+            PartnerCompletedTasks.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Partner && t.IsCompleted;
+
             // Apply saved theme on startup
             var saved = _settings.Theme;
             _themeService.Apply(saved);
             ThemeButtonText = saved == AppTheme.Light ? "Dark Mode" : "Light Mode";
             // Live sync
-            _live.Attach(Tasks, PendingTasks, IncomingPartnerRequests, OutgoingPartnerRequests, MyTasksView, PartnerTasksView);
-            _live.PartnerDisconnected += () => {
+            _live.Attach(Tasks, PendingTasks, MyTasksView, PartnerTasksView);
+            _pairing.PartnerDisconnected += () => {
                 IsPartnerVerified = false;
                 HasPendingOutgoing = _pairing.HasPendingOutgoing; // stay in sync
                 OnPropertyChanged(nameof(ConnectionSummary));
@@ -118,7 +127,7 @@ namespace TaskMate.ViewModels {
             // If partner changes at runtime, realign everything (pairing + UI)
             _partner.PartnerChanged += async () => {
                 IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
-                await _pairing.ReloadForPartnerAsync();
+                await _live.ReloadForPartnerAsync();
                 OnPropertyChanged(nameof(PartnerId));
                 OnPropertyChanged(nameof(NeedsProfileSetup));
                 OnPropertyChanged(nameof(DisplayName));
@@ -178,9 +187,33 @@ namespace TaskMate.ViewModels {
                 _ => SaveDisplayName(),
                 _ => !string.IsNullOrWhiteSpace(NewDisplayName)
         );
+
+            ToggleCompleteCommand = new RelayCommand<TaskItem>(async t => {
+                if(t == null) return;
+
+                // flip
+                if(t.IsCompleted)
+                    t.CompletedAt ??= DateTime.UtcNow;
+                else
+                    t.CompletedAt = null;
+
+                t.UpdatedAt = DateTime.UtcNow;
+
+                await _actions.UpdateAsync(t, UserId, _partner.GroupId);
+
+                // refresh the four views so items "jump" between active/completed
+                MyTasksView?.Refresh();
+                PartnerTasksView?.Refresh();
+                MyCompletedTasks?.Refresh();
+                PartnerCompletedTasks?.Refresh();
+                _taskService.SaveAll(GroupId);
+            });
             // If profile not set up yet, prompt for display name
             if(NeedsProfileSetup) NewDisplayName = string.Empty;
+            var local = TaskMate.Data.TaskDataService.LoadTasks();
+            foreach(var t in local) _taskService.Tasks.Add(t);
             _ = _live.StartAsync(); // fire-and-forget
+            _ = live.ReloadForPartnerAsync();
         }
 
 

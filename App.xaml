@@ -8,6 +8,7 @@
             <!-- Merge the default (Light) theme at app startup -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/Theme.Light.xaml"/>
+                <ResourceDictionary Source="Styles/SharedStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- App-wide resources still go here -->

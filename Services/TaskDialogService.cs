@@ -26,6 +26,7 @@ namespace TaskMate.Services {
         Owner = Application.Current.MainWindow,
         DataContext = vm
       };
+      vm.CloseRequested += () => win.Close();
 
       // modal is simplest; non-modal works too
       win.ShowDialog();

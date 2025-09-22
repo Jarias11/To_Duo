@@ -11,8 +11,6 @@ namespace TaskMate.Services
         void Attach(
             ObservableCollection<TaskItem> tasks,
             ObservableCollection<TaskItem> pendingRequests,
-            ObservableCollection<PartnerRequest> incomingReqs,
-            ObservableCollection<PartnerRequest> outgoingReqs,
             ICollectionView myTasksView,
             ICollectionView partnerTasksView);
 

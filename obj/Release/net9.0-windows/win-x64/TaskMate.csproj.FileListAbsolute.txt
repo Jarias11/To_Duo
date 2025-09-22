@@ -437,3 +437,8 @@ C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Themes\Theme
 C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Themes\Theme.Light.baml
 C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TaskDetailsWindow.baml
 C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TaskDetailsWindow.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TaskBoardSection.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TopDashboardSection.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TaskBoardSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Views\TopDashboardSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Release\net9.0-windows\win-x64\Styles\SharedStyles.baml

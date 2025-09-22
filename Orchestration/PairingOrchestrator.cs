@@ -1,11 +1,8 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Data;
 using System.Windows.Threading;
 using TaskMate.Models;
 using TaskMate.Services;
+using System.Linq;
 
 namespace TaskMate.Orchestration {
 	public interface IPairingOrchestrator : IDisposable {
@@ -49,6 +46,7 @@ namespace TaskMate.Orchestration {
 
 		private IDisposable? _incomingSub;
 		private IDisposable? _outgoingSub;
+		private bool _purgeEligibleOnStartup;
 
 		public ObservableCollection<PartnerRequest> Incoming { get; private set; } = new();
 		public ObservableCollection<PartnerRequest> Outgoing { get; private set; } = new();
@@ -80,19 +78,68 @@ namespace TaskMate.Orchestration {
 			_incomingSub?.Dispose();
 			_outgoingSub?.Dispose();
 
+			_purgeEligibleOnStartup = string.IsNullOrWhiteSpace(_partner.PartnerId);
+
 			_incomingSub = _partnerReqs.ListenIncoming(myUserId, list => {
-				_ui.Invoke(() => {
+				_ui.Invoke(async () => {
 					var pending = list.Where(x => string.Equals(x.Status, "pending", StringComparison.OrdinalIgnoreCase)).ToList();
 					ReplaceAll(Incoming, pending);
 					OutgoingChanged?.Invoke();
+
+					var discos = list.Where(x => string.Equals(x.Status, "disconnected", StringComparison.OrdinalIgnoreCase)).ToList();
+					if(discos.Count > 0) {
+						if(_purgeEligibleOnStartup && string.IsNullOrWhiteSpace(_partner.PartnerId)) {
+							foreach(var d in discos) {
+								var other =
+									d.FromUserId == myUserId ? d.ToUserId :
+									!string.IsNullOrWhiteSpace(d.FromUserId) ? d.FromUserId :
+									d.Id;
+
+								if(!string.IsNullOrWhiteSpace(other))
+									await _partnerReqs.PurgePairAsync(myUserId, other);
+							}
+							ClearRequests();
+						}
+						else {
+							_ui.Invoke(() => {
+								_partner.PartnerId = string.Empty; // acknowledge only; do not purge here
+								ClearRequests();
+								PartnerDisconnected?.Invoke();
+							});
+						}
+					}
 				});
 			});
 
 			_outgoingSub = _partnerReqs.ListenOutgoing(myUserId, list => {
-				_ui.Invoke(() => {
+				_ = _ui.InvokeAsync(() => {
 					var pending = list.Where(x => string.Equals(x.Status, "pending", StringComparison.OrdinalIgnoreCase)).ToList();
 					ReplaceAll(Outgoing, pending);
 					OutgoingChanged?.Invoke();
+
+					var accepted = list.FirstOrDefault(x => string.Equals(x.Status, "accepted", StringComparison.OrdinalIgnoreCase));
+					if(accepted != null) {
+						var other = accepted.ToUserId == myUserId ? accepted.FromUserId : accepted.ToUserId;
+						if(!string.IsNullOrWhiteSpace(other) && _partner.PartnerId != other) {
+							_ui.Invoke(() => _partner.PartnerId = other);// make partner tasks appear
+						}
+					}
+
+					var disconnected = list.FirstOrDefault(x => string.Equals(x.Status, "disconnected", StringComparison.OrdinalIgnoreCase));
+					if(disconnected != null) {
+						var other = disconnected.FromUserId == myUserId ? disconnected.ToUserId
+								  : !string.IsNullOrWhiteSpace(disconnected.FromUserId) ? disconnected.FromUserId
+								  : disconnected.Id; // fallback to doc's Id which is partner for outgoing docs
+
+						if(!string.IsNullOrWhiteSpace(other)) {
+
+							_ui.Invoke(() => {
+								_partner.PartnerId = string.Empty; // raises PartnerChanged → VM calls live.ReloadForPartnerAsync()
+								ClearRequests();
+								PartnerDisconnected?.Invoke();
+							});
+						}
+					}
 				});
 			});
 		}

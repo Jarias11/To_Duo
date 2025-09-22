@@ -10,11 +10,11 @@ none
 false
 TRACE;RELEASE;NET;NET9_0;NETCOREAPP
 C:\Users\Jarias\Documents\To-Duo\App.xaml
-4-125644678
+7305279325
 
-37563857358
+421453612582
 221-1056610266
-MainWindow.xaml;Themes\Theme.Dark.xaml;Themes\Theme.Light.xaml;Views\TaskDetailsWindow.xaml;
+MainWindow.xaml;Styles\SharedStyles.xaml;Themes\Theme.Dark.xaml;Themes\Theme.Light.xaml;Views\TaskBoardSection.xaml;Views\TaskDetailsWindow.xaml;Views\TopDashboardSection.xaml;
 
 False
 

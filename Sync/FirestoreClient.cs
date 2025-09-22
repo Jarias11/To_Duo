@@ -60,9 +60,16 @@ namespace TaskMate.Sync {
                     settings.PartnerId ??= string.Empty; // just to satisfy nullable
                     UserSettings.Save(settings);
                 }
+
+
+
                 CurrentUserId = settings.UserId ?? string.Empty;
                 PartnerId = settings.PartnerId ?? string.Empty;
                 GroupId = settings.GroupId ?? string.Empty;
+
+                await EnsureUserDocExistsAsync().ConfigureAwait(false);
+                if(!string.IsNullOrWhiteSpace(GroupId))
+                    await EnsureGroupDocExistsAsync().ConfigureAwait(false);
 
                 _initialized = true;
             }
@@ -96,6 +103,63 @@ namespace TaskMate.Sync {
 
             PartnerId = settings.PartnerId;
             GroupId = settings.GroupId;
+            if(!string.IsNullOrWhiteSpace(GroupId))
+                _ = EnsureGroupDocExistsAsync();
+        }
+
+        // --- NEW: create/ensure a users/{uid} doc exists ---
+        public static async Task EnsureUserDocExistsAsync() {
+            var db = GetDb();
+            var uid = CurrentUserId;
+            if(string.IsNullOrWhiteSpace(uid)) return;
+
+            var userRef = db.Collection("users").Document(uid);
+            var snap = await userRef.GetSnapshotAsync().ConfigureAwait(false);
+
+            if(!snap.Exists) {
+                await userRef.SetAsync(new {
+                    displayName = UserSettings.Load().DisplayName ?? "",
+                    createdAt = FieldValue.ServerTimestamp,
+                    updatedAt = FieldValue.ServerTimestamp
+                }).ConfigureAwait(false);
+            }
+            else {
+                // Don’t overwrite createdAt; just update mutable fields
+                await userRef.SetAsync(new {
+                    displayName = UserSettings.Load().DisplayName ?? "",
+                    updatedAt = FieldValue.ServerTimestamp
+                }, SetOptions.MergeAll).ConfigureAwait(false);
+            }
+        }
+
+        // --- NEW: create/ensure a groups/{groupId} doc exists ---
+        public static async Task EnsureGroupDocExistsAsync() {
+            var db = GetDb();
+            var gid = GroupId;
+            if(string.IsNullOrWhiteSpace(gid)) return;
+
+            // (a, b) are the two members; order doesn’t matter, GroupId is already sorted
+            var a = CurrentUserId;
+            var b = PartnerId;
+
+            var grpRef = db.Collection("groups").Document(gid);
+            var snap = await grpRef.GetSnapshotAsync().ConfigureAwait(false);
+
+            if(!snap.Exists) {
+                await grpRef.SetAsync(new {
+                    a,
+                    b,
+                    createdAt = FieldValue.ServerTimestamp,
+                    updatedAt = FieldValue.ServerTimestamp
+                }).ConfigureAwait(false);
+            }
+            else {
+                await grpRef.SetAsync(new {
+                    a,
+                    b,
+                    updatedAt = FieldValue.ServerTimestamp
+                }, SetOptions.MergeAll).ConfigureAwait(false);
+            }
         }
     }
 }
