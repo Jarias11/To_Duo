@@ -5,11 +5,13 @@ namespace TaskMate.Services {
 	public sealed class SettingsService : ISettingsService {
 		private readonly UserSettings _model;
 
+
 		public SettingsService() {
 			_model = UserSettings.Load();
-
-			// Backfill sensible defaults if missing (won’t change behavior)
 			_model.Theme ??= "Light";
+			_model.DisplayName ??= string.Empty;
+			_model.PartnerId ??= string.Empty;
+			_model.GroupId ??= string.Empty;
 			//_model.SoundsEnabled ??= false;
 			//_model.AnimationLevel ??= "Off";
 		}
@@ -36,6 +38,23 @@ namespace TaskMate.Services {
 		public string? DisplayName {
 			get => _model.DisplayName;
 			set => _model.DisplayName = value?.Trim();
+		}
+		// NEW: expose ids directly from the model
+		public string UserId => _model.UserId;
+
+		public string? PartnerId {
+			get => string.IsNullOrWhiteSpace(_model.PartnerId) ? null : _model.PartnerId;
+			set => _model.PartnerId = value?.Trim() ?? string.Empty;
+		}
+
+		public string GroupId {
+			get => _model.GroupId ?? string.Empty;
+			set => _model.GroupId = value ?? string.Empty;
+		}
+
+		public DateTime? PairedSinceUtc {
+			get => _model.PairedSinceUtc;
+			set => _model.PairedSinceUtc = value;
 		}
 
 		public void Save() => UserSettings.Save(_model);

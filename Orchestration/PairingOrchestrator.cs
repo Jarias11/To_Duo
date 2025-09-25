@@ -43,6 +43,9 @@ namespace TaskMate.Orchestration {
 		private readonly IPartnerService _partner;
 		private readonly ILiveSyncCoordinator _live;
 		private readonly Dispatcher _ui;
+		private readonly IActivityLogService _activity;
+		private readonly SettingsService _settings;
+		private bool _incomingPrimed, _outgoingPrimed;
 
 		private IDisposable? _incomingSub;
 		private IDisposable? _outgoingSub;
@@ -55,14 +58,25 @@ namespace TaskMate.Orchestration {
 		public event Action? PartnerDisconnected;
 		public event Action? OutgoingChanged;
 
+
+		static string OtherOf(PartnerRequest r, string me) =>
+	!string.IsNullOrWhiteSpace(r.ToUserId) && r.ToUserId != me ? r.ToUserId :
+	!string.IsNullOrWhiteSpace(r.FromUserId) && r.FromUserId != me ? r.FromUserId :
+	r.Id;
+
+
+
 		public PairingOrchestrator(IPartnerRequestService partnerReqs,
 								   IPartnerService partner,
 								   ILiveSyncCoordinator live,
-								   Dispatcher ui) {
+								   Dispatcher ui
+								   , IActivityLogService activity, SettingsService settings) {
 			_partnerReqs = partnerReqs ?? throw new ArgumentNullException(nameof(partnerReqs));
 			_partner = partner ?? throw new ArgumentNullException(nameof(partner));
 			_live = live ?? throw new ArgumentNullException(nameof(live));
 			_ui = ui ?? throw new ArgumentNullException(nameof(ui));
+			_activity = activity ?? throw new ArgumentNullException(nameof(activity));
+			_settings = settings ?? throw new ArgumentNullException(nameof(settings));
 		}
 
 		public void Attach(ObservableCollection<PartnerRequest> incoming,
@@ -74,6 +88,8 @@ namespace TaskMate.Orchestration {
 		}
 
 		public void Start(string myUserId) {
+			if(string.IsNullOrWhiteSpace(myUserId))
+				return;
 			// (Re)attach snapshot listeners
 			_incomingSub?.Dispose();
 			_outgoingSub?.Dispose();
@@ -81,65 +97,38 @@ namespace TaskMate.Orchestration {
 			_purgeEligibleOnStartup = string.IsNullOrWhiteSpace(_partner.PartnerId);
 
 			_incomingSub = _partnerReqs.ListenIncoming(myUserId, list => {
-				_ui.Invoke(async () => {
-					var pending = list.Where(x => string.Equals(x.Status, "pending", StringComparison.OrdinalIgnoreCase)).ToList();
+				_ui.BeginInvoke(() => {
+					var latest = list
+						.GroupBy(r => OtherOf(r, myUserId))
+						.Select(g => g.OrderByDescending(r => r.UpdatedAt ?? DateTime.MinValue).First())
+						.ToDictionary(r => OtherOf(r, myUserId), r => r, StringComparer.OrdinalIgnoreCase);
+
+					ReconcilePairingFromLatest(latest, myUserId, fromIncoming: true);
+
+					// 3) Pending list for UI (from the same 'latest')
+					var pending = latest.Values
+						.Where(r => string.Equals(r.Status, "pending", StringComparison.OrdinalIgnoreCase))
+						.ToList();
 					ReplaceAll(Incoming, pending);
 					OutgoingChanged?.Invoke();
-
-					var discos = list.Where(x => string.Equals(x.Status, "disconnected", StringComparison.OrdinalIgnoreCase)).ToList();
-					if(discos.Count > 0) {
-						if(_purgeEligibleOnStartup && string.IsNullOrWhiteSpace(_partner.PartnerId)) {
-							foreach(var d in discos) {
-								var other =
-									d.FromUserId == myUserId ? d.ToUserId :
-									!string.IsNullOrWhiteSpace(d.FromUserId) ? d.FromUserId :
-									d.Id;
-
-								if(!string.IsNullOrWhiteSpace(other))
-									await _partnerReqs.PurgePairAsync(myUserId, other);
-							}
-							ClearRequests();
-						}
-						else {
-							_ui.Invoke(() => {
-								_partner.PartnerId = string.Empty; // acknowledge only; do not purge here
-								ClearRequests();
-								PartnerDisconnected?.Invoke();
-							});
-						}
-					}
 				});
 			});
 
 			_outgoingSub = _partnerReqs.ListenOutgoing(myUserId, list => {
-				_ = _ui.InvokeAsync(() => {
-					var pending = list.Where(x => string.Equals(x.Status, "pending", StringComparison.OrdinalIgnoreCase)).ToList();
+				_ui.BeginInvoke(() => {
+					var latest = list
+						.GroupBy(r => OtherOf(r, myUserId))
+						.Select(g => g.OrderByDescending(r => r.UpdatedAt ?? DateTime.MinValue).First())
+						.ToDictionary(r => OtherOf(r, myUserId), r => r, StringComparer.OrdinalIgnoreCase);
+
+					ReconcilePairingFromLatest(latest, myUserId, fromIncoming: false);
+
+					// 3) Pending list for UI (from the same 'latest')
+					var pending = latest.Values
+						.Where(r => string.Equals(r.Status, "pending", StringComparison.OrdinalIgnoreCase))
+						.ToList();
 					ReplaceAll(Outgoing, pending);
 					OutgoingChanged?.Invoke();
-
-					var accepted = list.FirstOrDefault(x => string.Equals(x.Status, "accepted", StringComparison.OrdinalIgnoreCase));
-					if(accepted != null) {
-						var other = accepted.ToUserId == myUserId ? accepted.FromUserId : accepted.ToUserId;
-						if(!string.IsNullOrWhiteSpace(other) && _partner.PartnerId != other) {
-							_ui.Invoke(() => _partner.PartnerId = other);// make partner tasks appear
-						}
-					}
-
-					var disconnected = list.FirstOrDefault(x => string.Equals(x.Status, "disconnected", StringComparison.OrdinalIgnoreCase));
-					if(disconnected != null) {
-						var other = disconnected.FromUserId == myUserId ? disconnected.ToUserId
-								  : !string.IsNullOrWhiteSpace(disconnected.FromUserId) ? disconnected.FromUserId
-								  : disconnected.Id; // fallback to doc's Id which is partner for outgoing docs
-
-						if(!string.IsNullOrWhiteSpace(other)) {
-
-							_ui.Invoke(() => {
-								_partner.PartnerId = string.Empty; // raises PartnerChanged → VM calls live.ReloadForPartnerAsync()
-								ClearRequests();
-								PartnerDisconnected?.Invoke();
-							});
-						}
-					}
 				});
 			});
 		}
@@ -152,14 +141,39 @@ namespace TaskMate.Orchestration {
 		public async Task SendAsync(string myUserId, string toUserId, string fromDisplayName) {
 			if(string.IsNullOrWhiteSpace(toUserId) || toUserId == myUserId) return;
 			await _partnerReqs.SendAsync(myUserId, toUserId, fromDisplayName);
+			await _activity.LogAsync(new ActivityEntry {
+				Kind = "pairing.sent",
+				Actor = "Me",
+				Message = $"Sent partner request to {toUserId}"
+			}, myUserId);
 		}
 
 		public async Task AcceptAsync(string myUserId, PartnerRequest r) {
 			if(r is null) return;
 			await _partnerReqs.AcceptAsync(myUserId, r.FromUserId);
 
+
 			// Locally link partner so both sides flip immediately in UI.
 			_ui.Invoke(() => _partner.PartnerId = r.FromUserId);
+			var other = r.FromUserId;
+			_settings.PairedSinceUtc = DateTime.UtcNow;
+			_settings.Save();
+			_ui.Invoke(() => {       // persist this (setter should save)
+			});
+
+			await _activity.LogAsync(new ActivityEntry {
+				Kind = "pairing.accepted",
+				Actor = "Me",
+				Message = $"Accepted partner request from {r.FromUserId}"
+			}, myUserId);
+
+			await _activity.LogAsync(new ActivityEntry {
+				Kind = "pairing.connected",
+				Actor = "Me",
+				Message = $"Connected to {r.FromUserId}"
+			}, myUserId);
+
+
 		}
 
 		public async Task DeclineAsync(string myUserId, PartnerRequest r) {
@@ -189,13 +203,21 @@ namespace TaskMate.Orchestration {
 					await CancelAsync(myUserId, o);
 			}
 			catch { /* non-fatal */ }
+			await _activity.LogAsync(new ActivityEntry {
+				Kind = "pairing.disconnected",
+				Actor = "Me",
+				Message = $"Disconnected from {currentPartnerId}"
+			}, myUserId);
 
 			_ui.Invoke(() => {
 				_partner.PartnerId = string.Empty; // persists & raises PartnerChanged
 				ClearRequests();
 				PartnerDisconnected?.Invoke();
 
+
 			});
+			_settings.PairedSinceUtc = null;
+			_settings.Save();
 		}
 
 		public void Dispose() {
@@ -217,5 +239,50 @@ namespace TaskMate.Orchestration {
 		}
 		public Task PurgePairAsync(string userA, string userB)
 	=> _partnerReqs.PurgePairAsync(userA, userB);
+
+		private void ReconcilePairingFromLatest(
+		Dictionary<string, PartnerRequest> latest, string myUserId, bool fromIncoming) {
+			if(fromIncoming) _incomingPrimed = true; else _outgoingPrimed = true;
+
+			var pairSince = _settings.PairedSinceUtc; // null if never paired
+			string? currentPartner = _partner.PartnerId;
+
+			// If we have any accepted, prefer that (it can also *re*-pair us)
+			var accepted = latest.Values
+				.Where(r => string.Equals(r.Status, "accepted", StringComparison.OrdinalIgnoreCase))
+				.OrderByDescending(r => r.UpdatedAt ?? DateTime.MinValue)
+				.FirstOrDefault();
+
+			if(accepted != null) {
+				var other = OtherOf(accepted, myUserId);
+				if(!string.IsNullOrWhiteSpace(other) &&
+				   !string.Equals(currentPartner, other, StringComparison.OrdinalIgnoreCase)) {
+					_partner.PartnerId = other; // persists + recomputes GroupId
+					if(_settings.PairedSinceUtc == null) { _settings.PairedSinceUtc = DateTime.UtcNow; _settings.Save(); }
+				}
+				return; // accepted wins; don't consider disconnects this round
+			}
+
+			// Don’t auto-unpair until both listeners have primed at least once
+			if(!_incomingPrimed || !_outgoingPrimed) return;
+
+			// Only consider disconnects that are fresher than our last "paired since"
+			if(!string.IsNullOrWhiteSpace(currentPartner) &&
+			   latest.TryGetValue(currentPartner, out var rec) &&
+			   string.Equals(rec.Status, "disconnected", StringComparison.OrdinalIgnoreCase)) {
+				var recTime = rec.UpdatedAt ?? DateTime.MinValue;
+				var since = pairSince ?? DateTime.MinValue;
+
+				if(recTime > since)  // 👈 key guard: ignore stale disconnects
+				{
+					_partner.PartnerId = string.Empty; // persists & raises PartnerChanged
+					ClearRequests();
+					PartnerDisconnected?.Invoke();
+					_settings.PairedSinceUtc = null;
+					_settings.Save();
+				}
+			}
+		}
 	}
+
 }

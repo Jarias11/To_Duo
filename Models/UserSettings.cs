@@ -11,11 +11,17 @@ namespace TaskMate.Models {
         public string GroupId { get; set; } = "";
         public string? DisplayName { get; set; } = "";
         public string Theme { get; set; } = "Light"; // "Light" or "Dark"
+        public DateTime? PairedSinceUtc { get; set; }
 
-        private static readonly string FilePath = "user_settings.json";
+        private static readonly string FileName = "user_settings.json";
+        private static string GetPath() {
+            var dir = PathEx.GetAppDataDir("TaskMate");
+            return PathEx.CombineSafe(dir, FileName); // "user_settings.json"
+        }
 
         public static UserSettings Load() {
-            if(!File.Exists(FilePath)) {
+            var path = GetPath();
+            if(!File.Exists(path)) {
                 var settings = new UserSettings {
                     UserId = SnowflakeId.New(),   // <<< compact, ordered ID
                     PartnerId = "",
@@ -27,7 +33,7 @@ namespace TaskMate.Models {
                 return settings;
             }
 
-            string json = File.ReadAllText(FilePath);
+            string json = File.ReadAllText(path);
             var loaded = JsonSerializer.Deserialize<UserSettings>(json) ?? new UserSettings();
 
             // Backfill for older files that may not have a UserId
@@ -40,8 +46,9 @@ namespace TaskMate.Models {
         }
 
         public static void Save(UserSettings settings) {
+            var path = GetPath();
             string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(FilePath, json, Encoding.UTF8);
+            File.WriteAllText(path, json, Encoding.UTF8);
         }
     }
 

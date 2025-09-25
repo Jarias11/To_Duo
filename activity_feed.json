@@ -1,0 +1,268 @@
+[
+  {
+    "Timestamp": "2025-09-25T03:26:34.168916-04:00",
+    "Actor": "mon",
+    "Kind": "chat.message",
+    "Message": "hi",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T03:26:15.515878-04:00",
+    "Actor": "fuego",
+    "Kind": "chat.message",
+    "Message": "hello",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T03:17:11.0505-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.connected",
+    "Message": "Connected to GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T03:17:10.935074-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.accepted",
+    "Message": "Accepted partner request from GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T03:17:09.736701-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:52:07.842082-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.disconnected",
+    "Message": "Disconnected from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:51:59.065479-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.connected",
+    "Message": "Connected to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:51:58.846045-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.accepted",
+    "Message": "Accepted partner request from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:51:50.199234-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:21.42617-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.disconnected",
+    "Message": "Disconnected from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:14.098922-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.connected",
+    "Message": "Connected to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:13.969737-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.accepted",
+    "Message": "Accepted partner request from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:12.458814-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:08.611868-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.disconnected",
+    "Message": "Disconnected from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:03.438565-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.connected",
+    "Message": "Connected to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:03.300466-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.accepted",
+    "Message": "Accepted partner request from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:50:01.74033-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T02:44:44.422042-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.disconnected",
+    "Message": "Disconnected from GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T02:44:35.567085-04:00",
+    "Actor": "fuego",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cdzfgdszsdrzx\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:44:26.25346-04:00",
+    "Actor": "fuego",
+    "Kind": "task.accept",
+    "Message": "Accepted task \u201Cdzfgdszsdrzx\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-25T02:44:24.919927-04:00",
+    "Actor": "mon",
+    "Kind": "task.request",
+    "Message": "Requested task \u201Cdzfgdszsdrzx\u201D for Partner",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-25T02:44:15.385704-04:00",
+    "Actor": "fuego",
+    "Kind": "task.add",
+    "Message": "fuego Created task \u201Cedfasfs\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T21:19:17.778342-04:00",
+    "Actor": "mon",
+    "Kind": "task.add",
+    "Message": "mon Created task \u201Ceafewawf\u201D",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-24T21:18:57.68804-04:00",
+    "Actor": "mon",
+    "Kind": "task.add",
+    "Message": "mon Created task \u201Crrdfgxrsdxg\u201D",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:51.350672-04:00",
+    "Actor": "fuego",
+    "Kind": "task.accept",
+    "Message": "Accepted task \u201Chtdrhdfhhrd\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:48.371515-04:00",
+    "Actor": "mon",
+    "Kind": "task.request",
+    "Message": "Requested task \u201Chtdrhdfhhrd\u201D for Partner",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:44.055498-04:00",
+    "Actor": "fuego",
+    "Kind": "task.add",
+    "Message": "fuego Created task \u201Cfhtdgr\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:38.409878-04:00",
+    "Actor": "mon",
+    "Kind": "task.add",
+    "Message": "mon Created task \u201Ccvgbfb\u201D",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:24.163071-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.connected",
+    "Message": "Connected to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:24.014193-04:00",
+    "Actor": "fuego",
+    "Kind": "pairing.accepted",
+    "Message": "Accepted partner request from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T20:58:22.661835-04:00",
+    "Actor": "mon",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwRwLhzQtU",
+    "IsMine": false
+  },
+  {
+    "Timestamp": "2025-09-24T20:51:33.805992-04:00",
+    "Actor": "Me",
+    "Kind": "task.add",
+    "Message": "fuego Created task \u201Crtdsgdg\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T20:51:04.195554-04:00",
+    "Actor": "Me",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T18:04:40.62264-04:00",
+    "Actor": "Me",
+    "Kind": "pairing.disconnected",
+    "Message": "Disconnected from GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T18:04:23.926261-04:00",
+    "Actor": "Me",
+    "Kind": "task.request",
+    "Message": "Requested task \u201Cbvncnb\u201D for Partner",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T18:04:15.988124-04:00",
+    "Actor": "Me",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwS0l9RWJE",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T18:03:55.506418-04:00",
+    "Actor": "Me",
+    "Kind": "task.add",
+    "Message": "fuego Created task \u201Crgdsgred\u201D",
+    "IsMine": true
+  },
+  {
+    "Timestamp": "2025-09-24T17:52:50.650878-04:00",
+    "Actor": "Me",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to GwS0l9RWJE",
+    "IsMine": true
+  }
+]

@@ -10,8 +10,11 @@ using TaskMate.Models.Enums;
 namespace TaskMate.Services {
 	public sealed class LiveSyncCoordinator : ILiveSyncCoordinator {
 		private readonly IRequestService _requests;
-		private readonly IPartnerRequestService _partnerReqs;
 		private readonly IPartnerService _partner;
+		private readonly SemaphoreSlim _reloadGate = new(1, 1);
+		private readonly TaskCompletionSource<bool> _startedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		private string? _attachedPartnerId;
+		private string? _attachedGroupId;
 
 		// UI targets provided by the VM
 		private ObservableCollection<TaskItem>? _tasks;
@@ -22,14 +25,16 @@ namespace TaskMate.Services {
 		private IDisposable? _myHandle, _partnerHandle, _groupHandle;
 
 
-		public LiveSyncCoordinator(IRequestService requests, IPartnerRequestService partnerReqs, IPartnerService partner) {
+		public LiveSyncCoordinator(IRequestService requests, IPartnerService partner) {
 			_requests = requests;
-			_partnerReqs = partnerReqs;
 			_partner = partner;
 		}
 		static LiveSyncCoordinator() {
+			var logDir = PathEx.GetAppDataDir("TaskMate");
+			var logPath = PathEx.CombineSafe(logDir, "app.log");
+
 			System.Diagnostics.Trace.Listeners.Clear();
-			System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener("app.log"));
+			System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(logPath));
 			System.Diagnostics.Trace.AutoFlush = true;
 		}
 
@@ -57,7 +62,7 @@ namespace TaskMate.Services {
 			_myHandle = _requests.ListenPersonal(myId, cloud => {
 				List<TaskItem>? snapshot = null;
 
-				Application.Current.Dispatcher.Invoke(() => {
+				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_tasks is null) return;
 					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Me, ownerUserId: myId);
 					snapshot = _tasks.ToList();            // take a copy on UI thread
@@ -73,48 +78,89 @@ namespace TaskMate.Services {
 
 
 			// Partner/group (only when verified)
-			if(!string.IsNullOrWhiteSpace(partnerId))
+			if(!string.IsNullOrWhiteSpace(partnerId)) {
 				AttachPartnerAndGroup(partnerId, groupId);
+				_attachedPartnerId = partnerId;   // << crucial: record what we attached
+				_attachedGroupId = groupId;
+
+			}
+			_startedTcs.TrySetResult(true);
 		}
 
 		public async Task ReloadForPartnerAsync() {
 
+			await _startedTcs.Task; // ensure StartAsync ran at least once
+			await _reloadGate.WaitAsync();
+			try {
+				// read current desired ids
+				var partnerId = _partner.PartnerId;
+				var groupId = _partner.GroupId;
+				var expectGroup = !string.IsNullOrWhiteSpace(groupId);
+				var haveGroup = _groupHandle is not null;
 
-			// stop previous partner/group listeners
-			_partnerHandle?.Dispose();
-			_groupHandle?.Dispose();
-			_partnerHandle = _groupHandle = null;
+				// no-op if already attached to the same ids and handles are alive
+				if(!string.IsNullOrWhiteSpace(partnerId) &&
+					_partnerHandle is not null &&
+					string.Equals(_attachedPartnerId, partnerId, StringComparison.OrdinalIgnoreCase) &&
+					((expectGroup && haveGroup && string.Equals(_attachedGroupId, groupId, StringComparison.OrdinalIgnoreCase)) ||
+					(!expectGroup && !haveGroup))) {
+					return; // nothing to change; don’t clear!
+				}
+				bool partnerChanged = !string.Equals(_attachedPartnerId, partnerId, StringComparison.OrdinalIgnoreCase);
+				bool groupChanged = !string.Equals(_attachedGroupId, groupId, StringComparison.OrdinalIgnoreCase);
 
+				// stop previous partner/group listeners
+				_partnerHandle?.Dispose();
+				_groupHandle?.Dispose();
+				_partnerHandle = _groupHandle = null;
 
-			// clear partner-sourced UI
-			Application.Current.Dispatcher.Invoke(() => {
-				if(_tasks is null || _pending is null) return;
-				var mine = _tasks.Where(t => t.AssignedTo == Assignee.Me).ToList();
-				_tasks.Clear();
-				foreach(var t in mine) _tasks.Add(t);
-				_pending.Clear();
-			});
+				// clear partner-sourced UI ONLY if we are detaching or switching partners
+				Application.Current.Dispatcher.Invoke(() => {
+					if(_tasks is null || _pending is null) return;
+					if(partnerChanged || string.IsNullOrWhiteSpace(partnerId)) {
+						// Switching partner or detaching → remove partner rows
+						var keepMine = _tasks.Where(t => t.AssignedTo == Assignee.Me).ToList();
+						_tasks.Clear();
+						foreach(var t in keepMine) _tasks.Add(t);
+						_pending.Clear(); // pending rows belong to group; drop all
+					}
+					else if(groupChanged) {
+						// Same partner; only group changed → keep partner tasks, drop pending
+						_pending.Clear();
+					}
+					_myView?.Refresh();
+					_partnerView?.Refresh();
+				});
 
-			// reattach if verified
-			var partnerId = _partner.PartnerId;
-			if(!string.IsNullOrWhiteSpace(partnerId))
-				AttachPartnerAndGroup(partnerId, _partner.GroupId);
-
-			await Task.CompletedTask;
+				// reattach if verified (and keep the “what we attached” snapshot)
+				if(!string.IsNullOrWhiteSpace(partnerId)) {
+					AttachPartnerAndGroup(partnerId, groupId);
+					_attachedPartnerId = partnerId;
+					_attachedGroupId = groupId;
+				}
+				else {
+					_attachedPartnerId = _attachedGroupId = null;
+				}
+			}
+			finally {
+				_reloadGate.Release();
+			}
 		}
 
 		private void AttachPartnerAndGroup(string partnerId, string groupId) {
 			_partnerHandle = _requests.ListenPersonal(partnerId, cloud => {
-				Application.Current.Dispatcher.Invoke(() => {
+				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_tasks is null) return;
 					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Partner, ownerUserId: partnerId);
 					_myView?.Refresh();
 					_partnerView?.Refresh();
 				});
 			});
+			if(string.IsNullOrWhiteSpace(groupId))
+				return; // nothing to attach until GroupId is set
 
 			_groupHandle = _requests.ListenRequests(groupId, cloud => {
-				Application.Current.Dispatcher.Invoke(() => {
+				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_pending is null) return;
 
 					var myId = TaskMate.Sync.FirestoreClient.CurrentUserId;

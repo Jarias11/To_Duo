@@ -50,16 +50,20 @@ namespace TaskMate.Services {
 		private readonly IRequestService _requests;
 		private readonly ITaskService _taskService;
 		private readonly Dispatcher _ui;
+		private readonly IActivityLogService _activity;
+		private readonly ISettingsService _settings;
 
 		// We purposefully use the collections exposed by the task service
 		// so that VM filters (CollectionViewSource) see the updates immediately.
 		private ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
 		private ObservableCollection<TaskItem> Pending => _taskService.PendingTasks;
 
-		public TaskActions(IRequestService requests, ITaskService taskService, Dispatcher ui) {
+		public TaskActions(IRequestService requests, ITaskService taskService, Dispatcher ui, IActivityLogService activity, ISettingsService settings) {
 			_requests = requests ?? throw new ArgumentNullException(nameof(requests));
 			_taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
 			_ui = ui ?? throw new ArgumentNullException(nameof(ui));
+			_activity = activity ?? throw new ArgumentNullException(nameof(activity));
+			_settings = settings ?? throw new ArgumentNullException(nameof(settings));
 		}
 
 		public async Task AddAsync(
@@ -99,11 +103,23 @@ namespace TaskMate.Services {
 				var pendingUi = TaskCollectionHelpers.CloneForUi(newTask, Assignee.Partner, requestMode: true);
 				pendingUi.CanDecide = false;
 				_ui.Invoke(() => Pending.Add(pendingUi));
+				await _activity.LogAsync(new ActivityEntry {
+					Kind = "task.request",
+					Actor = "Me",
+					Message = $"Requested task “{newTask.Title}” for Partner",
+					Timestamp = DateTime.UtcNow
+				}, myUserId);
 			}
 			else {
 				await _requests.UpsertPersonalAsync(newTask, myUserId);
 				var ownUi = TaskCollectionHelpers.CloneForUi(newTask, Assignee.Me, requestMode: false);
 				_ui.Invoke(() => Tasks.Add(ownUi));
+				await _activity.LogAsync(new ActivityEntry {
+					Kind = "task.add",
+					Actor = "Me",   // Use your own DisplayName
+					Message = $"{_settings.DisplayName} Created task “{newTask.Title}”",
+					Timestamp = DateTime.UtcNow
+				}, myUserId);
 			}
 		}
 
@@ -113,10 +129,22 @@ namespace TaskMate.Services {
 			if(item.AssignedTo == Assignee.Partner) {
 				await _requests.DeleteRequestAsync(item.Id, groupId);
 				_ui.Invoke(() => Pending.Remove(item));
+				await _activity.LogAsync(new ActivityEntry {
+					Kind = "task.delete",
+					Actor = "Me",
+					Message = $"Deleted pending request “{item.Title}”",
+					Timestamp = DateTime.UtcNow
+				}, myUserId);
 			}
 			else {
 				await _requests.DeletePersonalAsync(item.Id, myUserId);
 				_ui.Invoke(() => Tasks.Remove(item));
+				await _activity.LogAsync(new ActivityEntry {
+					Kind = "task.delete",
+					Actor = "Me",
+					Message = $"Deleted task “{item.Title}”",
+					Timestamp = DateTime.UtcNow
+				}, myUserId);
 			}
 		}
 
@@ -124,12 +152,24 @@ namespace TaskMate.Services {
 			if(item is null) return;
 			await _requests.AcceptRequestAsync(item, groupId, myUserId);
 			_ui.Invoke(() => Pending.Remove(item));
+			await _activity.LogAsync(new ActivityEntry {
+				Kind = "task.accept",
+				Actor = "Me",
+				Message = $"Accepted task “{item.Title}”",
+				Timestamp = DateTime.UtcNow
+			}, myUserId);
 		}
 
 		public async Task DeclineAsync(TaskItem item, string groupId) {
 			if(item is null) return;
 			await _requests.DeleteRequestAsync(item.Id, groupId);
 			_ui.Invoke(() => Pending.Remove(item));
+			await _activity.LogAsync(new ActivityEntry {
+				Kind = "task.decline",
+				Actor = "Me",
+				Message = $"Declined task “{item.Title}”",
+				Timestamp = DateTime.UtcNow
+			}, TaskMate.Sync.FirestoreClient.CurrentUserId);
 		}
 		public async Task UpdateAsync(TaskItem item, string myUserId, string groupId) {
 			if(item is null) return;
@@ -139,6 +179,12 @@ namespace TaskMate.Services {
 			// If it's a partner-request (not accepted yet), it lives under "requests"
 			if(item.AssignedTo == Assignee.Partner && item.Accepted == false) {
 				await _requests.UpsertRequestAsync(item, groupId);
+				await _activity.LogAsync(new ActivityEntry {
+					Kind = "task.request.update",
+					Actor = "Me",
+					Message = $"Updated pending request “{item.Title}”",
+					Timestamp = DateTime.UtcNow
+				}, myUserId);
 				// Pending collection already holds a reference — no extra UI work needed
 			}
 			else {
@@ -150,8 +196,24 @@ namespace TaskMate.Services {
 					var idx = Tasks.ToList().FindIndex(t => t.Id == item.Id);
 					if(idx >= 0) Tasks[idx] = TaskCollectionHelpers.CloneForUi(item, item.AssignedTo, requestMode: false);
 				});
+				// LOG: completion vs. normal edit
+				if(item.IsCompleted) {
+					await _activity.LogAsync(new ActivityEntry {
+						Kind = "task.complete",
+						Actor = "Me",
+						Message = $"Completed “{item.Title}”",
+						Timestamp = DateTime.UtcNow
+					}, myUserId);
+				}
+				else {
+					await _activity.LogAsync(new ActivityEntry {
+						Kind = "task.update",
+						Actor = "Me",
+						Message = $"Updated task “{item.Title}”",
+						Timestamp = DateTime.UtcNow
+					}, myUserId);
+				}
 			}
 		}
-
 	}
 }

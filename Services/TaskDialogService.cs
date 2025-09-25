@@ -31,6 +31,15 @@ namespace TaskMate.Services {
       // modal is simplest; non-modal works too
       win.ShowDialog();
       return Task.CompletedTask;
+
+    }
+    public Task<string?> PromptTextAsync(string title, string message, string? placeholder = null) {
+      var win = new PromptTextWindow(title, message, placeholder) {
+        Owner = Application.Current?.MainWindow,
+        ShowInTaskbar = false
+      };
+      var result = (win.ShowDialog() == true) ? win.Result : null;
+      return Task.FromResult(result);
     }
   }
 }

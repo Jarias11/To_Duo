@@ -2,7 +2,7 @@
 <UserControl x:Class="TaskMate.Views.TopDashboardSection"
 			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	
+
 	<StackPanel Grid.Row="0"
 				Margin="0,0,0,10">
 
@@ -332,97 +332,157 @@
 
 			<!-- One compact card with its own scroll host (scrolls on hover) -->
 			<Border Style="{StaticResource SubCard}">
-				<!-- Make THIS the scroll host so it only scrolls when hovered -->
-				<ListBox
-					Height="180"
-					ItemsSource="{Binding ActivityFeed}"
-					BorderThickness="0"
-					ScrollViewer.VerticalScrollBarVisibility="Auto"
-					ScrollViewer.CanContentScroll="True"
-					ScrollViewer.PanningMode="VerticalFirst"
-					ScrollViewer.PanningDeceleration="0.001"
-					VirtualizingStackPanel.IsVirtualizing="True"
-					VirtualizingStackPanel.VirtualizationMode="Recycling"
-					VirtualizingStackPanel.ScrollUnit="Pixel"
-					VirtualizingStackPanel.CacheLength="1"
-					VirtualizingStackPanel.CacheLengthUnit="Page"
-					AlternationCount="2">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+					<!-- Make THIS the scroll host so it only scrolls when hovered -->
+					<Grid Grid.Row="0"
+						  Margin="0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<!-- input stretches -->
+							<ColumnDefinition Width="Auto"/>
+							<!-- button hugs right -->
+						</Grid.ColumnDefinitions>
+						<TextBox x:Name="ChatInput"
+								 Grid.Column="0"
+								 MinWidth="200"
+								 Height="28"
+								 Margin="0"
+								 Text="{Binding NewActivityMessage, UpdateSourceTrigger=PropertyChanged}">
+							<!-- Press Enter to send -->
+							<TextBox.InputBindings>
+								<KeyBinding Key="Enter"
+											Command="{Binding SendActivityMessageCommand}"/>
+							</TextBox.InputBindings>
+						</TextBox>
 
-					<!-- Cleaner container (no selection chrome) -->
-					<ListBox.ItemContainerStyle>
-						<Style TargetType="ListBoxItem">
-							<Setter Property="HorizontalContentAlignment"
-									Value="Stretch"/>
-							<Setter Property="Padding"
-									Value="0"/>
-							<Setter Property="Background"
-									Value="Transparent"/>
-							<Setter Property="BorderThickness"
-									Value="0"/>
-							<!-- subtle zebra striping -->
-							<Style.Triggers>
-								<Trigger Property="ItemsControl.AlternationIndex"
-										 Value="1">
+						<Button Grid.Column="1"
+								Content="Send"
+								Width="80"
+								Height="28"
+								Margin="0"
+								Command="{Binding SendActivityMessageCommand}"/>
+						</Grid>
+						<ListBox
+							Grid.Row="1"
+							Style="{StaticResource ActivityListStyle}"
+							Height="180"
+							ItemsSource="{Binding ActivityFeed}"
+							ScrollViewer.VerticalScrollBarVisibility="Auto"
+							AlternationCount="2">
+
+							<ListBox.ItemContainerStyle>
+								<Style TargetType="ListBoxItem">
+									<Setter Property="HorizontalContentAlignment"
+											Value="Stretch"/>
+									<Setter Property="Padding"
+											Value="0"/>
 									<Setter Property="Background"
-											Value="{DynamicResource HeaderRowBackgroundBrush}"/>
-								</Trigger>
-							</Style.Triggers>
-						</Style>
-					</ListBox.ItemContainerStyle>
-
-					<!-- Row template -->
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<Grid Margin="6,3">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="4"/>
-									<!-- colored accent -->
-									<ColumnDefinition Width="80"/>
-									<!-- timestamp -->
-									<ColumnDefinition Width="*"/>
-									<!-- message -->
-								</Grid.ColumnDefinitions>
-
-								<!-- Accent: who generated it -->
-								<Border Grid.Column="0"
-										CornerRadius="2">
-									<Border.Style>
-										<Style TargetType="Border">
+											Value="Transparent"/>
+									<Setter Property="BorderThickness"
+											Value="0"/>
+									<Style.Triggers>
+										<Trigger Property="ItemsControl.AlternationIndex"
+												 Value="1">
 											<Setter Property="Background"
-													Value="{DynamicResource CardBorderBrush}"/>
-											<!-- If you expose Actor as 'Me'/'Partner', this colors the accent -->
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding Actor}"
-															 Value="Me">
-													<Setter Property="Background"
-															Value="{DynamicResource MeTaskTextBrush}"/>
-												</DataTrigger>
-												<DataTrigger Binding="{Binding Actor}"
-															 Value="Partner">
-													<Setter Property="Background"
-															Value="{DynamicResource PartnerTaskTextBrush}"/>
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-								</Border>
+													Value="{DynamicResource ActivityRowAltBrush}"/>
+										</Trigger>
+									</Style.Triggers>
+								</Style>
+							</ListBox.ItemContainerStyle>
 
-								<!-- Time -->
-								<TextBlock Grid.Column="1"
-										   Text="{Binding Timestamp, StringFormat={}{0:MM/dd HH:mm}}"
-										   Opacity="0.7"
-										   Margin="8,0,8,0"
-										   VerticalAlignment="Center"/>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Grid Margin="6,3">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="4"/>
+											<!-- accent -->
+											<ColumnDefinition Width="84"/>
+											<!-- timestamp -->
+											<ColumnDefinition Width="*"/>
+											<!-- message -->
+										</Grid.ColumnDefinitions>
 
-								<!-- Message (includes who did it, if you want) -->
-								<TextBlock Grid.Column="2"
-										   Text="{Binding Message}"
-										   TextWrapping="Wrap"
-										   VerticalAlignment="Center"/>
-							</Grid>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
+										<!-- Accent by actor -->
+										<Border Grid.Column="0"
+												CornerRadius="2">
+											<Border.Style>
+												<Style TargetType="Border">
+													<Setter Property="Background"
+															Value="{DynamicResource CardBorderBrush}"/>
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding IsMine}"
+																	 Value="True">
+															<Setter Property="Background"
+																	Value="{DynamicResource MeTaskTextBrush}"/>
+														</DataTrigger>
+														<DataTrigger Binding="{Binding IsMine}"
+																	 Value="False">
+															<Setter Property="Background"
+																	Value="{DynamicResource PartnerTaskTextBrush}"/>
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</Border.Style>
+										</Border>
+
+										<!-- Timestamp (24h “roboty” style) -->
+										<TextBlock Grid.Column="1"
+												   Style="{StaticResource ActivityTimestampStyle}"
+												   Text="{Binding Timestamp, StringFormat={}{0:MM/dd HH:mm}}"/>
+
+										<!-- Message -->
+										<Grid Grid.Column="2"
+											  VerticalAlignment="Center">
+											<!-- Normal system entry -->
+											<TextBlock Text="{Binding Message}"
+													   TextWrapping="Wrap">
+												<TextBlock.Style>
+													<Style TargetType="TextBlock">
+														<Setter Property="Visibility"
+																Value="Visible"/>
+														<Style.Triggers>
+															<DataTrigger Binding="{Binding Kind}"
+																		 Value="chat.message">
+																<Setter Property="Visibility"
+																		Value="Collapsed"/>
+															</DataTrigger>
+														</Style.Triggers>
+													</Style>
+												</TextBlock.Style>
+											</TextBlock>
+
+											<!-- Chat entry -->
+											<TextBlock TextWrapping="Wrap">
+												<TextBlock.Inlines>
+													<Run Text="{Binding Actor}"
+														 FontWeight="Bold"/>
+													<Run Text=": "/>
+													<Run Text="{Binding Message}"/>
+												</TextBlock.Inlines>
+												<TextBlock.Style>
+													<Style TargetType="TextBlock">
+														<Setter Property="Visibility"
+																Value="Collapsed"/>
+														<Style.Triggers>
+															<DataTrigger Binding="{Binding Kind}"
+																		 Value="chat.message">
+																<Setter Property="Visibility"
+																		Value="Visible"/>
+															</DataTrigger>
+														</Style.Triggers>
+													</Style>
+												</TextBlock.Style>
+											</TextBlock>
+										</Grid>
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Grid>
 			</Border>
 		</Expander>
 
@@ -466,9 +526,9 @@
 						<TextBlock Text="Description"
 								   Margin="5,0,5,0"/>
 						<TextBox Width="220"
-							Height="Auto"
-							AcceptsReturn="True"
-							TextWrapping="Wrap"
+								 Height="Auto"
+								 AcceptsReturn="True"
+								 TextWrapping="Wrap"
 								 Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
 								 ToolTip="Optional task description"/>
 					</StackPanel>
@@ -480,7 +540,8 @@
 								   Margin="5,0,5,0"/>
 						<ComboBox Width="160"
 								  ItemsSource="{Binding Categories}"
-								  SelectedItem="{Binding NewTaskCategory}"/>
+								  SelectedItem="{Binding NewTaskCategory, Mode=TwoWay}"
+								  IsEditable="False"/>
 					</StackPanel>
 
 					<!-- Due Date -->
@@ -507,9 +568,11 @@
 								MinWidth="160">
 						<TextBlock Text="Assign To"
 								   Margin="5,0,5,0"/>
-						<ComboBox Width="160"
-								  ItemsSource="{Binding Assignees}"
-								  SelectedItem="{Binding NewTaskAssignee, Mode=TwoWay}"/>
+						<!-- REPLACE ComboBox with ToggleButton -->
+						<ToggleButton
+							Style="{StaticResource AssignToSwitch}"
+							IsChecked="{Binding AssignToPartner, Mode=TwoWay}"
+							IsEnabled="{Binding IsPartnerVerified}"/>
 					</StackPanel>
 
 					<!-- Add Task button -->

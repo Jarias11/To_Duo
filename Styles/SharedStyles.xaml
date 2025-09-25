@@ -14,6 +14,135 @@
 					 Color="#4CAF50"/>
 	<SolidColorBrush x:Key="PartnerTaskTextBrush"
 					 Color="#E91E63"/>
+
+
+	<!-- 1) The template as a standalone resource -->
+	<ControlTemplate x:Key="AssignToSwitchTemplate"
+					 TargetType="ToggleButton">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+
+			<!-- Track spans both columns -->
+			<Border x:Name="Track"
+					Grid.ColumnSpan="2"
+					CornerRadius="16"
+					Background="{DynamicResource MeTaskTextBrush}"
+					BorderBrush="{DynamicResource CardBorderBrush}"
+					BorderThickness="1"/>
+
+			<!-- Labels overlay -->
+			<Grid Grid.ColumnSpan="2"
+				  Margin="9,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<TextBlock x:Name="PartnerLabel"
+						   Text="Partner"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Left"
+						   Foreground="White"
+						   FontWeight="Bold"
+						   Opacity="0.95"/>
+
+				<!-- Right = Me -->
+				<TextBlock x:Name="MeLabel"
+						   Grid.Column="1"
+						   Text="Me"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Right"
+						   Foreground="White"
+						   FontWeight="Bold"
+						   Opacity="0.95"/>
+			</Grid>
+
+			<!-- Thumb sits in a column we toggle -->
+			<Border x:Name="Thumb"
+					Grid.Column="0"
+					Width="28"
+					Height="28"
+					CornerRadius="14"
+					Background="{DynamicResource ControlBackgroundBrush}"
+					BorderBrush="{DynamicResource CardBorderBrush}"
+					BorderThickness="1"
+					Margin="2"/>
+		</Grid>
+
+		<!-- IMPORTANT: Triggers are inside the ControlTemplate owner -->
+		<ControlTemplate.Triggers>
+			<Trigger Property="IsMouseOver"
+					 Value="True">
+				<Setter TargetName="Thumb"
+						Property="Opacity"
+						Value="0.98"/>
+				<Setter TargetName="Track"
+						Property="Opacity"
+						Value="0.98"/>
+			</Trigger>
+			<Trigger Property="IsPressed"
+					 Value="True">
+				<Setter TargetName="Thumb"
+						Property="Opacity"
+						Value="0.9"/>
+			</Trigger>
+			<!-- Checked = Partner -->
+			<Trigger Property="IsChecked"
+					 Value="True">
+				<Setter TargetName="Track"
+						Property="Background"
+						Value="{DynamicResource PartnerTaskTextBrush}"/>
+				<Setter TargetName="Thumb"
+						Property="Grid.Column"
+						Value="1"/>
+				<Setter TargetName="PartnerLabel"
+						Property="Visibility"
+						Value="Visible"/>
+				<Setter TargetName="MeLabel"
+						Property="Visibility"
+						Value="Collapsed"/>
+			</Trigger>
+			<Trigger Property="IsChecked"
+					 Value="False">
+				<Setter TargetName="PartnerLabel"
+						Property="Visibility"
+						Value="Collapsed"/>
+				<Setter TargetName="MeLabel"
+						Property="Visibility"
+						Value="Visible"/>
+			</Trigger>
+
+			<Trigger Property="IsEnabled"
+					 Value="False">
+				<Setter Property="Opacity"
+						Value="0.6"/>
+			</Trigger>
+		</ControlTemplate.Triggers>
+	</ControlTemplate>
+
+	<!-- 2) Style that uses the template -->
+	<Style x:Key="AssignToSwitch"
+		   TargetType="ToggleButton">
+		<Setter Property="Width"
+				Value="100"/>
+		<Setter Property="Height"
+				Value="35"/>
+		<Setter Property="Cursor"
+				Value="Hand"/>
+		<Setter Property="Template"
+				Value="{StaticResource AssignToSwitchTemplate}"/>
+		<Style.Triggers>
+			<!-- If not connected, force to Me -->
+			<DataTrigger Binding="{Binding IsPartnerVerified}"
+						 Value="False">
+				<Setter Property="IsChecked"
+						Value="False"/>
+			</DataTrigger>
+		</Style.Triggers>
+	</Style>
+
 	<Style x:Key="TaskRowTextStyle"
 		   TargetType="TextBlock"
 		   BasedOn="{StaticResource {x:Type TextBlock}}">
@@ -148,7 +277,13 @@
 						<!-- content -->
 						<ContentPresenter Margin="8,0,28,0"
 										  VerticalAlignment="Center"
-										  HorizontalAlignment="Left"/>
+										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										  Content="{TemplateBinding SelectionBoxItem}"
+										  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+										  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+										  ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+										  RecognizesAccessKey="True"
+										  TextElement.Foreground="{TemplateBinding Foreground}"/>
 
 						<!-- dropdown button -->
 						<ToggleButton Grid.Column="1"
@@ -415,7 +550,37 @@
 				Value="0,0,0,8"/>
 	</Style>
 
-	<!-- ALL THE STYLES you already have: TaskRowTextStyle, TaskCardButtonStyle, the base Control/TextBox/ComboBox/DatePicker styles,
-       Card, CardExpander, SubCard, TaskItemCard, SectionHeader, etc. (move them unchanged) -->
+	<!-- Activity Center theming -->
+	<SolidColorBrush x:Key="ActivityBackgroundBrush"
+			Color="#F0F0F3"/>
+	<!-- lighter gray -->
+	<SolidColorBrush x:Key="ActivityRowAltBrush"
+			Color="#E9E9EE"/>
+	<Style x:Key="ActivityListStyle"
+			TargetType="ListBox">
+		<Setter Property="Background"
+				Value="{DynamicResource ActivityBackgroundBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="0"/>
+		<Setter Property="FontFamily"
+				Value="Bahnschrift,Consolas,Segoe UI"/>
+		<Setter Property="FontSize"
+				Value="11"/>
+	</Style>
+	<Style x:Key="ActivityTimestampStyle"
+			TargetType="TextBlock"
+			BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontFamily"
+				Value="Bahnschrift,Consolas,Segoe UI"/>
+		<Setter Property="FontSize"
+				Value="10"/>
+		<Setter Property="Opacity"
+				Value="0.7"/>
+		<Setter Property="VerticalAlignment"
+				Value="Center"/>
+		<Setter Property="Margin"
+				Value="8,0,8,0"/>
+	</Style>
 
+	
 </ResourceDictionary>
