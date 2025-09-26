@@ -56,535 +56,532 @@
 			</Grid>
 		</Border>
 
-		<!-- CONNECTIONS -->
-		<Expander Style="{StaticResource CardExpander}">
-			<Expander.Header>
+		<Expander 
+			x:Name="QuickToolsExpander"
+			Style="{StaticResource TabbedCardExpander}"
+				  IsExpanded="True">
+			<Expander.Content>
 				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<TextBlock Text="Connections"
-							   Style="{StaticResource SectionHeader}"
-							   Margin="0"/>
-					<!-- optional chevron or hint on the right -->
-					<TextBlock Grid.Column="1"
-							   Text="▼"
-							   Opacity="0.6"
-							   Margin="8,0,0,0"/>
-				</Grid>
-			</Expander.Header>
 
-			<!-- Content shown when expanded (your existing Connections content WITHOUT the title) -->
-			<StackPanel>
-				<!-- Codes Row (aligned halves) -->
-				<Grid Margin="0,0,0,8"
-					  Grid.IsSharedSizeScope="True">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
 
-					<!-- LEFT: Your Code -->
-					<Grid Grid.Column="0">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="130"
-											  SharedSizeGroup="ConnLabels"/>
-							<ColumnDefinition Width="*"/>
-						</Grid.ColumnDefinitions>
-						<TextBlock Grid.Column="0"
-								   Text="Your Code:"
-								   VerticalAlignment="Center"/>
-						<TextBox Grid.Column="1"
-								 Text="{Binding UserId, Mode=OneWay}"
-								 IsReadOnly="True"
-								 BorderThickness="0"
-								 Background="{x:Null}"
-								 Padding="0"
-								 FontWeight="Bold"
-								 VerticalAlignment="Center"/>
-					</Grid>
+					<StackPanel>
+						<StackPanel.Style>
+							<Style TargetType="StackPanel">
+								<Setter Property="Visibility"
+										Value="Collapsed"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding SelectedTopTab}"
+												 Value="0">
+										<Setter Property="Visibility"
+												Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</StackPanel.Style>
+						<StackPanel Margin="8,6,8,8">
 
-					<!-- RIGHT: Connection area (three states) -->
-					<Grid Grid.Column="1">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto"/>
-						</Grid.RowDefinitions>
+							<!-- CONNECTIONS -->
 
-						<!-- STATE A: Enter partner code -->
-						<Grid x:Name="EnterCodeRow">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="130"
-												  SharedSizeGroup="ConnLabels"/>
-								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
+							<!-- Codes Row (aligned halves) -->
+							<Grid Margin="0,0,0,8"
+								  Grid.IsSharedSizeScope="True">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
 
-							<!-- show when NOT connected AND NO pending outgoing -->
-							<Grid.Style>
-								<Style TargetType="Grid">
-									<Setter Property="Visibility"
-											Value="Collapsed"/>
-									<Style.Triggers>
-										<MultiDataTrigger>
-											<MultiDataTrigger.Conditions>
-												<Condition Binding="{Binding IsPartnerVerified}"
-														   Value="False"/>
-												<Condition Binding="{Binding HasPendingOutgoing}"
-														   Value="False"/>
-											</MultiDataTrigger.Conditions>
-											<Setter Property="Visibility"
-													Value="Visible"/>
-										</MultiDataTrigger>
-									</Style.Triggers>
-								</Style>
-							</Grid.Style>
+								<!-- LEFT: Your Code -->
+								<Grid Grid.Column="0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="130"
+														  SharedSizeGroup="ConnLabels"/>
+										<ColumnDefinition Width="*"/>
+									</Grid.ColumnDefinitions>
+									<TextBlock Grid.Column="0"
+											   Text="Your Code:"
+											   VerticalAlignment="Center"/>
+									<TextBox Grid.Column="1"
+											 Text="{Binding UserId, Mode=OneWay}"
+											 IsReadOnly="True"
+											 BorderThickness="0"
+											 Background="{x:Null}"
+											 Padding="0"
+											 FontWeight="Bold"
+											 VerticalAlignment="Center"/>
+								</Grid>
 
-							<TextBlock Grid.Column="0"
-									   Text="Enter Partner Code:"
-									   VerticalAlignment="Center"/>
-							<TextBox Grid.Column="1"
-									 Width="200"
-									 Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
-									 Margin="5,0"
-									 VerticalAlignment="Center"/>
-							<Button Grid.Column="2"
-									Content="Send Request"
-									Command="{Binding SendPartnerRequestCommand}"
-									Margin="5,0"
-									VerticalAlignment="Center"/>
-						</Grid>
+								<!-- RIGHT: Connection area (three states) -->
+								<Grid Grid.Column="1">
+									<Grid.RowDefinitions>
+										<RowDefinition Height="Auto"/>
+									</Grid.RowDefinitions>
 
-						<!-- STATE B: Waiting message -->
-						<Border x:Name="WaitingRow"
-								CornerRadius="6"
-								Padding="8"
-								Margin="0,0,0,0"
-								Background="{DynamicResource CardBackgroundBrush}"
-								BorderBrush="{DynamicResource CardBorderBrush}"
-								BorderThickness="1">
-							<!-- show when NOT connected AND HAS pending outgoing -->
-							<Border.Style>
-								<Style TargetType="Border">
-									<Setter Property="Visibility"
-											Value="Collapsed"/>
-									<Style.Triggers>
-										<MultiDataTrigger>
-											<MultiDataTrigger.Conditions>
-												<Condition Binding="{Binding IsPartnerVerified}"
-														   Value="False"/>
-												<Condition Binding="{Binding HasPendingOutgoing}"
-														   Value="True"/>
-											</MultiDataTrigger.Conditions>
-											<Setter Property="Visibility"
-													Value="Visible"/>
-										</MultiDataTrigger>
-									</Style.Triggers>
-								</Style>
-							</Border.Style>
-
-							<StackPanel Orientation="Horizontal"
-										VerticalAlignment="Center">
-								<ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<Grid>
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="*"/>
-													<ColumnDefinition Width="Auto"/>
-												</Grid.ColumnDefinitions>
-
-												<!-- Only show 'pending' rows -->
-												<Grid.Style>
-													<Style TargetType="Grid">
-														<Setter Property="Visibility"
-																Value="Collapsed"/>
-														<Style.Triggers>
-															<DataTrigger Binding="{Binding Status}"
-																		 Value="pending">
-																<Setter Property="Visibility"
-																		Value="Visible"/>
-															</DataTrigger>
-														</Style.Triggers>
-													</Style>
-												</Grid.Style>
-
-												<TextBlock Grid.Column="0"
-														   VerticalAlignment="Center"
-														   Text="{Binding ToUserId, StringFormat=Waiting for {0} to accept…}"/>
-												<Button Grid.Column="1"
-														Content="Cancel Request"
-														Margin="8,0,0,0"
-														Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-														CommandParameter="{Binding}"/>
-											</Grid>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
-							</StackPanel>
-						</Border>
-
-						<!-- STATE C: Connected summary -->
-						<StackPanel x:Name="ConnectedRow"
-									Orientation="Horizontal">
-							<StackPanel.Style>
-								<Style TargetType="StackPanel">
-									<Setter Property="Visibility"
-											Value="Collapsed"/>
-									<Style.Triggers>
-										<DataTrigger Binding="{Binding IsPartnerVerified}"
-													 Value="True">
-											<Setter Property="Visibility"
-													Value="Visible"/>
-										</DataTrigger>
-									</Style.Triggers>
-								</Style>
-							</StackPanel.Style>
-
-							<TextBlock Text="{Binding ConnectionSummary}"
-									   FontWeight="Bold"
-									   FontSize="16"
-									   VerticalAlignment="Center"
-									   Margin="0,0,8,0"/>
-
-							<!-- New: Disconnect button -->
-							<Button Content="Disconnect"
-									FontSize="16"
-									Command="{Binding DisconnectPartnerCommand}"
-									VerticalAlignment="Center"/>
-						</StackPanel>
-					</Grid>
-				</Grid>
-
-				<!-- Requests Row -->
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
-
-					<GroupBox Grid.Column="0"
-							  Header="Incoming Requests"
-							  Margin="0,0,5,0">
-						<ItemsControl ItemsSource="{Binding IncomingPartnerRequests}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<StackPanel Orientation="Horizontal"
-												Margin="5">
-										<TextBlock Text="{Binding FromDisplayName}"
-												   FontWeight="Bold"
-												   Margin="0,0,10,0"/>
-										<Button Content="Accept"
-												Command="{Binding DataContext.AcceptPartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-												CommandParameter="{Binding}"/>
-										<Button Content="Decline"
-												Command="{Binding DataContext.DeclinePartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-												CommandParameter="{Binding}"
-												Margin="5,0,0,0"/>
-									</StackPanel>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</GroupBox>
-
-					<GroupBox Grid.Column="1"
-							  Header="Outgoing Requests"
-							  Margin="5,0,0,0">
-						<ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<StackPanel Orientation="Horizontal"
-												Margin="5">
-										<TextBlock Text="{Binding ToUserId}"
-												   FontWeight="Bold"
-												   Margin="0,0,10,0"/>
-										<TextBlock Text="{Binding Status}"
-												   Margin="0,0,10,0"/>
-										<Button Content="Cancel"
-												Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-												CommandParameter="{Binding}"/>
-									</StackPanel>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</GroupBox>
-				</Grid>
-			</StackPanel>
-		</Expander>
-
-		<!-- ACTIVITY CENTER (single unified feed) -->
-		<Expander Style="{StaticResource CardExpander}">
-			<Expander.Header>
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<TextBlock Text="Activity Center"
-							   Style="{StaticResource SectionHeader}"
-							   Margin="0"/>
-					<TextBlock Grid.Column="1"
-							   Text="▼"
-							   Opacity="0.6"
-							   Margin="8,0,0,0"/>
-				</Grid>
-			</Expander.Header>
-
-			<!-- One compact card with its own scroll host (scrolls on hover) -->
-			<Border Style="{StaticResource SubCard}">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="*"/>
-					</Grid.RowDefinitions>
-					<!-- Make THIS the scroll host so it only scrolls when hovered -->
-					<Grid Grid.Row="0"
-						  Margin="0">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*"/>
-							<!-- input stretches -->
-							<ColumnDefinition Width="Auto"/>
-							<!-- button hugs right -->
-						</Grid.ColumnDefinitions>
-						<TextBox x:Name="ChatInput"
-								 Grid.Column="0"
-								 MinWidth="200"
-								 Height="28"
-								 Margin="0"
-								 Text="{Binding NewActivityMessage, UpdateSourceTrigger=PropertyChanged}">
-							<!-- Press Enter to send -->
-							<TextBox.InputBindings>
-								<KeyBinding Key="Enter"
-											Command="{Binding SendActivityMessageCommand}"/>
-							</TextBox.InputBindings>
-						</TextBox>
-
-						<Button Grid.Column="1"
-								Content="Send"
-								Width="80"
-								Height="28"
-								Margin="0"
-								Command="{Binding SendActivityMessageCommand}"/>
-						</Grid>
-						<ListBox
-							Grid.Row="1"
-							Style="{StaticResource ActivityListStyle}"
-							Height="180"
-							ItemsSource="{Binding ActivityFeed}"
-							ScrollViewer.VerticalScrollBarVisibility="Auto"
-							AlternationCount="2">
-
-							<ListBox.ItemContainerStyle>
-								<Style TargetType="ListBoxItem">
-									<Setter Property="HorizontalContentAlignment"
-											Value="Stretch"/>
-									<Setter Property="Padding"
-											Value="0"/>
-									<Setter Property="Background"
-											Value="Transparent"/>
-									<Setter Property="BorderThickness"
-											Value="0"/>
-									<Style.Triggers>
-										<Trigger Property="ItemsControl.AlternationIndex"
-												 Value="1">
-											<Setter Property="Background"
-													Value="{DynamicResource ActivityRowAltBrush}"/>
-										</Trigger>
-									</Style.Triggers>
-								</Style>
-							</ListBox.ItemContainerStyle>
-
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<Grid Margin="6,3">
+									<!-- STATE A: Enter partner code -->
+									<Grid x:Name="EnterCodeRow">
 										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="4"/>
-											<!-- accent -->
-											<ColumnDefinition Width="84"/>
-											<!-- timestamp -->
-											<ColumnDefinition Width="*"/>
-											<!-- message -->
+											<ColumnDefinition Width="130"
+															  SharedSizeGroup="ConnLabels"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="Auto"/>
 										</Grid.ColumnDefinitions>
 
-										<!-- Accent by actor -->
-										<Border Grid.Column="0"
-												CornerRadius="2">
-											<Border.Style>
-												<Style TargetType="Border">
-													<Setter Property="Background"
-															Value="{DynamicResource CardBorderBrush}"/>
-													<Style.Triggers>
-														<DataTrigger Binding="{Binding IsMine}"
-																	 Value="True">
-															<Setter Property="Background"
-																	Value="{DynamicResource MeTaskTextBrush}"/>
-														</DataTrigger>
-														<DataTrigger Binding="{Binding IsMine}"
-																	 Value="False">
-															<Setter Property="Background"
-																	Value="{DynamicResource PartnerTaskTextBrush}"/>
-														</DataTrigger>
-													</Style.Triggers>
-												</Style>
-											</Border.Style>
-										</Border>
-
-										<!-- Timestamp (24h “roboty” style) -->
-										<TextBlock Grid.Column="1"
-												   Style="{StaticResource ActivityTimestampStyle}"
-												   Text="{Binding Timestamp, StringFormat={}{0:MM/dd HH:mm}}"/>
-
-										<!-- Message -->
-										<Grid Grid.Column="2"
-											  VerticalAlignment="Center">
-											<!-- Normal system entry -->
-											<TextBlock Text="{Binding Message}"
-													   TextWrapping="Wrap">
-												<TextBlock.Style>
-													<Style TargetType="TextBlock">
+										<!-- show when NOT connected AND NO pending outgoing -->
+										<Grid.Style>
+											<Style TargetType="Grid">
+												<Setter Property="Visibility"
+														Value="Collapsed"/>
+												<Style.Triggers>
+													<MultiDataTrigger>
+														<MultiDataTrigger.Conditions>
+															<Condition Binding="{Binding IsPartnerVerified}"
+																	   Value="False"/>
+															<Condition Binding="{Binding HasPendingOutgoing}"
+																	   Value="False"/>
+														</MultiDataTrigger.Conditions>
 														<Setter Property="Visibility"
 																Value="Visible"/>
-														<Style.Triggers>
-															<DataTrigger Binding="{Binding Kind}"
-																		 Value="chat.message">
-																<Setter Property="Visibility"
-																		Value="Collapsed"/>
-															</DataTrigger>
-														</Style.Triggers>
-													</Style>
-												</TextBlock.Style>
-											</TextBlock>
+													</MultiDataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Grid.Style>
 
-											<!-- Chat entry -->
-											<TextBlock TextWrapping="Wrap">
-												<TextBlock.Inlines>
-													<Run Text="{Binding Actor}"
-														 FontWeight="Bold"/>
-													<Run Text=": "/>
-													<Run Text="{Binding Message}"/>
-												</TextBlock.Inlines>
-												<TextBlock.Style>
-													<Style TargetType="TextBlock">
+										<TextBlock Grid.Column="0"
+												   Text="Enter Partner Code:"
+												   VerticalAlignment="Center"/>
+										<TextBox Grid.Column="1"
+												 Width="200"
+												 Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
+												 Margin="5,0"
+												 VerticalAlignment="Center"/>
+										<Button Grid.Column="2"
+												Content="Send Request"
+												Command="{Binding SendPartnerRequestCommand}"
+												Margin="5,0"
+												VerticalAlignment="Center"/>
+									</Grid>
+
+									<!-- STATE B: Waiting message -->
+									<Border x:Name="WaitingRow"
+											CornerRadius="6"
+											Padding="8"
+											Margin="0,0,0,0"
+											Background="{DynamicResource CardBackgroundBrush}"
+											BorderBrush="{DynamicResource CardBorderBrush}"
+											BorderThickness="1">
+										<!-- show when NOT connected AND HAS pending outgoing -->
+										<Border.Style>
+											<Style TargetType="Border">
+												<Setter Property="Visibility"
+														Value="Collapsed"/>
+												<Style.Triggers>
+													<MultiDataTrigger>
+														<MultiDataTrigger.Conditions>
+															<Condition Binding="{Binding IsPartnerVerified}"
+																	   Value="False"/>
+															<Condition Binding="{Binding HasPendingOutgoing}"
+																	   Value="True"/>
+														</MultiDataTrigger.Conditions>
 														<Setter Property="Visibility"
-																Value="Collapsed"/>
-														<Style.Triggers>
-															<DataTrigger Binding="{Binding Kind}"
-																		 Value="chat.message">
+																Value="Visible"/>
+													</MultiDataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Border.Style>
+
+										<StackPanel Orientation="Horizontal"
+													VerticalAlignment="Center">
+											<ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
+												<ItemsControl.ItemTemplate>
+													<DataTemplate>
+														<Grid>
+															<Grid.ColumnDefinitions>
+																<ColumnDefinition Width="*"/>
+																<ColumnDefinition Width="Auto"/>
+															</Grid.ColumnDefinitions>
+
+															<!-- Only show 'pending' rows -->
+															<Grid.Style>
+																<Style TargetType="Grid">
+																	<Setter Property="Visibility"
+																			Value="Collapsed"/>
+																	<Style.Triggers>
+																		<DataTrigger Binding="{Binding Status}"
+																					 Value="pending">
+																			<Setter Property="Visibility"
+																					Value="Visible"/>
+																		</DataTrigger>
+																	</Style.Triggers>
+																</Style>
+															</Grid.Style>
+
+															<TextBlock Grid.Column="0"
+																	   VerticalAlignment="Center"
+																	   Text="{Binding ToUserId, StringFormat=Waiting for {0} to accept…}"/>
+															<Button Grid.Column="1"
+																	Content="Cancel Request"
+																	Margin="8,0,0,0"
+																	Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+																	CommandParameter="{Binding}"/>
+														</Grid>
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+										</StackPanel>
+									</Border>
+
+									<!-- STATE C: Connected summary -->
+									<StackPanel x:Name="ConnectedRow"
+												Orientation="Horizontal">
+										<StackPanel.Style>
+											<Style TargetType="StackPanel">
+												<Setter Property="Visibility"
+														Value="Collapsed"/>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding IsPartnerVerified}"
+																 Value="True">
+														<Setter Property="Visibility"
+																Value="Visible"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</StackPanel.Style>
+
+										<TextBlock Text="{Binding ConnectionSummary}"
+												   FontWeight="Bold"
+												   FontSize="16"
+												   VerticalAlignment="Center"
+												   Margin="0,0,8,0"/>
+
+										<!-- New: Disconnect button -->
+										<Button Content="Disconnect"
+												FontSize="16"
+												Command="{Binding DisconnectPartnerCommand}"
+												VerticalAlignment="Center"/>
+									</StackPanel>
+								</Grid>
+							</Grid>
+
+							<!-- Requests Row -->
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+
+								<GroupBox Grid.Column="0"
+										  Header="Incoming Requests"
+										  Margin="0,0,5,0">
+									<ItemsControl ItemsSource="{Binding IncomingPartnerRequests}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<StackPanel Orientation="Horizontal"
+															Margin="5">
+													<TextBlock Text="{Binding FromDisplayName}"
+															   FontWeight="Bold"
+															   Margin="0,0,10,0"/>
+													<Button Content="Accept"
+															Command="{Binding DataContext.AcceptPartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+															CommandParameter="{Binding}"/>
+													<Button Content="Decline"
+															Command="{Binding DataContext.DeclinePartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+															CommandParameter="{Binding}"
+															Margin="5,0,0,0"/>
+												</StackPanel>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</GroupBox>
+
+								<GroupBox Grid.Column="1"
+										  Header="Outgoing Requests"
+										  Margin="5,0,0,0">
+									<ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<StackPanel Orientation="Horizontal"
+															Margin="5">
+													<TextBlock Text="{Binding ToUserId}"
+															   FontWeight="Bold"
+															   Margin="0,0,10,0"/>
+													<TextBlock Text="{Binding Status}"
+															   Margin="0,0,10,0"/>
+													<Button Content="Cancel"
+															Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+															CommandParameter="{Binding}"/>
+												</StackPanel>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</GroupBox>
+							</Grid>
+
+						</StackPanel>
+					</StackPanel>
+
+					<!-- ================= Activity Center Tab ================= -->
+					<Border>
+						<Border.Style>
+							<Style TargetType="Border">
+								<Setter Property="Visibility"
+										Value="Collapsed"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding SelectedTopTab}"
+												 Value="1">
+										<Setter Property="Visibility"
+												Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Border.Style>
+						<Border Style="{StaticResource SubCard}">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="*"/>
+								</Grid.RowDefinitions>
+
+								<!-- Input row (text + send) -->
+								<Grid Grid.Row="0"
+									  Margin="0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+
+									<TextBox x:Name="ChatInput"
+											 Grid.Column="0"
+											 MinWidth="200"
+											 Height="28"
+											 Margin="0"
+											 Text="{Binding NewActivityMessage, UpdateSourceTrigger=PropertyChanged}">
+										<TextBox.InputBindings>
+											<KeyBinding Key="Enter"
+														Command="{Binding SendActivityMessageCommand}"/>
+										</TextBox.InputBindings>
+									</TextBox>
+
+									<Button Grid.Column="1"
+											Content="Send"
+											Width="80"
+											Height="28"
+											Margin="0"
+											Command="{Binding SendActivityMessageCommand}"/>
+								</Grid>
+
+								<!-- Feed -->
+								<ListBox Grid.Row="1"
+										 Style="{StaticResource ActivityListStyle}"
+										 Height="180"
+										 ItemsSource="{Binding ActivityFeed}"
+										 ScrollViewer.VerticalScrollBarVisibility="Auto"
+										 AlternationCount="2">
+									<ListBox.ItemContainerStyle>
+										<Style TargetType="ListBoxItem">
+											<Setter Property="HorizontalContentAlignment"
+													Value="Stretch"/>
+											<Setter Property="Padding"
+													Value="0"/>
+											<Setter Property="Background"
+													Value="Transparent"/>
+											<Setter Property="BorderThickness"
+													Value="0"/>
+											<Style.Triggers>
+												<Trigger Property="ItemsControl.AlternationIndex"
+														 Value="1">
+													<Setter Property="Background"
+															Value="{DynamicResource ActivityRowAltBrush}"/>
+												</Trigger>
+											</Style.Triggers>
+										</Style>
+									</ListBox.ItemContainerStyle>
+
+									<!-- (reuse your existing DataTemplate exactly) -->
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<Grid Margin="6,3">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="4"/>
+													<!-- accent -->
+													<ColumnDefinition Width="84"/>
+													<!-- timestamp -->
+													<ColumnDefinition Width="*"/>
+													<!-- message -->
+												</Grid.ColumnDefinitions>
+
+												<!-- Accent by actor -->
+												<Border Grid.Column="0"
+														CornerRadius="2">
+													<Border.Style>
+														<Style TargetType="Border">
+															<Setter Property="Background"
+																	Value="{DynamicResource CardBorderBrush}"/>
+															<Style.Triggers>
+																<DataTrigger Binding="{Binding IsMine}"
+																			 Value="True">
+																	<Setter Property="Background"
+																			Value="{DynamicResource MeTaskTextBrush}"/>
+																</DataTrigger>
+																<DataTrigger Binding="{Binding IsMine}"
+																			 Value="False">
+																	<Setter Property="Background"
+																			Value="{DynamicResource PartnerTaskTextBrush}"/>
+																</DataTrigger>
+															</Style.Triggers>
+														</Style>
+													</Border.Style>
+												</Border>
+
+												<!-- Timestamp (24h “roboty” style) -->
+												<TextBlock Grid.Column="1"
+														   Style="{StaticResource ActivityTimestampStyle}"
+														   Text="{Binding Timestamp, StringFormat={}{0:MM/dd HH:mm}}"/>
+
+												<!-- Message -->
+												<Grid Grid.Column="2"
+													  VerticalAlignment="Center">
+													<!-- Normal system entry -->
+													<TextBlock Text="{Binding Message}"
+															   TextWrapping="Wrap">
+														<TextBlock.Style>
+															<Style TargetType="TextBlock">
 																<Setter Property="Visibility"
 																		Value="Visible"/>
-															</DataTrigger>
-														</Style.Triggers>
-													</Style>
-												</TextBlock.Style>
-											</TextBlock>
-										</Grid>
-									</Grid>
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-					</Grid>
-			</Border>
-		</Expander>
+																<Style.Triggers>
+																	<DataTrigger Binding="{Binding Kind}"
+																				 Value="chat.message">
+																		<Setter Property="Visibility"
+																				Value="Collapsed"/>
+																	</DataTrigger>
+																</Style.Triggers>
+															</Style>
+														</TextBlock.Style>
+													</TextBlock>
+
+													<!-- Chat entry -->
+													<TextBlock TextWrapping="Wrap">
+														<TextBlock.Inlines>
+															<Run Text="{Binding Actor}"
+																 FontWeight="Bold"/>
+															<Run Text=": "/>
+															<Run Text="{Binding Message}"/>
+														</TextBlock.Inlines>
+														<TextBlock.Style>
+															<Style TargetType="TextBlock">
+																<Setter Property="Visibility"
+																		Value="Collapsed"/>
+																<Style.Triggers>
+																	<DataTrigger Binding="{Binding Kind}"
+																				 Value="chat.message">
+																		<Setter Property="Visibility"
+																				Value="Visible"/>
+																	</DataTrigger>
+																</Style.Triggers>
+															</Style>
+														</TextBlock.Style>
+													</TextBlock>
+												</Grid>
+											</Grid>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</Grid>
+						</Border>
+					</Border>
+
+					<!-- ================= Task Builder Tab ================= -->
+					<Border>
+						<Border.Style>
+							<Style TargetType="Border">
+								<Setter Property="Visibility"
+										Value="Collapsed"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding SelectedTopTab}"
+												 Value="2">
+										<Setter Property="Visibility"
+												Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Border.Style>
+						<WrapPanel Margin="0,4,0,0"
+								   ItemHeight="Auto"
+								   ItemWidth="Auto">
+							<StackPanel Margin="6,2"
+										MinWidth="200">
+								<TextBlock Text="Title"
+										   Margin="5,0,5,0"/>
+								<TextBox Width="200"
+										 Text="{Binding NewTaskTitle}"/>
+							</StackPanel>
+
+							<!-- Description -->
+							<StackPanel Margin="6,2"
+										MinWidth="220">
+								<TextBlock Text="Description"
+										   Margin="5,0,5,0"/>
+								<TextBox Width="220"
+										 Height="Auto"
+										 AcceptsReturn="True"
+										 TextWrapping="Wrap"
+										 Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
+										 ToolTip="Optional task description"/>
+							</StackPanel>
+
+							<!-- Category -->
+							<StackPanel Margin="6,2"
+										MinWidth="160">
+								<TextBlock Text="Category"
+										   Margin="5,0,5,0"/>
+								<ComboBox Width="160"
+										  ItemsSource="{Binding Categories}"
+										  SelectedItem="{Binding NewTaskCategory, Mode=TwoWay}"
+										  IsEditable="False"/>
+							</StackPanel>
+
+							<!-- Due Date -->
+							<StackPanel Margin="6,2"
+										MinWidth="150">
+								<TextBlock Text="Due Date"
+										   Margin="5,0,5,0"/>
+								<DatePicker Width="150"
+											SelectedDate="{Binding NewTaskDueDate}"/>
+							</StackPanel>
+
+							<!-- Media Request (dropdown only) -->
+							<StackPanel Margin="6,2"
+										MinWidth="170">
+								<TextBlock Text="Media Request"
+										   Margin="5,0,5,0"/>
+								<ComboBox Width="170"
+										  ItemsSource="{Binding MediaRequestTypes}"
+										  SelectedItem="{Binding NewTaskMediaType}"/>
+							</StackPanel>
+
+							<!-- Assign To -->
+							<StackPanel Margin="6,2"
+										MinWidth="160">
+								<TextBlock Text="Assign To"
+										   Margin="5,0,5,0"/>
+								<!-- REPLACE ComboBox with ToggleButton -->
+								<ToggleButton
+									Style="{StaticResource AssignToSwitch}"
+									IsChecked="{Binding AssignToPartner, Mode=TwoWay}"
+									IsEnabled="{Binding IsPartnerVerified}"/>
+							</StackPanel>
+
+							<!-- Add Task button -->
+							<Button Content="Add Task"
+									Width="120"
+									Margin="10,26,0,0"
+									VerticalAlignment="Bottom"
+									Command="{Binding AddTaskCommand}"/>
+						</WrapPanel>
+					</Border>
 
 
-		<!-- TASK BUILDER -->
-		<Expander Style="{StaticResource CardExpander}">
-			<Expander.Header>
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<TextBlock Text="Task Builder"
-							   Style="{StaticResource SectionHeader}"
-							   Margin="0"/>
-					<TextBlock Grid.Column="1"
-							   Text="▼"
-							   Opacity="0.6"
-							   Margin="8,0,0,0"/>
 				</Grid>
-			</Expander.Header>
-
-			<!-- Responsive layout: wraps horizontally; stacks as window narrows -->
-			<Border Style="{StaticResource SubCard}">
-				<WrapPanel Margin="0,4,0,0"
-						   ItemHeight="Auto"
-						   ItemWidth="Auto">
-
-					<!-- Title -->
-					<StackPanel Margin="6,2"
-								MinWidth="200">
-						<TextBlock Text="Title"
-								   Margin="5,0,5,0"/>
-						<TextBox Width="200"
-								 Text="{Binding NewTaskTitle}"/>
-					</StackPanel>
-
-					<!-- Description -->
-					<StackPanel Margin="6,2"
-								MinWidth="220">
-						<TextBlock Text="Description"
-								   Margin="5,0,5,0"/>
-						<TextBox Width="220"
-								 Height="Auto"
-								 AcceptsReturn="True"
-								 TextWrapping="Wrap"
-								 Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
-								 ToolTip="Optional task description"/>
-					</StackPanel>
-
-					<!-- Category -->
-					<StackPanel Margin="6,2"
-								MinWidth="160">
-						<TextBlock Text="Category"
-								   Margin="5,0,5,0"/>
-						<ComboBox Width="160"
-								  ItemsSource="{Binding Categories}"
-								  SelectedItem="{Binding NewTaskCategory, Mode=TwoWay}"
-								  IsEditable="False"/>
-					</StackPanel>
-
-					<!-- Due Date -->
-					<StackPanel Margin="6,2"
-								MinWidth="150">
-						<TextBlock Text="Due Date"
-								   Margin="5,0,5,0"/>
-						<DatePicker Width="150"
-									SelectedDate="{Binding NewTaskDueDate}"/>
-					</StackPanel>
-
-					<!-- Media Request (dropdown only) -->
-					<StackPanel Margin="6,2"
-								MinWidth="170">
-						<TextBlock Text="Media Request"
-								   Margin="5,0,5,0"/>
-						<ComboBox Width="170"
-								  ItemsSource="{Binding MediaRequestTypes}"
-								  SelectedItem="{Binding NewTaskMediaType}"/>
-					</StackPanel>
-
-					<!-- Assign To -->
-					<StackPanel Margin="6,2"
-								MinWidth="160">
-						<TextBlock Text="Assign To"
-								   Margin="5,0,5,0"/>
-						<!-- REPLACE ComboBox with ToggleButton -->
-						<ToggleButton
-							Style="{StaticResource AssignToSwitch}"
-							IsChecked="{Binding AssignToPartner, Mode=TwoWay}"
-							IsEnabled="{Binding IsPartnerVerified}"/>
-					</StackPanel>
-
-					<!-- Add Task button -->
-					<Button Content="Add Task"
-							Width="120"
-							Margin="10,26,0,0"
-							VerticalAlignment="Bottom"
-							Command="{Binding AddTaskCommand}"/>
-				</WrapPanel>
-			</Border>
+			</Expander.Content>
 		</Expander>
-
 
 	</StackPanel>
 </UserControl>

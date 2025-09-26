@@ -27,6 +27,36 @@
 
 
 
+
+
+
+
+                <!-- QUICK TOOLS: one dropdown with 3 tabs -->
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <!-- TASK LISTS in a big card -->
                 <!-- === MIDDLE AREA: one owner ScrollViewer === -->
                 <ScrollViewer Grid.Row="1"
@@ -41,17 +71,86 @@
                                           IsExpanded="True">
                                         <Expander.Header>
                                                 <Grid>
+                                                        <!-- Title | Stats | (spacer) | Filter -->
                                                         <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="Task Board"
+
+                                                        <!-- Title -->
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="Task Board"
                                                                    Style="{StaticResource SectionHeader}"
                                                                    Margin="0"/>
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="▼"
-                                                                   Opacity="0.6"
-                                                                   Margin="8,0,0,0"/>
+
+                                                        <!-- Tiny stats -->
+                                                        <StackPanel Grid.Column="1"
+                                                                    Orientation="Horizontal"
+                                                                    Margin="30,0,0,0"
+                                                                    VerticalAlignment="Center">
+                                                                <!-- Me -->
+                                                                <StackPanel Margin="0,0,12,0"
+                                                                            VerticalAlignment="Center">
+                                                                        <TextBlock Text="{Binding MyActiveCount}"
+                                                                                   FontSize="15"
+                                                                                   FontWeight="Bold"
+                                                                                   Foreground="{DynamicResource MeTaskTextBrush}"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                        <TextBlock Text="Me"
+                                                                                   FontSize="10"
+                                                                                   Opacity="0.75"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                </StackPanel>
+
+                                                                <!-- Partner (only when connected) -->
+                                                                <StackPanel Margin="0,0,12,0"
+                                                                            VerticalAlignment="Center"
+                                                                            Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
+                                                                        <TextBlock Text="{Binding PartnerActiveCount}"
+                                                                                   FontSize="15"
+                                                                                   FontWeight="Bold"
+                                                                                   Foreground="{DynamicResource PartnerTaskTextBrush}"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                        <TextBlock Text="Partner"
+                                                                                   FontSize="10"
+                                                                                   Opacity="0.75"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                </StackPanel>
+
+                                                                <!-- Completed -->
+                                                                <StackPanel VerticalAlignment="Center">
+                                                                        <TextBlock Text="{Binding MyCompletedCount}"
+                                                                                   FontSize="15"
+                                                                                   FontWeight="Bold"
+                                                                                   Foreground="{DynamicResource CompletedCountBrush}"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                        <TextBlock Text="Completed"
+                                                                                   FontSize="10"
+                                                                                   Opacity="0.75"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                </StackPanel>
+                                                        </StackPanel>
+
+                                                        <!-- Filter (stays visually the same, now in far-right column) -->
+                                                        <StackPanel Grid.Column="3"
+                                                                    Orientation="Horizontal"
+                                                                    VerticalAlignment="Center">
+                                                                <TextBlock Text="Filter:"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,0,0"
+                                                                           Opacity="0.7"/>
+                                                                <ComboBox ItemsSource="{Binding SortOptions}"
+                                                                          SelectedValuePath="Key"
+                                                                          DisplayMemberPath="Value"
+                                                                          SelectedValue="{Binding SelectedSort}"
+                                                                          MinWidth="130"
+                                                                          Margin="4,0,0,0"/>
+                                                                <TextBlock Text="▼"
+                                                                           Opacity="0.6"
+                                                                           Margin="8,0,0,0"/>
+                                                        </StackPanel>
                                                 </Grid>
                                         </Expander.Header>
 

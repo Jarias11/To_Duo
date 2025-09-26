@@ -21,6 +21,46 @@ namespace TaskMate.ViewModels {
         public string ConnectionSummary => IsPartnerVerified ? $"Connected to: {PartnerId}" : "No partner connected yet";
         private string? _newActivityMessage;
 
+        public IReadOnlyList<KeyValuePair<TaskSortMode, string>> SortOptions { get; } =
+    new[] {
+        new KeyValuePair<TaskSortMode,string>(TaskSortMode.DueSoon, "Due soon"),
+        new KeyValuePair<TaskSortMode,string>(TaskSortMode.Newest,  "Newest"),
+        new KeyValuePair<TaskSortMode,string>(TaskSortMode.Oldest,  "Oldest"),
+        new KeyValuePair<TaskSortMode,string>(TaskSortMode.Category,"Category"),
+    };
+        private TaskSortMode _selectedSort = TaskSortMode.DueSoon;
+        public TaskSortMode SelectedSort {
+            get => _selectedSort;
+            set {
+                if(_selectedSort == value) return;
+                _selectedSort = value;
+                OnPropertyChanged();
+                ApplySorts();
+            }
+        }
+        private int _myActiveCount;
+        public int MyActiveCount {
+            get => _myActiveCount;
+            private set { if(_myActiveCount != value) { _myActiveCount = value; OnPropertyChanged(); } }
+        }
+
+        private int _myCompletedCount;
+        public int MyCompletedCount {
+            get => _myCompletedCount;
+            private set { if(_myCompletedCount != value) { _myCompletedCount = value; OnPropertyChanged(); } }
+        }
+        private int _partnerActiveCount;
+        public int PartnerActiveCount {
+            get => _partnerActiveCount;
+            private set { if(_partnerActiveCount != value) { _partnerActiveCount = value; OnPropertyChanged(); } }
+        }
+        private int _selectedTopTab;
+        public int SelectedTopTab {
+            get => _selectedTopTab;
+            set { if(_selectedTopTab == value) return; _selectedTopTab = value; OnPropertyChanged(); }
+        }
+
+
         //Readonly services
         private readonly ILiveSyncCoordinator _live;
         private readonly ITaskService _taskService;
@@ -153,7 +193,9 @@ namespace TaskMate.ViewModels {
                 else {
                     await _activity.StopPartnerAsync();
                 }
+                UpdateHeaderCounts();
             };
+
 
 
 
@@ -237,6 +279,24 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
 
             var local = TaskMate.Data.TaskDataService.LoadTasks();
             foreach(var t in local) _taskService.Tasks.Add(t);
+            foreach(var t in Tasks) AttachTaskHandlers(t);
+
+            // Track add/remove so new categories from partner are merged automatically
+            Tasks.CollectionChanged += (_, e) => {
+                if(e.NewItems != null)
+                    foreach(TaskItem t in e.NewItems) AttachTaskHandlers(t);
+
+                if(e.OldItems != null)
+                    foreach(TaskItem t in e.OldItems) DetachTaskHandlers(t);
+                UpdateHeaderCounts();
+
+                // Keep the list sorted if we are in Category mode
+                if(SelectedSort == TaskSortMode.Category) {
+                    ApplyCategorySorts();
+                    RefreshAllViews();
+                }
+            };
+            UpdateHeaderCounts();
             _ = _live.StartAsync();
 
             if(IsPartnerVerified && PartnerId is not null) {
@@ -249,7 +309,25 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             _pairing.Start(UserId);
 
 
-            _ = InitializeCategoriesAsync();
+            // Re-apply sort after categories are loaded (async) and whenever Categories changes.
+            _ = InitializeCategoriesAsync().ContinueWith(_ => {
+                if(SelectedSort == TaskSortMode.Category) {
+                    ApplyCategorySorts();
+                    RefreshAllViews();
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+
+            // If the Categories collection changes later (e.g., partner sync pulls a new category),
+            // re-apply the category sort automatically.
+            Categories.CollectionChanged += (_, __) => {
+                if(SelectedSort == TaskSortMode.Category) {
+                    ApplyCategorySorts();
+                    RefreshAllViews();
+                }
+            };
+
+            // Run initial sort immediately (uses whatever we have right now)
+            ApplySorts();
             // If profile not set up yet, prompt for display name
             if(NeedsProfileSetup) NewDisplayName = string.Empty;
 
@@ -327,23 +405,120 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                                   .Select((c, i) => (c, i))
                                   .ToDictionary(t => t.c, t => t.i, StringComparer.OrdinalIgnoreCase);
 
-            int KeyOf(string? cat) => cat is string s && order.TryGetValue(s, out var idx) ? idx : int.MaxValue;
+            int KeyOf(string? cat)
+                => cat is string s && order.TryGetValue(s, out var idx) ? idx : int.MaxValue;
 
-            var comparer = Comparer<TaskItem>.Create((a, b) => {
-                var ka = KeyOf(a.Category);
-                var kb = KeyOf(b.Category);
-                if(ka != kb) return ka.CompareTo(kb);
-                // stable fallback: then by Title
-                return string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase);
-            });
+            // Non-generic IComparer so it plugs straight into ListCollectionView.CustomSort
+            System.Collections.IComparer comparer =
+                Comparer<TaskItem>.Create((a, b) => {
+                    int ka = KeyOf(a.Category);
+                    int kb = KeyOf(b.Category);
+                    if(ka != kb) return ka.CompareTo(kb);
+                    // stable fallback: then by Title
+                    return string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase);
+                });
 
-            // Apply to both active views; CustomSort only works on ListCollectionView
-            if(MyTasksView is ListCollectionView lv1) lv1.CustomSort = comparer;
-            if(PartnerTasksView is ListCollectionView lv2) lv2.CustomSort = comparer;
-            if(MyCompletedTasks is ListCollectionView lv3) lv3.CustomSort = comparer;
-            if(PartnerCompletedTasks is ListCollectionView lv4) lv4.CustomSort = comparer;
+            void SetSort(ICollectionView v) {
+                if(v is ListCollectionView lv) lv.CustomSort = comparer;
+            }
+
+            SetSort(MyTasksView);
+            SetSort(PartnerTasksView);
+            SetSort(MyCompletedTasks);
+            SetSort(PartnerCompletedTasks);
         }
 
+        private void ApplySorts() {
+            if(SelectedSort == TaskSortMode.Category) {
+                ApplyCategorySorts();
+                RefreshAllViews();
+                return;
+            }
+
+            int NullsLast<T>(T? a, T? b) where T : struct, IComparable<T> {
+                var hasA = a.HasValue; var hasB = b.HasValue;
+                if(hasA && hasB) return a.Value.CompareTo(b.Value);
+                if(hasA && !hasB) return -1;
+                if(!hasA && hasB) return 1;
+                return 0;
+            }
+
+            // NOTE: non-generic IComparer
+            System.Collections.IComparer comparer = SelectedSort switch {
+                TaskSortMode.DueSoon => (System.Collections.IComparer)Comparer<TaskItem>.Create((a, b) => {
+                    int byDue = NullsLast(a.DueDate, b.DueDate);
+                    if(byDue != 0) return byDue;
+                    return string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase);
+                }),
+
+                TaskSortMode.Newest => (System.Collections.IComparer)Comparer<TaskItem>.Create((a, b) => {
+                    DateTime A() => a.UpdatedAt ?? a.CompletedAt ?? a.DueDate ?? DateTime.MinValue;
+                    DateTime B() => b.UpdatedAt ?? b.CompletedAt ?? b.DueDate ?? DateTime.MinValue;
+                    int byTimeDesc = -A().CompareTo(B()); // newest first
+                    if(byTimeDesc != 0) return byTimeDesc;
+                    return string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase);
+                }),
+
+                TaskSortMode.Oldest => (System.Collections.IComparer)Comparer<TaskItem>.Create((a, b) => {
+                    DateTime A() => a.UpdatedAt ?? a.CompletedAt ?? a.DueDate ?? DateTime.MaxValue;
+                    DateTime B() => b.UpdatedAt ?? b.CompletedAt ?? b.DueDate ?? DateTime.MaxValue;
+                    int byTimeAsc = A().CompareTo(B());   // oldest first
+                    if(byTimeAsc != 0) return byTimeAsc;
+                    return string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase);
+                }),
+
+                _ => (System.Collections.IComparer)Comparer<TaskItem>.Create((a, b) => 0)
+            };
+
+            void SetSort(ICollectionView v) {
+                if(v is ListCollectionView lv) lv.CustomSort = comparer;
+            }
+
+            SetSort(MyTasksView);
+            SetSort(PartnerTasksView);
+            SetSort(MyCompletedTasks);
+            SetSort(PartnerCompletedTasks);
+            RefreshAllViews();
+        }
+        private void AttachTaskHandlers(TaskItem t) {
+            if(t == null) return;
+            t.PropertyChanged += OnTaskPropertyChanged;
+            // Ensure its category is known (covers initial attach and new items)
+            MergeCategories(new[] { t.Category! });
+            UpdateHeaderCounts();
+        }
+
+        private void DetachTaskHandlers(TaskItem t) {
+            if(t == null) return;
+            t.PropertyChanged -= OnTaskPropertyChanged;
+            UpdateHeaderCounts();
+        }
+
+        private void OnTaskPropertyChanged(object? sender, PropertyChangedEventArgs e) {
+            if(e.PropertyName == nameof(TaskItem.Category) && sender is TaskItem t) {
+                MergeCategories(new[] { t.Category! });
+                if(SelectedSort == TaskSortMode.Category) {
+                    ApplyCategorySorts();
+                    RefreshAllViews();
+                }
+            }
+            if(e.PropertyName == nameof(TaskItem.IsCompleted) ||
+                e.PropertyName == nameof(TaskItem.AssignedTo)) {
+                UpdateHeaderCounts();             // <-- add
+            }
+        }
+
+        private void RefreshAllViews() {
+            MyTasksView?.Refresh();
+            PartnerTasksView?.Refresh();
+            MyCompletedTasks?.Refresh();
+            PartnerCompletedTasks?.Refresh();
+        }
+        private void UpdateHeaderCounts() {
+            MyActiveCount = Tasks.Count(t => t.AssignedTo == Assignee.Me && !t.IsCompleted);
+            MyCompletedCount = Tasks.Count(t => t.AssignedTo == Assignee.Me && t.IsCompleted);
+            PartnerActiveCount = Tasks.Count(t => t.AssignedTo == Assignee.Partner && !t.IsCompleted);
+        }
 
         public DateTime Now {
             get => _now;

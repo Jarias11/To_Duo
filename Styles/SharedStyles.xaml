@@ -14,6 +14,8 @@
 					 Color="#4CAF50"/>
 	<SolidColorBrush x:Key="PartnerTaskTextBrush"
 					 Color="#E91E63"/>
+	<SolidColorBrush x:Key="CompletedCountBrush"
+					 Color="#616161"/>
 
 
 	<!-- 1) The template as a standalone resource -->
@@ -121,6 +123,46 @@
 			</Trigger>
 		</ControlTemplate.Triggers>
 	</ControlTemplate>
+
+
+
+
+
+
+	<!-- Section header -->
+	<Style x:Key="SectionHeader"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontSize"
+				Value="16"/>
+		<Setter Property="FontWeight"
+				Value="Bold"/>
+		<Setter Property="Margin"
+				Value="0,0,0,8"/>
+	</Style>
+	<!-- Generic white card -->
+	<Style x:Key="Card"
+		   TargetType="Border">
+		<Setter Property="Background"
+				Value="{DynamicResource CardBackgroundBrush}"/>
+		<Setter Property="CornerRadius"
+				Value="10"/>
+		<Setter Property="Padding"
+				Value="12"/>
+		<Setter Property="Margin"
+				Value="0,0,0,10"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource CardBorderBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<Setter Property="Effect">
+			<Setter.Value>
+				<DropShadowEffect BlurRadius="10"
+								  ShadowDepth="2"
+								  Opacity="0.15"/>
+			</Setter.Value>
+		</Setter>
+	</Style>
 
 	<!-- 2) Style that uses the template -->
 	<Style x:Key="AssignToSwitch"
@@ -401,29 +443,7 @@
 				Value="{DynamicResource ControlBackgroundBrush}"/>
 	</Style>
 
-	<!-- Generic white card -->
-	<Style x:Key="Card"
-		   TargetType="Border">
-		<Setter Property="Background"
-				Value="{DynamicResource CardBackgroundBrush}"/>
-		<Setter Property="CornerRadius"
-				Value="10"/>
-		<Setter Property="Padding"
-				Value="12"/>
-		<Setter Property="Margin"
-				Value="0,0,0,10"/>
-		<Setter Property="BorderBrush"
-				Value="{DynamicResource CardBorderBrush}"/>
-		<Setter Property="BorderThickness"
-				Value="1"/>
-		<Setter Property="Effect">
-			<Setter.Value>
-				<DropShadowEffect BlurRadius="10"
-								  ShadowDepth="2"
-								  Opacity="0.15"/>
-			</Setter.Value>
-		</Setter>
-	</Style>
+
 
 	<!-- Card-looking Expander: header = full-width clickable row, content = inside a card -->
 	<Style x:Key="CardExpander"
@@ -538,26 +558,16 @@
 		</Setter>
 	</Style>
 
-	<!-- Section header -->
-	<Style x:Key="SectionHeader"
-		   TargetType="TextBlock"
-		   BasedOn="{StaticResource {x:Type TextBlock}}">
-		<Setter Property="FontSize"
-				Value="16"/>
-		<Setter Property="FontWeight"
-				Value="Bold"/>
-		<Setter Property="Margin"
-				Value="0,0,0,8"/>
-	</Style>
+
 
 	<!-- Activity Center theming -->
 	<SolidColorBrush x:Key="ActivityBackgroundBrush"
-			Color="#F0F0F3"/>
+					 Color="#F0F0F3"/>
 	<!-- lighter gray -->
 	<SolidColorBrush x:Key="ActivityRowAltBrush"
-			Color="#E9E9EE"/>
+					 Color="#E9E9EE"/>
 	<Style x:Key="ActivityListStyle"
-			TargetType="ListBox">
+		   TargetType="ListBox">
 		<Setter Property="Background"
 				Value="{DynamicResource ActivityBackgroundBrush}"/>
 		<Setter Property="BorderThickness"
@@ -568,8 +578,8 @@
 				Value="11"/>
 	</Style>
 	<Style x:Key="ActivityTimestampStyle"
-			TargetType="TextBlock"
-			BasedOn="{StaticResource {x:Type TextBlock}}">
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource {x:Type TextBlock}}">
 		<Setter Property="FontFamily"
 				Value="Bahnschrift,Consolas,Segoe UI"/>
 		<Setter Property="FontSize"
@@ -581,6 +591,309 @@
 		<Setter Property="Margin"
 				Value="8,0,8,0"/>
 	</Style>
+	<!-- Header tabs: TabControl -->
+	<Style x:Key="HeaderTabs"
+		   TargetType="TabControl">
+		<Setter Property="Background"
+				Value="Transparent"/>
+		<Setter Property="BorderThickness"
+				Value="0"/>
+		<Setter Property="Padding"
+				Value="0"/>
+		<Setter Property="Margin"
+				Value="0,0,0,0"/>
+		<Setter Property="SnapsToDevicePixels"
+				Value="False"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TabControl">
+					<Grid KeyboardNavigation.TabNavigation="Local">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition/>
+							<ColumnDefinition Width="30"/>
+							<!-- spacer so last tab isn’t flush -->
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
 
-	
+						<!-- Tab strip -->
+						<TabPanel x:Name="HeaderPanel"
+								  Grid.Row="0"
+								  Grid.Column="0"
+								  IsItemsHost="True"
+								  Background="Transparent"
+								  Margin="0,0,0,0"
+								  ClipToBounds="False"/>
+
+						<!-- hide default body -->
+						<ContentPresenter Grid.Row="1"
+										  Grid.ColumnSpan="2"
+										  Visibility="Collapsed"/>
+					</Grid>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Header tab "chip" -->
+	<Style x:Key="HeaderTabItem"
+		   TargetType="TabItem">
+		<Setter Property="Background"
+				Value="{DynamicResource TabItemBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource TabItemBorderBrush}"/>
+		<!-- space between tabs -->
+		<Setter Property="Margin"
+				Value="0,0,0,0"/>
+
+		<Setter Property="Padding"
+				Value="10,6,10,6"/>
+		<Setter Property="Template">
+
+			<Setter.Value>
+				<ControlTemplate TargetType="TabItem">
+					<Border x:Name="Bd"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="10"
+							Padding="{TemplateBinding Padding}">
+						<ContentPresenter ContentSource="Header"
+										  VerticalAlignment="Center"
+										  HorizontalAlignment="Left"/>
+					</Border>
+
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource TabItemHoverBrush}"/>
+						</Trigger>
+
+						<!-- Selected look, without changing TabItem.Margin -->
+						<Trigger Property="IsSelected"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource TabItemSelectedBrush}"/>
+							<Setter TargetName="Bd"
+									Property="CornerRadius"
+									Value="10,10,0,0"/>
+							<Setter TargetName="Bd"
+									Property="BorderThickness"
+									Value="1,1,1,0"/>
+							<Setter TargetName="Bd"
+									Property="Margin"
+									Value="10,0,15,-6"/>
+							<!-- drop into card -->
+							<Setter Property="Panel.ZIndex"
+									Value="1"/>
+							<Setter Property="FontWeight"
+									Value="SemiBold"/>
+						</Trigger>
+
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+						<DataTrigger Value="False">
+							<DataTrigger.Binding>
+								<Binding RelativeSource="{RelativeSource AncestorType=Expander}"
+										 Path="IsExpanded"/>
+							</DataTrigger.Binding>
+							<!-- reset just the selected-state visuals -->
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource TabItemBackgroundBrush}"/>
+							<Setter TargetName="Bd"
+									Property="CornerRadius"
+									Value="10"/>
+							<Setter TargetName="Bd"
+									Property="BorderThickness"
+									Value="1"/>
+							<Setter TargetName="Bd"
+									Property="Margin"
+									Value="0"/>
+							<Setter Property="Panel.ZIndex"
+									Value="0"/>
+							<Setter Property="FontWeight"
+									Value="Normal"/>
+						</DataTrigger>
+						
+					</ControlTemplate.Triggers>
+
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+
+
+	<!-- Tabs in header + chevron to collapse -->
+	<Style x:Key="TabbedCardExpander"
+		   TargetType="Expander">
+		<Setter Property="IsExpanded"
+				Value="False"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Expander">
+					<Border Style="{StaticResource Card}"
+							Padding="0">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto"/>
+								<!-- header -->
+								<RowDefinition Height="Auto"/>
+								<!-- body -->
+							</Grid.RowDefinitions>
+
+							<!-- HEADER: title | tabs | spacer | chevron -->
+							<Grid Grid.Row="0"
+								  Margin="12,6,12,6">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<!-- Title -->
+									<ColumnDefinition Width="Auto"/>
+									<!-- Tabs -->
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+									<!-- Chevron (click to toggle) -->
+								</Grid.ColumnDefinitions>
+
+								<!-- Title -->
+								<TextBlock Grid.Column="0"
+										   Text="Quick Tools"
+										   Style="{StaticResource SectionHeader}"
+										   VerticalAlignment="Center"
+										   Margin="0,0,10,0"/>
+
+								<!-- Tabs (do NOT toggle) -->
+								<TabControl
+									x:Name="Tabs"
+									Grid.Column="1"
+									Panel.ZIndex="2"
+									Style="{StaticResource HeaderTabs}"
+									ItemContainerStyle="{StaticResource HeaderTabItem}"
+									HorizontalAlignment="Left"
+									SelectedIndex="{Binding SelectedTopTab, Mode=TwoWay}">
+									<TabItem Header="Connections"/>
+									<TabItem Header="Activity Center"/>
+									<TabItem Header="Task Builder"/>
+								</TabControl>
+								<!--   Spacer (pushes chevron to right)  -->
+								<ToggleButton Grid.Column="2"
+											  Panel.ZIndex="0"
+											  Background="Transparent"
+											  BorderThickness="0"
+											  Cursor="Hand"
+											  Focusable="False"
+											  IsChecked="{Binding IsExpanded, Mode=TwoWay,
+                                   RelativeSource={RelativeSource TemplatedParent}}">
+									<ToggleButton.Template>
+										<ControlTemplate TargetType="ToggleButton">
+											<Border Background="Transparent"/>
+											<!-- invisible hit-area -->
+										</ControlTemplate>
+									</ToggleButton.Template>
+								</ToggleButton>
+
+
+								<!-- Chevron (clickable) -->
+								<ToggleButton Grid.Column="3"
+											  MinWidth="16"
+											  HorizontalAlignment="Stretch"
+											  Background="Transparent"
+											  BorderThickness="0"
+											  Cursor="Hand"
+											  Focusable="False"
+											  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+									<ToggleButton.Template>
+										<ControlTemplate TargetType="ToggleButton">
+											<Grid>
+												<Path x:Name="Glyph"
+													  Data="M 0 0 L 6 6 L 12 0 Z"
+													  Width="12"
+													  Height="6"
+													  HorizontalAlignment="Center"
+													  VerticalAlignment="Center"
+													  Fill="{DynamicResource PrimaryTextBrush}"/>
+											</Grid>
+											<ControlTemplate.Triggers>
+												<Trigger Property="IsChecked"
+														 Value="True">
+													<Setter TargetName="Glyph"
+															Property="RenderTransform">
+														<Setter.Value>
+															<RotateTransform Angle="180"
+																			 CenterX="6"
+																			 CenterY="3"/>
+														</Setter.Value>
+													</Setter>
+												</Trigger>
+											</ControlTemplate.Triggers>
+										</ControlTemplate>
+									</ToggleButton.Template>
+								</ToggleButton>
+
+								<!-- Title overlay (clickable, no visuals) -->
+								<ToggleButton Grid.Column="0"
+											  Panel.ZIndex="10"
+											  Focusable="False"
+											  Cursor="Hand"
+											  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+									<ToggleButton.Template>
+										<ControlTemplate TargetType="ToggleButton">
+											<Border Background="Transparent"/>
+											<!-- no hover/pressed visuals -->
+										</ControlTemplate>
+									</ToggleButton.Template>
+								</ToggleButton>
+							</Grid>
+
+							<!-- BODY -->
+							<ContentPresenter x:Name="Body"
+											  Grid.Row="1"
+											  Margin="12,0,12,12"
+											  Visibility="Collapsed"/>
+						</Grid>
+					</Border>
+
+					<!-- ⬇️ Triggers belong here, as children of ControlTemplate -->
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsExpanded"
+								 Value="True">
+							<Setter TargetName="Body"
+									Property="Visibility"
+									Value="Visible"/>
+						</Trigger>
+						<Trigger SourceName="Tabs"
+								 Property="SelectedIndex"
+								 Value="0">
+							<Setter Property="IsExpanded"
+									Value="True"/>
+						</Trigger>
+						<Trigger SourceName="Tabs"
+								 Property="SelectedIndex"
+								 Value="1">
+							<Setter Property="IsExpanded"
+									Value="True"/>
+						</Trigger>
+						<Trigger SourceName="Tabs"
+								 Property="SelectedIndex"
+								 Value="2">
+							<Setter Property="IsExpanded"
+									Value="True"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+
+
 </ResourceDictionary>
