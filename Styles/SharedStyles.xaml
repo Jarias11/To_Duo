@@ -2,11 +2,14 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:conv="clr-namespace:TaskMate.Converters"
+	xmlns:sys="clr-namespace:System;assembly=System.Runtime"
 	xmlns:local="clr-namespace:TaskMate.ViewModels">
 
 	<!-- Converters -->
 	<BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 	<conv:AssigneeToVisibilityConverter x:Key="AssigneeToVisibilityConverter"/>
+	<conv:TupleConverter x:Key="TupleConverter"/>
+	<conv:DictionaryLookupConverter x:Key="DictLookup"/>
 	<local:BoolToTextDecorationsConverter x:Key="BoolToTextDecorationsConverter"/>
 
 	<!-- Brushes -->
@@ -16,6 +19,10 @@
 					 Color="#E91E63"/>
 	<SolidColorBrush x:Key="CompletedCountBrush"
 					 Color="#616161"/>
+
+	<!-- Treat null/empty string as false; any text as true -->
+	<conv:BooleanOrMultiConverter x:Key="BooleanOrMultiConverter"/>
+	<conv:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
 
 
 	<!-- 1) The template as a standalone resource -->
@@ -723,7 +730,7 @@
 							<Setter Property="FontWeight"
 									Value="Normal"/>
 						</DataTrigger>
-						
+
 					</ControlTemplate.Triggers>
 
 				</ControlTemplate>
@@ -892,6 +899,54 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
+	</Style>
+	<!-- Display chip -->
+	<Style x:Key="ReactionPill"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontSize"
+				Value="14"/>
+		<Setter Property="FontWeight"
+				Value="SemiBold"/>
+		<Setter Property="Margin"
+				Value="2,0,0,0"/>
+		<Setter Property="VerticalAlignment"
+				Value="Top"/>
+	</Style>
+
+	<!-- Reaction glyph from key -->
+	<Style x:Key="ReactionGlyph"
+			TargetType="TextBlock"
+			BasedOn="{StaticResource ReactionPill}">
+		<Setter Property="Text"
+				Value=""/>
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
+					Value="happy">
+				<Setter Property="Text"
+						Value="😊"/>
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
+					Value="sad">
+				<Setter Property="Text"
+						Value="😢"/>
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
+					Value="thumbsUp">
+				<Setter Property="Text"
+						Value="👍"/>
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
+					Value="thumbsDown">
+				<Setter Property="Text"
+						Value="👎"/>
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
+					Value="shocked">
+				<Setter Property="Text"
+						Value="😮"/>
+			</DataTrigger>
+		</Style.Triggers>
 	</Style>
 
 

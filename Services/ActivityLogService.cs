@@ -50,18 +50,22 @@ namespace TaskMate.Services {
 				["Timestamp"] = Timestamp.FromDateTime(utc),
 				["Actor"] = myActor,
 				["Kind"] = e.Kind ?? "",
-				["Message"] = e.Message ?? ""
+				["Message"] = e.Message ?? "",
+				["Reactions"] = new Dictionary<string, object?>()
 			};
 
 			await doc.SetAsync(payload, SetOptions.MergeAll);
 			try {
 				var localTs = utc.ToLocalTime(); // MapFrom uses local time for UI
 				var echo = new ActivityEntry {
+					Id = doc.Id,                     // NEW
+					OwnerUserId = myUserId,
 					Timestamp = localTs,
 					Actor = myActor,
 					Kind = e.Kind ?? "",
 					Message = e.Message ?? "",
-					IsMine = true
+					IsMine = true,
+					Reactions = new Dictionary<string, string>()
 				};
 				_ui.BeginInvoke(() => UpsertIntoFeed(new[] { echo }));
 			}
@@ -80,14 +84,17 @@ namespace TaskMate.Services {
 					var myDisplay = _settings.DisplayName ?? "Me";
 
 					var mine = snap.Documents
-						.Select(MapFrom)
+						.Select(d => MapFrom(d, myUserId))
 						// Ensure our rows show with *our* current display name for consistency
 						.Select(e => new ActivityEntry {
+							Id = e.Id,
+							OwnerUserId = myUserId,
 							Timestamp = e.Timestamp,
 							Kind = e.Kind,
 							Message = e.Message,
 							Actor = string.IsNullOrWhiteSpace(e.Actor) ? myDisplay : e.Actor,
-							IsMine = true
+							IsMine = true,
+							Reactions = e.Reactions
 						})
 						.ToList();
 
@@ -132,7 +139,7 @@ namespace TaskMate.Services {
 				.Limit(200)
 				.Listen(snap => {
 					var entries = snap.Documents
-						.Select(MapFrom) // uses the Actor stored by the partner (their display name)
+						.Select(d => MapFrom(d, partnerUserId)) // uses the Actor stored by the partner (their display name)
 						.Where(e => e.Timestamp.ToUniversalTime() >= cutoffUtc)
 						.Select(e => { e.IsMine = false; return e; })
 						.ToList();
@@ -158,12 +165,12 @@ namespace TaskMate.Services {
 
 		// ---- Mapping & merge helpers ----------------------------------------
 
-		private static ActivityEntry MapFrom(DocumentSnapshot d) {
+		private static ActivityEntry MapFrom(DocumentSnapshot d, string ownerUserId) {
 			var dict = d.ToDictionary();
-			return MapFrom(dict);
+			return MapFrom(dict, ownerUserId, d.Id);
 		}
 
-		private static ActivityEntry MapFrom(IDictionary<string, object?> dict) {
+		private static ActivityEntry MapFrom(IDictionary<string, object?> dict, string ownerUserId, string id) {
 			DateTime ts = DateTime.UtcNow;
 			if(dict.TryGetValue("Timestamp", out var v) && v is Timestamp t) {
 				// Firestore Timestamp -> DateTime, then normalize to local so UI matches header clock
@@ -172,25 +179,38 @@ namespace TaskMate.Services {
 			static string S(IDictionary<string, object?> d, string k)
 				=> d.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
 
+			var reactions = new Dictionary<string, string>();
+			if(dict.TryGetValue("Reactions", out var r) && r is IDictionary<string, object?> map) {
+				foreach(var kv in map) reactions[kv.Key] = kv.Value?.ToString() ?? "";
+			}
 			return new ActivityEntry {
+				Id = id,
+				OwnerUserId = ownerUserId,
 				Timestamp = ts,
 				Actor = S(dict, "Actor"),
 				Kind = S(dict, "Kind"),
-				Message = S(dict, "Message")
+				Message = S(dict, "Message"),
+				Reactions = reactions
 			};
 		}
 
 		private void UpsertIntoFeed(IEnumerable<ActivityEntry> incoming) {
 			foreach(var e in incoming) {
-				// Dedupe by coarse signature (your model has no Id)
-				var existing = Feed.FirstOrDefault(x =>
-					x.Timestamp == e.Timestamp &&
-					string.Equals(x.Kind, e.Kind, StringComparison.Ordinal) &&
-					string.Equals(x.Message, e.Message, StringComparison.Ordinal) &&
-					string.Equals(x.Actor, e.Actor, StringComparison.Ordinal));
+				ActivityEntry? existing = null;
 
-				if(existing is null)
-					Feed.Add(e);
+				if(!string.IsNullOrWhiteSpace(e.Id)) {
+					existing = Feed.FirstOrDefault(x => x.Id == e.Id && x.OwnerUserId == e.OwnerUserId);
+				}
+				if(existing is null) {
+					// fallback to coarse signature for legacy rows
+					existing = Feed.FirstOrDefault(x =>
+						x.Timestamp == e.Timestamp &&
+						string.Equals(x.Kind, e.Kind, StringComparison.Ordinal) &&
+						string.Equals(x.Message, e.Message, StringComparison.Ordinal) &&
+						string.Equals(x.Actor, e.Actor, StringComparison.Ordinal));
+				}
+
+				if(existing is null) Feed.Add(e);
 				else {
 					var i = Feed.IndexOf(existing);
 					if(i >= 0) Feed[i] = e;
@@ -214,6 +234,30 @@ namespace TaskMate.Services {
 			foreach(var e in entries.OrderByDescending(x => x.Timestamp))
 				Feed.Add(e);
 		}
+		public async Task ReactAsync(string ownerUserId, string entryId, string reactorUserId, string emoji) {
+			if(string.IsNullOrWhiteSpace(ownerUserId) || string.IsNullOrWhiteSpace(entryId) || string.IsNullOrWhiteSpace(reactorUserId))
+				return;
+
+			var db = FirestoreClient.GetDb();
+			var doc = Col(db, ownerUserId).Document(entryId);
+
+			// write to Reactions.{reactorUserId} = emoji (merge)
+			await doc.SetAsync(new Dictionary<string, object?> {
+				["Reactions"] = new Dictionary<string, object?> { [reactorUserId] = emoji }
+			}, SetOptions.MergeAll);
+
+			// optimistic local update
+			_ui.BeginInvoke(() => {
+				var row = Feed.FirstOrDefault(a => a.Id == entryId && a.OwnerUserId == ownerUserId);
+				if(row != null) {
+					row.Reactions[reactorUserId] = emoji;
+					// replace to trigger bindings if needed
+					var idx = Feed.IndexOf(row);
+					if(idx >= 0) Feed[idx] = row;
+					SaveLocal();
+				}
+			});
+		}
 
 		private void LoadLocal() {
 			try {
@@ -223,26 +267,23 @@ namespace TaskMate.Services {
 				var saved = JsonSerializer.Deserialize<List<ActivityEntry>>(json) ?? new();
 				var myDisplay = _settings.DisplayName ?? "Me";
 
-				// Rebuild entries so we can set init-only properties (Actor, etc.)
-				var normalized = saved.Select(e => {
-					var actor = string.IsNullOrWhiteSpace(e.Actor) ? myDisplay : e.Actor;
+				foreach(var s in saved.OrderByDescending(x => x.Timestamp)) {
+					// normalize Actor fallback only; keep the rest intact
+					var actor = string.IsNullOrWhiteSpace(s.Actor) ? myDisplay : s.Actor;
 
-					return new ActivityEntry {
-						Timestamp = e.Timestamp,
-						Kind = e.Kind,
-						Message = e.Message,
+					Feed.Add(new ActivityEntry {
+						Id = s.Id,
+						OwnerUserId = s.OwnerUserId,
+						Timestamp = s.Timestamp,
+						Kind = s.Kind,
+						Message = s.Message,
 						Actor = actor,
-						IsMine = string.Equals(actor, myDisplay, StringComparison.OrdinalIgnoreCase)
-					};
-				});
-
-				// Newest-first order while loading
-				foreach(var e in normalized.OrderByDescending(x => x.Timestamp))
-					Feed.Add(e);
+						IsMine = s.IsMine,
+						Reactions = new Dictionary<string, string>(s.Reactions ?? new())
+					});
+				}
 			}
-			catch {
-				// ignore local read failures
-			}
+			catch { /* ignore */ }
 		}
 		public Task PostMessageAsync(string text, string myUserId)
 	=> LogAsync(new ActivityEntry {

@@ -29,34 +29,6 @@
 
 
 
-
-
-                <!-- QUICK TOOLS: one dropdown with 3 tabs -->
-                
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 <!-- TASK LISTS in a big card -->
                 <!-- === MIDDLE AREA: one owner ScrollViewer === -->
                 <ScrollViewer Grid.Row="1"

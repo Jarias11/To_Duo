@@ -9,5 +9,6 @@ namespace TaskMate.Services {
 		Task StartMineAsync(string myUserId);                           // listen to my logs
 		Task StartPartnerSinceAsync(string partnerUserId, DateTime sinceUtc); // listen to partner logs from 'since' forward
 		Task StopPartnerAsync();
+		Task ReactAsync(string ownerUserId, string entryId, string reactorUserId, string emoji); // toggle reaction on an entry
 	}
 }

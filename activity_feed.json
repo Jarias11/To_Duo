@@ -1,457 +1,707 @@
 [
   {
+    "Timestamp": "2025-09-26T16:56:28.235285-04:00",
+    "Actor": "fuego",
+    "Kind": "task.accept",
+    "Message": "Accepted task \u201Cefaaawfawf\u201D",
+    "IsMine": true,
+    "Id": "bdvJNkwG0s04E2GtROik",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {
+      "GwS0l9RWJE": "happy",
+      "GwRwLhzQtU": "thumbsDown"
+    }
+  },
+  {
+    "Timestamp": "2025-09-26T16:56:18.877446-04:00",
+    "Actor": "mon",
+    "Kind": "task.request",
+    "Message": "Requested task \u201Cefaaawfawf\u201D for Partner",
+    "IsMine": false,
+    "Id": "lanfojQIRs8aBVAJ91AG",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {
+      "GwRwLhzQtU": "happy",
+      "GwS0l9RWJE": "thumbsUp"
+    }
+  },
+  {
+    "Timestamp": "2025-09-26T16:55:12.106173-04:00",
+    "Actor": "fuego",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Crtsdhdgsedgszdgsd\u201D",
+    "IsMine": true,
+    "Id": "EZsQcbyk4E0Ftm8GK7WN",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {
+      "GwRwLhzQtU": "happy"
+    }
+  },
+  {
+    "Timestamp": "2025-09-26T16:54:01.706465-04:00",
+    "Actor": "fuego",
+    "Kind": "chat.message",
+    "Message": "hello",
+    "IsMine": true,
+    "Id": "zqP9nzhKwM1IuquBdCrp",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {
+      "GwRwLhzQtU": "thumbsDown"
+    }
+  },
+  {
     "Timestamp": "2025-09-25T19:08:55.433844-04:00",
     "Actor": "fuego",
     "Kind": "task.complete",
     "Message": "Completed \u201Ccreated first\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "tIjILprVxwG2dqK9aJiz",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {
+      "GwRwLhzQtU": "thumbsDown"
+    }
   },
   {
     "Timestamp": "2025-09-25T17:45:04.303242-04:00",
     "Actor": "fuego",
     "Kind": "task.delete",
     "Message": "Deleted task \u201Cdzfgdszsdrzx\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "aaJiCdDiZ5AnvoZODlT3",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {
+      "GwRwLhzQtU": "shocked",
+      "GwS0l9RWJE": "shocked"
+    }
   },
   {
     "Timestamp": "2025-09-25T17:28:11.720793-04:00",
     "Actor": "fuego",
     "Kind": "task.complete",
     "Message": "Completed \u201Ccreated second\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "NsHrCz5EbBwJjb2QrbyJ",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T17:28:09.542696-04:00",
     "Actor": "fuego",
     "Kind": "task.complete",
     "Message": "Completed \u201Cgfsdgrvfsdgrgsd\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "bf4lj2xprT2CKwBzJj4Y",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T17:28:07.026805-04:00",
     "Actor": "fuego",
     "Kind": "task.complete",
     "Message": "Completed \u201Cerafaewefaw\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "AdnnFlbFxZftAFq9jrSG",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:52:26.10668-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Chw\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "lryaVfkMl0pPletwZVZe",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:52:13.843585-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201CFinish Exam\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "bzjN4l2Y8EyTXwdasSNt",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:33:59.58665-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Cthbdfthd\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "d0EFeyWsEXizFomA7sUR",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:33:45.09225-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Cwasnbcghnfcg\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "7O1l454rCt7W0gqOkd3h",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:33:38.295382-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Cnbvcngfvngf\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "nwdqckxe6jyyQhucdgbL",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:33:22.727584-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Cground\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "LgvKM7zKWCZuyKKcxCws",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:33:05.235385-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Cwater\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "JyR0GPRQui7NcjmyeHyE",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:51.030957-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Cfire\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "P8be4pagifJhj15OIiJE",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:20.735882-04:00",
     "Actor": "mon",
     "Kind": "task.complete",
     "Message": "Completed \u201Chgjfhfgg\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "zo7GliUULt35RzpejSYi",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:18.540386-04:00",
     "Actor": "mon",
     "Kind": "task.complete",
     "Message": "Completed \u201Cvbnn\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "HMczceu6ChcvwqvK5aIF",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:16.814958-04:00",
     "Actor": "mon",
     "Kind": "task.complete",
     "Message": "Completed \u201Ceafewawf\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "1DcO1Vp5kVMNyicBl20p",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:15.072771-04:00",
     "Actor": "mon",
     "Kind": "task.complete",
     "Message": "Completed \u201Crrdfgxrsdxg\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "IY0vviDHr9yY5wDCN3Mp",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:12.949682-04:00",
     "Actor": "mon",
     "Kind": "task.complete",
     "Message": "Completed \u201Cgfhndfchn\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "NTYibMW6GpqNpRhJXfsr",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:32:11.413032-04:00",
     "Actor": "mon",
     "Kind": "task.complete",
     "Message": "Completed \u201Cbvncnb\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "ZYo8HF1BB0LMHkQWbKrC",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:30:20.443982-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Cweafeasfaswf\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "53KK2L7MCoS2cJwTSX87",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:26:48.170287-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Cujkfggydbfhbxf gttfdhxf\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "ySIuE7fY9eQ5kQ7mN09D",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:26:37.007887-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Chgdfhdtrfhdrhtdrh\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "Dei5HeErzOq9scwNjbAl",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:26:31.55451-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Cgfsdgrvfsdgrgsd\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "qeNZsaP6XC3T3b2W5qgQ",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:26:09.299143-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Crtsdhdgsedgszdgsd\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "s8PdvH0e4Zf6QSp1tZVS",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:25:56.898637-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Cerafaewefaw\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "G4ZTHulbeRG8GkBofrtT",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:25:36.011364-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Ccreated second\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "ZgpB8TYCBajs2mqDPxMO",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T15:25:13.627805-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Ccreated first\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "1lzJYRWl9oz6PsXPGIDq",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T03:26:34.168916-04:00",
     "Actor": "mon",
     "Kind": "chat.message",
     "Message": "hi",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "5Sf04QBCoOmjueNLr2b3",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T03:26:15.515878-04:00",
     "Actor": "fuego",
     "Kind": "chat.message",
     "Message": "hello",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "gTJksBCrAtVpm4XaYt1U",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T03:17:11.0505-04:00",
     "Actor": "mon",
     "Kind": "pairing.connected",
     "Message": "Connected to GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "4aGxCivx0tZj5kzj0yGu",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T03:17:10.935074-04:00",
     "Actor": "mon",
     "Kind": "pairing.accepted",
     "Message": "Accepted partner request from GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "9RkxwTdX76s50emb4EOS",
+    "OwnerUserId": "GwS0l9RWJE",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T03:17:09.736701-04:00",
     "Actor": "fuego",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "YxpdZgJKPmLQseRNScYM",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:52:07.842082-04:00",
     "Actor": "fuego",
     "Kind": "pairing.disconnected",
     "Message": "Disconnected from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "FbXtbFRB2S8XYftCj7CS",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:51:59.065479-04:00",
     "Actor": "fuego",
     "Kind": "pairing.connected",
     "Message": "Connected to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "vx5ToqmNCREUEDEVq8ks",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:51:58.846045-04:00",
     "Actor": "fuego",
     "Kind": "pairing.accepted",
     "Message": "Accepted partner request from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "S46gd7zgYcO2K1i00RaJ",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:51:50.199234-04:00",
     "Actor": "mon",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:21.42617-04:00",
     "Actor": "fuego",
     "Kind": "pairing.disconnected",
     "Message": "Disconnected from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "jKJS6nr9xKl4xkonABth",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:14.098922-04:00",
     "Actor": "fuego",
     "Kind": "pairing.connected",
     "Message": "Connected to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "LpqggSA3kyT7OIcIZfvM",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:13.969737-04:00",
     "Actor": "fuego",
     "Kind": "pairing.accepted",
     "Message": "Accepted partner request from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "B5UWK467mFFPOHpqeTXx",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:12.458814-04:00",
     "Actor": "mon",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:08.611868-04:00",
     "Actor": "fuego",
     "Kind": "pairing.disconnected",
     "Message": "Disconnected from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "ncrmz1znvS8dcrIxBH05",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:03.438565-04:00",
     "Actor": "fuego",
     "Kind": "pairing.connected",
     "Message": "Connected to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "aF24QQ60mdUpv9RIEzpv",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:03.300466-04:00",
     "Actor": "fuego",
     "Kind": "pairing.accepted",
     "Message": "Accepted partner request from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "zH3f9wgiM55lhJZ7Wujq",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:50:01.74033-04:00",
     "Actor": "mon",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:44:44.422042-04:00",
     "Actor": "mon",
     "Kind": "pairing.disconnected",
     "Message": "Disconnected from GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:44:35.567085-04:00",
     "Actor": "fuego",
     "Kind": "task.complete",
     "Message": "Completed \u201Cdzfgdszsdrzx\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "40mUFtbRvM8aNfPLdvhv",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:44:26.25346-04:00",
     "Actor": "fuego",
     "Kind": "task.accept",
     "Message": "Accepted task \u201Cdzfgdszsdrzx\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "ucumLhgb6kEqQgKVZr6Q",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:44:24.919927-04:00",
     "Actor": "mon",
     "Kind": "task.request",
     "Message": "Requested task \u201Cdzfgdszsdrzx\u201D for Partner",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-25T02:44:15.385704-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Cedfasfs\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "8pYLutTDXT6GrkeFRGDv",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T21:19:17.778342-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Ceafewawf\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T21:18:57.68804-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Crrdfgxrsdxg\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:51.350672-04:00",
     "Actor": "fuego",
     "Kind": "task.accept",
     "Message": "Accepted task \u201Chtdrhdfhhrd\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "4rXb6wy3OHB40ZhTvUFT",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:48.371515-04:00",
     "Actor": "mon",
     "Kind": "task.request",
     "Message": "Requested task \u201Chtdrhdfhhrd\u201D for Partner",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:44.055498-04:00",
     "Actor": "fuego",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Cfhtdgr\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "vbQzjOVANHd8IvTJbGrX",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:38.409878-04:00",
     "Actor": "mon",
     "Kind": "task.add",
     "Message": "mon Created task \u201Ccvgbfb\u201D",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:24.163071-04:00",
     "Actor": "fuego",
     "Kind": "pairing.connected",
     "Message": "Connected to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "soySRW3lmu3PhkwYhdvI",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:24.014193-04:00",
     "Actor": "fuego",
     "Kind": "pairing.accepted",
     "Message": "Accepted partner request from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "HD6hDnGKZ8Dn3lN2sM3P",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:58:22.661835-04:00",
     "Actor": "mon",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwRwLhzQtU",
-    "IsMine": false
+    "IsMine": false,
+    "Id": "",
+    "OwnerUserId": "",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:51:33.805992-04:00",
     "Actor": "Me",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Crtdsgdg\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "IFy3thHgMbk1uOPMTbwY",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T20:51:04.195554-04:00",
     "Actor": "Me",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "JH1pncXxHZXcwK1eTO9Z",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T18:04:40.62264-04:00",
     "Actor": "Me",
     "Kind": "pairing.disconnected",
     "Message": "Disconnected from GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "Ca9YTUnIiokSbT7RO2LW",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T18:04:23.926261-04:00",
     "Actor": "Me",
     "Kind": "task.request",
     "Message": "Requested task \u201Cbvncnb\u201D for Partner",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "hNT3xpv48UW7q5pwvvMz",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T18:04:15.988124-04:00",
     "Actor": "Me",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "oICX3pPMf5QhA3TLUk4Q",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T18:03:55.506418-04:00",
     "Actor": "Me",
     "Kind": "task.add",
     "Message": "fuego Created task \u201Crgdsgred\u201D",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "aU08tSucAmqnudhwrdLv",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-24T17:52:50.650878-04:00",
     "Actor": "Me",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to GwS0l9RWJE",
-    "IsMine": true
+    "IsMine": true,
+    "Id": "XR94uhNp0Kf1d5PmVeWk",
+    "OwnerUserId": "GwRwLhzQtU",
+    "Reactions": {}
   }
 ]

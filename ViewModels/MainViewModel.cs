@@ -118,6 +118,7 @@ namespace TaskMate.ViewModels {
         public ICommand ShowTaskDetailsCommand { get; }
         public ICommand ToggleCompleteCommand { get; }
         public ICommand SendActivityMessageCommand { get; }
+        public ICommand ReactToActivityCommand { get; }
 
 
         public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs, IActivityLogService activity) {
@@ -276,6 +277,17 @@ namespace TaskMate.ViewModels {
                 NewActivityMessage = string.Empty; // clear box
             },
 _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
+            ReactToActivityCommand = new RelayCommand(async obj => {
+                if(obj is not Tuple<ActivityEntry, string> t) return;
+                var (entry, reaction) = t;
+
+                // which collection owns this entry (mine or partner’s)
+                var ownerUserId = entry.IsMine ? UserId : (PartnerId ?? string.Empty);
+                if(string.IsNullOrWhiteSpace(ownerUserId) || string.IsNullOrWhiteSpace(entry.Id)) return;
+
+                var reactorId = UserId; // I’m reacting
+                await _activity.ReactAsync(ownerUserId, entry.Id, reactorId, reaction);
+            });
 
             var local = TaskMate.Data.TaskDataService.LoadTasks();
             foreach(var t in local) _taskService.Tasks.Add(t);
