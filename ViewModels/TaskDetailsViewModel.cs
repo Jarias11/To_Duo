@@ -46,6 +46,7 @@ namespace TaskMate.ViewModels {
 				// Use the *same* path the checkbox uses:
 				await _actions.UpdateAsync(Item, _myUserId, _groupId);
 
+				SoundService.PlayTaskCompleted();
 				CloseRequested?.Invoke();
 			}, _ => CanComplete);
 		}

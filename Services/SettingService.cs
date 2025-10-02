@@ -12,7 +12,7 @@ namespace TaskMate.Services {
 			_model.DisplayName ??= string.Empty;
 			_model.PartnerId ??= string.Empty;
 			_model.GroupId ??= string.Empty;
-			//_model.SoundsEnabled ??= false;
+			_model.SoundsEnabled ??= true;
 			//_model.AnimationLevel ??= "Off";
 		}
 
@@ -22,11 +22,7 @@ namespace TaskMate.Services {
 			set => _model.Theme = value == AppTheme.Dark ? "Dark" : "Light";
 		}
 
-		/*public bool SoundsEnabled
-        {
-            get => _model.SoundsEnabled ?? false;
-            set => _model.SoundsEnabled = value;
-        }
+		/*
 
         public string AnimationLevel
         {
@@ -55,6 +51,11 @@ namespace TaskMate.Services {
 		public DateTime? PairedSinceUtc {
 			get => _model.PairedSinceUtc;
 			set => _model.PairedSinceUtc = value;
+		}
+
+		public bool SoundsEnabled {
+			get => _model.SoundsEnabled ?? true;   // default true
+			set => _model.SoundsEnabled = value;
 		}
 
 		public void Save() => UserSettings.Save(_model);

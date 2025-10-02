@@ -8,6 +8,8 @@ using TaskMate.Models;
 using TaskMate.Services;
 using TaskMate.Models.Enums;
 using TaskMate.Orchestration;
+using System.Windows;        // Application.Current
+using System.Windows.Media;
 
 namespace TaskMate.ViewModels {
     public class MainViewModel : INotifyPropertyChanged, IDisposable {
@@ -20,6 +22,7 @@ namespace TaskMate.ViewModels {
         public string? DisplayName => _settings.DisplayName;
         public string ConnectionSummary => IsPartnerVerified ? $"Connected to: {PartnerId}" : "No partner connected yet";
         private string? _newActivityMessage;
+        private static int _openPopouts;
 
         public IReadOnlyList<KeyValuePair<TaskSortMode, string>> SortOptions { get; } =
     new[] {
@@ -119,6 +122,11 @@ namespace TaskMate.ViewModels {
         public ICommand ToggleCompleteCommand { get; }
         public ICommand SendActivityMessageCommand { get; }
         public ICommand ReactToActivityCommand { get; }
+        public ICommand PopOutBothCommand { get; }
+        public ICommand PopOutMineCommand { get; }
+        public ICommand PopOutPartnerCommand { get; }
+        public ICommand ToggleSoundCommand { get; }
+
 
 
         public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs, IActivityLogService activity) {
@@ -274,7 +282,9 @@ namespace TaskMate.ViewModels {
                 if(text.Length == 0) return;
 
                 await _activity.PostMessageAsync(text, UserId);
+                SoundService.PlaySent();
                 NewActivityMessage = string.Empty; // clear box
+
             },
 _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             ReactToActivityCommand = new RelayCommand(async obj => {
@@ -288,6 +298,39 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                 var reactorId = UserId; // I’m reacting
                 await _activity.ReactAsync(ownerUserId, entry.Id, reactorId, reaction);
             });
+            PopOutBothCommand = new RelayCommand(_ => {
+                var w = new TaskMate.Views.TaskBoardPopoutWindow { DataContext = this };
+                ShowPopoutAndHideMain(w); 
+                SoundService.PlayTaskCreated();
+            });
+
+            PopOutMineCommand = new RelayCommand(_ => {
+                var w = new TaskMate.Views.TaskListPopoutWindow { DataContext = this };
+                w.PopoutTitle = "My Tasks";
+                w.PopoutItems = MyTasksView;
+                w.PopoutBackground = (Brush)Application.Current.FindResource("SubCardLeftBrush");
+                w.PopoutHeaderBackground = (Brush)Application.Current.FindResource("SubCardLeftHeaderBrush");
+                SoundService.PlayTaskCreated();
+                ShowPopoutAndHideMain(w);
+            });
+
+            // Partner
+            PopOutPartnerCommand = new RelayCommand(_ => {
+                var w = new TaskMate.Views.TaskListPopoutWindow { DataContext = this };
+                w.PopoutTitle = "Partner's Tasks";
+                w.PopoutItems = PartnerTasksView;
+                w.PopoutBackground = (Brush)Application.Current.FindResource("SubCardRightBrush");
+                w.PopoutHeaderBackground = (Brush)Application.Current.FindResource("SubCardRightHeaderBrush");
+                SoundService.PlayTaskCreated();
+                ShowPopoutAndHideMain(w);
+            }, _ => ShowPartnerList);
+            ToggleSoundCommand = new RelayCommand(_ => {
+                var next = !_settings.SoundsEnabled;
+                _settings.SoundsEnabled = next;
+                _settings.Save();
+                SoundService.Enable(next);
+            });
+
 
             var local = TaskMate.Data.TaskDataService.LoadTasks();
             foreach(var t in local) _taskService.Tasks.Add(t);
@@ -530,6 +573,24 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             MyActiveCount = Tasks.Count(t => t.AssignedTo == Assignee.Me && !t.IsCompleted);
             MyCompletedCount = Tasks.Count(t => t.AssignedTo == Assignee.Me && t.IsCompleted);
             PartnerActiveCount = Tasks.Count(t => t.AssignedTo == Assignee.Partner && !t.IsCompleted);
+        }
+        private static void ShowPopoutAndHideMain(Window popout) {
+            var main = Application.Current?.MainWindow;
+            if(main == null || popout == null) return;
+
+            // Hide main if this is the first popout
+            if(_openPopouts == 0)
+                main.Hide();
+
+            _openPopouts++;
+
+            popout.Closed += (_, __) => {
+                _openPopouts = Math.Max(0, _openPopouts - 1);
+                if(_openPopouts == 0 && main.IsLoaded)
+                    main.Show();
+            };
+
+            popout.Show(); // non-modal
         }
 
         public DateTime Now {

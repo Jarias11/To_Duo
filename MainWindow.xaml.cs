@@ -1,16 +1,9 @@
 ﻿using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using TaskMate.ViewModels;
 using TaskMate.Services;
 using TaskMate.Orchestration;
+using TaskMate.Services.Notifications;
 
 
 namespace TaskMate;
@@ -37,6 +30,15 @@ public partial class MainWindow : Window {
         var taskActions = new TaskActions(requestSvc, taskSvc, Dispatcher, activity, settingsSvc);
         var dialogs = new TaskDialogService(taskActions, partnerSvc);
         var pairing = new PairingOrchestrator(partnerReqs, partnerSvc, live, Dispatcher, activity, settingsSvc);
+
+        AppServices.Notifications = new NotificationService();
+        AppServices.Tasks = taskSvc;
+        AppServices.TaskDialogs = dialogs;
+        AppServices.Partner = partnerSvc;
+        AppServices.Pairing = pairing;
+        AppServices.Actions = taskActions;
+        AppServices.Settings = settingsSvc;
+
 
         try {
             DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, live, taskActions, pairing, dialogs, activity);

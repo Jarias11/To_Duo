@@ -50,4 +50,11 @@
                          Color="#E0E0E0"/>
         <SolidColorBrush x:Key="TabItemBorderBrush"
                          Color="#D5D5D5"/>
+        <!-- darker versions of the list backgrounds -->
+        <SolidColorBrush x:Key="SubCardLeftHeaderBrush"
+                        Color="#D7E3FF"/>
+        <!-- darker than #E8F0FE -->
+        <SolidColorBrush x:Key="SubCardRightHeaderBrush"
+                        Color="#EAD7FF"/>
+        <!-- darker than #F3E8FF -->
 </ResourceDictionary>

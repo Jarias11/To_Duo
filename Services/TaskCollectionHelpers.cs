@@ -29,7 +29,8 @@ namespace TaskMate.Services {
             ObservableCollection<TaskItem> target,
             IList<TaskItem> incoming,
             Assignee assignedTo,
-            string ownerUserId) {
+            string ownerUserId,
+            Action<TaskItem, TaskItem>? onReplaced = null) {
             var index = target.ToDictionary(t => t.Id);
             foreach(var inc in incoming) {
                 var mapped = CloneForUi(inc, assignedTo, requestMode: false);
@@ -39,7 +40,13 @@ namespace TaskMate.Services {
                     var newTime = mapped.UpdatedAt ?? DateTime.MinValue;
                     if(newTime > oldTime) {
                         var pos = target.IndexOf(existing);
+
+                        // detect completion flip before replacing
+                        bool becameCompleted = !existing.IsCompleted && mapped.IsCompleted;
                         target[pos] = mapped;
+
+                        if(becameCompleted)
+                            onReplaced?.Invoke(existing, mapped);
                     }
                 }
                 else {

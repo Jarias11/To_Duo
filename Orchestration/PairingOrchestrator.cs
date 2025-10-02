@@ -50,6 +50,7 @@ namespace TaskMate.Orchestration {
 		private IDisposable? _incomingSub;
 		private IDisposable? _outgoingSub;
 		private bool _purgeEligibleOnStartup;
+		private bool _incomingListPrimed; //only for the sound debounce
 
 		public ObservableCollection<PartnerRequest> Incoming { get; private set; } = new();
 		public ObservableCollection<PartnerRequest> Outgoing { get; private set; } = new();
@@ -109,8 +110,20 @@ namespace TaskMate.Orchestration {
 					var pending = latest.Values
 						.Where(r => string.Equals(r.Status, "pending", StringComparison.OrdinalIgnoreCase))
 						.ToList();
+					var newOnes = pending.Where(p => Incoming.All(i => i.Id != p.Id)).ToList();
+
+
+					bool shouldChime =
+						newOnes.Count > 0
+						|| (!_incomingListPrimed && pending.Count > 0);
+					if(shouldChime)
+						SoundService.PlayPendingPartnerRequest();
+
+					_incomingListPrimed = true; // mark after first pass
 					ReplaceAll(Incoming, pending);
 					OutgoingChanged?.Invoke();
+
+
 				});
 			});
 
@@ -141,6 +154,7 @@ namespace TaskMate.Orchestration {
 		public async Task SendAsync(string myUserId, string toUserId, string fromDisplayName) {
 			if(string.IsNullOrWhiteSpace(toUserId) || toUserId == myUserId) return;
 			await _partnerReqs.SendAsync(myUserId, toUserId, fromDisplayName);
+			SoundService.PlaySent();
 			await _activity.LogAsync(new ActivityEntry {
 				Kind = "pairing.sent",
 				Actor = "Me",
@@ -213,6 +227,7 @@ namespace TaskMate.Orchestration {
 				_partner.PartnerId = string.Empty; // persists & raises PartnerChanged
 				ClearRequests();
 				PartnerDisconnected?.Invoke();
+				SoundService.PlayPartnerDisconnected();
 
 
 			});
@@ -278,6 +293,7 @@ namespace TaskMate.Orchestration {
 					_partner.PartnerId = string.Empty; // persists & raises PartnerChanged
 					ClearRequests();
 					PartnerDisconnected?.Invoke();
+					SoundService.PlayPartnerDisconnected();
 					_settings.PairedSinceUtc = null;
 					_settings.Save();
 				}

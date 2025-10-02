@@ -30,6 +30,6 @@ namespace TaskMate.Services {
 			=> _repo.DisconnectAsync(myUserId, partnerUserId);
 
 		public Task PurgePairAsync(string userA, string userB)
-    		=> _repo.PurgePairAsync(userA, userB);
+			=> _repo.PurgePairAsync(userA, userB);
 	}
 }

@@ -13,6 +13,7 @@ namespace TaskMate.Services {
 		private readonly IPartnerService _partner;
 		private readonly SemaphoreSlim _reloadGate = new(1, 1);
 		private readonly TaskCompletionSource<bool> _startedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		private readonly HashSet<Guid> _lastPendingMine = new();
 		private string? _attachedPartnerId;
 		private string? _attachedGroupId;
 
@@ -21,6 +22,9 @@ namespace TaskMate.Services {
 		private ObservableCollection<TaskItem>? _pending;
 		private ICollectionView? _myView;
 		private ICollectionView? _partnerView;
+
+		private bool _myPersonalPrimed;
+		private bool _partnerPersonalPrimed;
 
 		private IDisposable? _myHandle, _partnerHandle, _groupHandle;
 
@@ -64,7 +68,18 @@ namespace TaskMate.Services {
 
 				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_tasks is null) return;
-					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Me, ownerUserId: myId);
+					// BEFORE: capture current IDs
+					var before = new HashSet<Guid>(_tasks.Select(t => t.Id));
+					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Me, ownerUserId: myId,
+						onReplaced: (oldItem, newItem) => {
+							// fire only after initial priming to avoid startup spam
+							if(_myPersonalPrimed) SoundService.PlayTaskCompleted();
+						});
+					var added = _tasks.Where(t => !before.Contains(t.Id)).ToList();
+					// Play only after the first snapshot is primed
+					if(_myPersonalPrimed && added.Count > 0)
+						SoundService.PlayTaskCreated();
+					_myPersonalPrimed = true;
 					snapshot = _tasks.ToList();            // take a copy on UI thread
 					_myView?.Refresh();
 					_partnerView?.Refresh();
@@ -151,7 +166,16 @@ namespace TaskMate.Services {
 			_partnerHandle = _requests.ListenPersonal(partnerId, cloud => {
 				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_tasks is null) return;
-					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Partner, ownerUserId: partnerId);
+					var before = new HashSet<Guid>(_tasks.Select(t => t.Id));
+					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Partner, ownerUserId: partnerId,
+						onReplaced: (oldItem, newItem) => {
+							if(_partnerPersonalPrimed) SoundService.PlayTaskCompleted();
+						});
+					var added = _tasks.Where(t => !before.Contains(t.Id)).ToList();
+					if(_partnerPersonalPrimed && added.Count > 0)
+						SoundService.PlayTaskCreated();
+
+					_partnerPersonalPrimed = true;
 					_myView?.Refresh();
 					_partnerView?.Refresh();
 				});
@@ -182,6 +206,21 @@ namespace TaskMate.Services {
 
 					var mine = cloud.Where(IsMineToDecide).ToList(); // 👈 actually use the helper
 
+					// 👇 Toast only brand-new "mine" requests (dedup with a HashSet<Guid>)
+					foreach(var t in mine) {
+						if(_lastPendingMine.Add(t.Id)) {
+							// We don't have display names; show a friendly label from CreatedBy
+							// If the partner created it -> "Partner", else "You"
+							var mineId = TaskMate.Sync.FirestoreClient.CurrentUserId;
+							var fromLabel = string.Equals(t.CreatedBy, mineId, StringComparison.OrdinalIgnoreCase)
+											? "You"
+											: "Partner";
+
+							var title = string.IsNullOrWhiteSpace(t.Title) ? "New task" : t.Title;
+							AppServices.Notifications.ShowTaskRequestToast(t.Id, fromLabel, title);
+						}
+					}
+
 					foreach(var t in cloud) t.CanDecide = false;
 					foreach(var t in mine) t.CanDecide = true;
 
@@ -193,7 +232,10 @@ namespace TaskMate.Services {
 					);
 					foreach(var t in _pending)
 						t.CanDecide = true;
+					// keep dedupe set tight (drop ids no longer pending)
+					_lastPendingMine.IntersectWith(mine.Select(x => x.Id));
 				});
+
 			});
 
 		}

@@ -55,5 +55,11 @@
         <!-- selected -->
         <SolidColorBrush x:Key="TabItemBorderBrush"
                          Color="#404040"/>
+        <SolidColorBrush x:Key="SubCardLeftHeaderBrush"
+                        Color="#1E2738"/>
+        <!-- darker than #263043 -->
+        <SolidColorBrush x:Key="SubCardRightHeaderBrush"
+                        Color="#2A1F32"/>
+        <!-- darker than #33283D -->
 
 </ResourceDictionary>

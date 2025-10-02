@@ -1,0 +1,182 @@
+<Window x:Class="TaskMate.Views.TaskListPopoutWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		x:Name="Self"
+		Title="{Binding PopoutTitle, ElementName=Self}"
+		Width="420"
+		Height="520"
+		Background="Transparent"
+		WindowStyle="None"
+		ResizeMode="CanResize"
+		AllowsTransparency="True">
+	<!-- Keep OS shadow + resizing with WindowChrome -->
+	<WindowChrome.WindowChrome>
+		<WindowChrome CaptionHeight="0"
+					  CornerRadius="16"
+					  GlassFrameThickness="0"
+					  ResizeBorderThickness="6"
+					  UseAeroCaptionButtons="False"/>
+	</WindowChrome.WindowChrome>
+
+	<!-- overall slight tilt to mimic a note stuck on a wall -->
+	<Grid RenderTransformOrigin="0.5,0.5">
+		<Grid.RenderTransform>
+			<RotateTransform Angle="-0.2"/>
+
+			<!-- subtle! -->
+		</Grid.RenderTransform>
+
+		<!-- “Paper” -->
+		<Border CornerRadius="16"
+				Background="{Binding PopoutBackground, ElementName=Self}"
+				Padding="0"
+				Margin="14">
+			<Border.Effect>
+				<DropShadowEffect BlurRadius="18"
+								  ShadowDepth="4"
+								  Opacity="0.35"/>
+
+			</Border.Effect>
+
+
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="44"/>
+					<!-- tape/header -->
+					<RowDefinition Height="Auto"/>
+					<!-- columns header -->
+					<RowDefinition Height="*"/>
+					<!-- list -->
+				</Grid.RowDefinitions>
+
+				<!-- Tape (drag handle) -->
+				<Border Grid.Row="0"
+						Background="{Binding PopoutHeaderBackground, ElementName=Self}"
+						CornerRadius="16,16,0,0"
+						Padding="12,8"
+						MouseLeftButtonDown="Header_OnMouseLeftButtonDown">
+					<DockPanel>
+						<!-- Faux tape look -->
+						<Rectangle Fill="#50FFFFFF"
+								   RadiusX="4"
+								   RadiusY="4"
+								   Width="72"
+								   Height="14"
+								   VerticalAlignment="Top"
+								   Margin="0,0,10,0"/>
+						<TextBlock Text="{Binding PopoutTitle, ElementName=Self}"
+								   FontSize="18"
+								   FontWeight="Bold"/>
+						<StackPanel Orientation="Horizontal"
+									DockPanel.Dock="Right">
+							<!-- Always on top toggle -->
+							<ToggleButton x:Name="TopmostToggle"
+										  Margin="8,0,0,0"
+										  VerticalAlignment="Center"
+										  ToolTip="Pin on top"
+										  Checked="TopmostToggle_OnChecked"
+										  Unchecked="TopmostToggle_OnUnchecked">
+								▲
+							</ToggleButton>
+							<!-- Close -->
+							<Button Content="✕"
+									Margin="8,0,0,0"
+									Padding="2,0"
+									ToolTip="Close"
+									Click="Close_OnClick"/>
+						</StackPanel>
+					</DockPanel>
+				</Border>
+
+				<!-- Columns header -->
+				<!-- Columns header -->
+				<Border Grid.Row="1"
+						Background="#20FFFFFF"
+						Margin="10,8,10,6"
+						CornerRadius="10">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="30"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"
+											  SharedSizeGroup="DueCol"
+											  MinWidth="90"/>
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Text="✓"
+								   FontWeight="Bold"
+								   Margin="10,6,0,6"/>
+						<TextBlock Text="Task"
+								   Grid.Column="1"
+								   FontWeight="Bold"
+								   Margin="0,6"/>
+						<TextBlock Text="Due"
+								   Grid.Column="2"
+								   FontWeight="Bold"
+								   Margin="8,6,10,6"/>
+					</Grid>
+				</Border>
+
+				<!-- List -->
+				<ScrollViewer Grid.Row="2"
+							  VerticalScrollBarVisibility="Hidden"
+							  Margin="6,0,6,12">
+					<ItemsControl ItemsSource="{Binding PopoutItems, ElementName=Self}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<!-- reuse your card style but make it a tad flatter -->
+								<Button Style="{StaticResource TaskCardButtonStyle}"
+										Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+										CommandParameter="{Binding}">
+									<Grid Margin="4,3">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="30"/>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"
+															  SharedSizeGroup="DueCol"
+															  MinWidth="110"/>
+										</Grid.ColumnDefinitions>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="Auto"/>
+											<RowDefinition Height="Auto"/>
+										</Grid.RowDefinitions>
+
+										<CheckBox Grid.RowSpan="2"
+												  IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+												  Margin="2"
+												  Command="{Binding DataContext.ToggleCompleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+												  CommandParameter="{Binding}"/>
+
+										<TextBlock Grid.Column="1"
+												   Style="{StaticResource TaskRowTextStyle}"
+												   Text="{Binding Title}"
+												   Margin="0,0,8,0"
+												   TextTrimming="CharacterEllipsis"
+												   TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"/>
+										<TextBlock Grid.Column="2"
+												   Style="{StaticResource TaskRowTextStyle}"
+												   Text="{Binding DueDate, StringFormat={}{0:d}}"
+												   HorizontalAlignment="Right"/>
+										<TextBlock Grid.Column="1"
+												   Grid.Row="1"
+												   Grid.ColumnSpan="2"
+												   Style="{StaticResource TaskRowTextStyle}"
+												   Opacity="0.8"
+												   FontSize="12"
+												   Text="{Binding Category}"
+												   TextTrimming="CharacterEllipsis"/>
+									</Grid>
+								</Button>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
+				<ResizeGrip Grid.Row="2"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Bottom"
+							Margin="0,0,8,8"
+							IsTabStop="False"/>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>

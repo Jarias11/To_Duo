@@ -1,19 +1,16 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
-using TaskMate.ViewModels;
+﻿using System.Windows;
+using TaskMate.Services.Notifications;
 
-namespace TaskMate;
+namespace TaskMate {
+    public partial class App : Application {
+        protected override void OnStartup(StartupEventArgs e) {
+            base.OnStartup(e);
+            TaskMate.Services.SoundService.Initialize();
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application {
-    protected override void OnStartup(StartupEventArgs e) {
-        base.OnStartup(e);
-        PathEx.UseLocalData("A");
+            ToastRegistration.EnsureRegistered();
+            ToastRegistration.ShowSimple("TaskMate", "Notifications ready");
 
-
+            PathEx.UseLocalData("B");
+        }
     }
 }
-

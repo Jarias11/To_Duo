@@ -5,6 +5,7 @@
         xmlns:conv="clr-namespace:TaskMate.Converters"
         xmlns:local="clr-namespace:TaskMate.ViewModels"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:beh="clr-namespace:TaskMate.Behaviors"
         Title="TaskMate"
         Height="900"
         Width="1000"
@@ -48,6 +49,7 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
 
@@ -123,6 +125,15 @@
                                                                            Opacity="0.6"
                                                                            Margin="8,0,0,0"/>
                                                         </StackPanel>
+                                                        <Button Grid.Column="4"
+                                                                Content="↗"
+                                                                ToolTip="Pop out both lists"
+                                                                Width="26"
+                                                                Height="26"
+                                                                Padding="0"
+                                                                Margin="8,0,0,0"
+                                                                Command="{Binding PopOutBothCommand}"
+                                                                beh:AudioBehavior.HoverSound="True"/>
                                                 </Grid>
                                         </Expander.Header>
 
@@ -146,9 +157,19 @@
                                                                                 <RowDefinition Height="Auto"/>
                                                                         </Grid.RowDefinitions>
 
-                                                                        <TextBlock Grid.Row="0"
-                                                                                   Text="My Tasks"
-                                                                                   Style="{StaticResource SectionHeader}"/>
+                                                                        <StackPanel Grid.Row="0"
+                                                                                    Orientation="Horizontal">
+                                                                                <TextBlock Text="My Tasks"
+                                                                                           Style="{StaticResource SectionHeader}"
+                                                                                           Margin="0,0,6,0"/>
+                                                                                <Button Content="↗"
+                                                                                        Width="22"
+                                                                                        Height="22"
+                                                                                        Padding="0"
+                                                                                        ToolTip="Pop out My Tasks"
+                                                                                        Command="{Binding PopOutMineCommand}"
+                                                                                        beh:AudioBehavior.HoverSound="True"/>
+                                                                        </StackPanel>
 
                                                                         <!-- Header: ✓ | Task ......... | Due -->
                                                                         <Grid Grid.Row="1"
@@ -190,7 +211,8 @@
                                                                                         <DataTemplate>
                                                                                                 <Button Style="{StaticResource TaskCardButtonStyle}"
                                                                                                         Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}">
+                                                                                                        CommandParameter="{Binding}"
+                                                                                                        beh:AudioBehavior.HoverSound="True">
                                                                                                         <Grid>
                                                                                                                 <Grid.ColumnDefinitions>
                                                                                                                         <ColumnDefinition Width="30"/>
@@ -257,9 +279,20 @@
                                                                                 <RowDefinition Height="Auto"/>
                                                                         </Grid.RowDefinitions>
 
-                                                                        <TextBlock Grid.Row="0"
-                                                                                   Text="Partner's Tasks"
-                                                                                   Style="{StaticResource SectionHeader}"/>
+                                                                        <StackPanel Grid.Row="0"
+                                                                                    Orientation="Horizontal"
+                                                                                    Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
+                                                                                <TextBlock Text="Partner's Tasks"
+                                                                                           Style="{StaticResource SectionHeader}"
+                                                                                           Margin="0,0,6,0"/>
+                                                                                <Button Content="↗"
+                                                                                        Width="22"
+                                                                                        Height="22"
+                                                                                        Padding="0"
+                                                                                        ToolTip="Pop out Partner Tasks"
+                                                                                        Command="{Binding PopOutPartnerCommand}"
+                                                                                        beh:AudioBehavior.HoverSound="True"/>
+                                                                        </StackPanel>
 
                                                                         <!-- Header: ✓ | Task ......... | Due -->
                                                                         <Grid Grid.Row="1"
@@ -299,7 +332,8 @@
                                                                                                 <Button Style="{StaticResource TaskCardButtonStyle}"
                                                                                                         Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}"
                                                                                                         Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}">
+                                                                                                        CommandParameter="{Binding}"
+                                                                                                        beh:AudioBehavior.HoverSound="True">
                                                                                                         <Grid>
                                                                                                                 <Grid.ColumnDefinitions>
                                                                                                                         <ColumnDefinition Width="30"/>
@@ -428,7 +462,8 @@
                                                                                         <DataTemplate>
                                                                                                 <Button Style="{StaticResource TaskCardButtonStyle}"
                                                                                                         Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}">
+                                                                                                        CommandParameter="{Binding}"
+                                                                                                        beh:AudioBehavior.HoverSound="True">
                                                                                                         <Grid>
                                                                                                                 <Grid.ColumnDefinitions>
                                                                                                                         <ColumnDefinition Width="*"/>
@@ -519,7 +554,8 @@
                                                                                                 <Button Style="{StaticResource TaskCardButtonStyle}"
                                                                                                         Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}"
                                                                                                         Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}">
+                                                                                                        CommandParameter="{Binding}"
+                                                                                                        beh:AudioBehavior.HoverSound="True">
                                                                                                         <Grid>
                                                                                                                 <Grid.ColumnDefinitions>
                                                                                                                         <ColumnDefinition Width="*"/>
@@ -619,13 +655,15 @@
                                                                         Style="{StaticResource DecisionBtn}"
                                                                         Command="{Binding DataContext.AcceptTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                         CommandParameter="{Binding}"
-                                                                        Margin="5"/>
+                                                                        Margin="5"
+                                                                        beh:AudioBehavior.HoverSound="True"/>
 
                                                                 <Button Content="Decline"
                                                                         Style="{StaticResource DecisionBtn}"
                                                                         Command="{Binding DataContext.DeclineTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                         CommandParameter="{Binding}"
-                                                                        Margin="5"/>
+                                                                        Margin="5"
+                                                                        beh:AudioBehavior.HoverSound="True"/>
                                                         </StackPanel>
                                                 </Border>
                                         </DataTemplate>
@@ -652,7 +690,8 @@
                                         <TextBox Text="{Binding NewDisplayName, UpdateSourceTrigger=PropertyChanged}"/>
                                         <Button Content="Continue"
                                                 Command="{Binding SaveDisplayNameCommand}"
-                                                Margin="0,10,0,0"/>
+                                                Margin="0,10,0,0"
+                                                beh:AudioBehavior.HoverSound="True"/>
                                 </StackPanel>
                         </Border>
                 </Grid>

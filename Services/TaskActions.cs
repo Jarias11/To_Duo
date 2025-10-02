@@ -114,12 +114,17 @@ namespace TaskMate.Services {
 				await _requests.UpsertPersonalAsync(newTask, myUserId);
 				var ownUi = TaskCollectionHelpers.CloneForUi(newTask, Assignee.Me, requestMode: false);
 				_ui.Invoke(() => Tasks.Add(ownUi));
+				SoundService.PlayTaskCreated();
 				await _activity.LogAsync(new ActivityEntry {
 					Kind = "task.add",
 					Actor = "Me",   // Use your own DisplayName
 					Message = $"{_settings.DisplayName} Created task “{newTask.Title}”",
 					Timestamp = DateTime.UtcNow
 				}, myUserId);
+			}
+			if(due.HasValue) {
+				var dueLocal = due.Value; // your DueDate seems to be local-time already
+				AppServices.Notifications.ScheduleDueToasts(newTask.Id, newTask.Title, dueLocal, TimeSpan.FromMinutes(15));
 			}
 		}
 
@@ -194,7 +199,14 @@ namespace TaskMate.Services {
 				// Replace in Tasks by Id so CollectionViews refresh seamlessly
 				_ui.Invoke(() => {
 					var idx = Tasks.ToList().FindIndex(t => t.Id == item.Id);
-					if(idx >= 0) Tasks[idx] = TaskCollectionHelpers.CloneForUi(item, item.AssignedTo, requestMode: false);
+					if(idx >= 0) {
+						var wasCompleted = Tasks[idx].IsCompleted;              // NEW
+						var updatedUi = TaskCollectionHelpers.CloneForUi(item, item.AssignedTo, requestMode: false);
+						Tasks[idx] = updatedUi;
+
+						if(!wasCompleted && item.IsCompleted)                   // NEW
+							SoundService.PlayTaskCompleted();
+					}
 				});
 				// LOG: completion vs. normal edit
 				if(item.IsCompleted) {
@@ -213,6 +225,16 @@ namespace TaskMate.Services {
 						Timestamp = DateTime.UtcNow
 					}, myUserId);
 				}
+			}
+			await _requests.UpsertPersonalAsync(item, myUserId);
+
+			// (re)apply scheduling
+			if(item.IsCompleted || !item.DueDate.HasValue) {
+				AppServices.Notifications.CancelDueToasts(item.Id);
+			}
+			else {
+				AppServices.Notifications.ScheduleDueToasts(
+					item.Id, item.Title, item.DueDate.Value, TimeSpan.FromMinutes(15));
 			}
 		}
 	}

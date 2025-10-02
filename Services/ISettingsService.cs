@@ -4,10 +4,10 @@ namespace TaskMate.Services {
 		AppTheme Theme { get; set; }
 
 
-		//bool SoundsEnabled { get; set; }       // default false
+		bool SoundsEnabled { get; set; }
 		//string AnimationLevel { get; set; }    // "Off" | "Subtle" | "Extra"
 
-
+		
 		string UserId { get; }           // from model
 		string? PartnerId { get; set; }  // persisted
 		string GroupId { get; set; }     // persisted

@@ -12,6 +12,7 @@ namespace TaskMate.Models {
         public string? DisplayName { get; set; } = "";
         public string Theme { get; set; } = "Light"; // "Light" or "Dark"
         public DateTime? PairedSinceUtc { get; set; }
+        public bool? SoundsEnabled { get; set; } = true; // NEW: default to true
 
         private static readonly string FileName = "user_settings.json";
         private static string GetPath() {
