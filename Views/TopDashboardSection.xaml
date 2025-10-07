@@ -4,34 +4,63 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:conv="clr-namespace:TaskMate.Converters"
 			 xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+			 xmlns:views="clr-namespace:TaskMate.Views"
 			 xmlns:beh="clr-namespace:TaskMate.Behaviors">
 
 
 	<StackPanel Grid.Row="0"
 				Margin="0,0,0,10">
 
-		<!-- DASHBOARD (no title) -->
-		<Border Style="{StaticResource Card}">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
+		<!-- DASHBOARD: open handwritten header (no card) -->
+		<Grid Margin="0,6,0,10"
+			  Background="Transparent">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<!-- left: time -->
+				<ColumnDefinition Width="*"/>
+				<!-- center: title -->
+				<ColumnDefinition Width="Auto"/>
+				<!-- right: buttons -->
+			</Grid.ColumnDefinitions>
 
-				<!-- Greeting (left) -->
-				<TextBlock
-					Text="{Binding DisplayName, StringFormat=Welcome Back {0}!}"
-					FontSize="22"
-					FontWeight="Bold"
-					VerticalAlignment="Center">
+			<!-- Left: time/date -->
+			<TextBlock Grid.Column="0"
+					   Style="{StaticResource TopClockText}"
+					   Text="{Binding Now, StringFormat={}{0:dddd, MMM d h:mm tt}}"
+					   Margin="10,8,12,0"
+					   VerticalAlignment="Top"/>
+
+			<!-- Center: title + greeting -->
+			<StackPanel Grid.Column="1"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Top"
+						Margin="0,0,0,0">
+
+				<TextBlock Text="TaskMate"
+						   Style="{StaticResource NotebookTitle}"/>
+
+				<!-- Greeting with name -->
+				<TextBlock Text="{Binding DisplayName, StringFormat=Welcome back {0}!}">
 					<TextBlock.Style>
 						<Style TargetType="TextBlock"
-							   BasedOn="{StaticResource {x:Type TextBlock}}">
+							   BasedOn="{StaticResource NotebookSubtitle}">
 							<Setter Property="Visibility"
 									Value="Visible"/>
 							<Style.Triggers>
+								<!-- Hide if profile not set up -->
 								<DataTrigger Binding="{Binding NeedsProfileSetup}"
 											 Value="True">
+									<Setter Property="Visibility"
+											Value="Collapsed"/>
+								</DataTrigger>
+								<!-- Hide if name is empty/null -->
+								<DataTrigger Binding="{Binding DisplayName}"
+											 Value="">
+									<Setter Property="Visibility"
+											Value="Collapsed"/>
+								</DataTrigger>
+								<DataTrigger Binding="{Binding DisplayName}"
+											 Value="{x:Null}">
 									<Setter Property="Visibility"
 											Value="Collapsed"/>
 								</DataTrigger>
@@ -40,709 +69,231 @@
 					</TextBlock.Style>
 				</TextBlock>
 
-				<!-- Date/Time + 3 buttons (right) -->
-				<StackPanel Grid.Column="1"
-							Orientation="Horizontal"
-							VerticalAlignment="Center">
-					<TextBlock
-						Text="{Binding Now, StringFormat={}{0:dddd, MMM d • h:mm tt}}"
-						Margin="0,0,8,0"
-						VerticalAlignment="Center"
-						Opacity="0.8"/>
-					<Button Content="{Binding ThemeButtonText}"
-							MinWidth="110"
-							Command="{Binding ToggleThemeCommand}"
-							beh:AudioBehavior.HoverSound="True"/>
-					<Button Content="🔊"
-							Command="{Binding ToggleSoundCommand}"
-							beh:AudioBehavior.HoverSound="True"
-							MinWidth="90"/>
-					<Button Content="Refresh"
-							beh:AudioBehavior.HoverSound="True"
-							MinWidth="85"/>
-				</StackPanel>
-			</Grid>
-		</Border>
+				<!-- Fallback greeting (no name yet) -->
+				<TextBlock Text="Welcome back!">
+					<TextBlock.Style>
+						<Style TargetType="TextBlock"
+							   BasedOn="{StaticResource NotebookSubtitle}">
+							<Setter Property="Visibility"
+									Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding NeedsProfileSetup}"
+											 Value="True">
+									<Setter Property="Visibility"
+											Value="Visible"/>
+								</DataTrigger>
+								<DataTrigger Binding="{Binding DisplayName}"
+											 Value="">
+									<Setter Property="Visibility"
+											Value="Visible"/>
+								</DataTrigger>
+								<DataTrigger Binding="{Binding DisplayName}"
+											 Value="{x:Null}">
+									<Setter Property="Visibility"
+											Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+				</TextBlock>
 
-		<Expander
-			x:Name="QuickToolsExpander"
-			Style="{StaticResource TabbedCardExpander}"
-			IsExpanded="True">
-			<Expander.Content>
-				<Grid>
+			</StackPanel>
 
-
-					<StackPanel>
-						<StackPanel.Style>
-							<Style TargetType="StackPanel">
-								<Setter Property="Visibility"
-										Value="Collapsed"/>
+			<!-- Right: floating chip buttons -->
+			<StackPanel Grid.Column="2"
+						Orientation="Horizontal"
+						VerticalAlignment="Top"
+						Margin="0,6,0,0">
+				<Button Style="{StaticResource IconChipButton}"
+						ToolTip="{Binding SoundButtonText}"
+						Command="{Binding ToggleSoundCommand}"
+						beh:AudioBehavior.HoverSound="True">
+					<TextBlock>
+						<TextBlock.Style>
+							<Style TargetType="TextBlock">
+								<Setter Property="Text"
+										Value="🔊"/>
 								<Style.Triggers>
-									<DataTrigger Binding="{Binding SelectedTopTab}"
-												 Value="0">
-										<Setter Property="Visibility"
-												Value="Visible"/>
+									<DataTrigger Binding="{Binding IsMuted}"
+												 Value="True">
+										<Setter Property="Text"
+												Value="🔇"/>
 									</DataTrigger>
 								</Style.Triggers>
 							</Style>
-						</StackPanel.Style>
-						<StackPanel Margin="8,6,8,8">
-
-							<!-- CONNECTIONS -->
-
-							<!-- Codes Row (aligned halves) -->
-							<Grid Margin="0,0,0,8"
-								  Grid.IsSharedSizeScope="True">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-
-								<!-- LEFT: Your Code -->
-								<Grid Grid.Column="0">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="130"
-														  SharedSizeGroup="ConnLabels"/>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<TextBlock Grid.Column="0"
-											   Text="Your Code:"
-											   VerticalAlignment="Center"/>
-									<TextBox Grid.Column="1"
-											 Text="{Binding UserId, Mode=OneWay}"
-											 IsReadOnly="True"
-											 BorderThickness="0"
-											 Background="{x:Null}"
-											 Padding="0"
-											 FontWeight="Bold"
-											 VerticalAlignment="Center"/>
-								</Grid>
-
-								<!-- RIGHT: Connection area (three states) -->
-								<Grid Grid.Column="1">
-									<Grid.RowDefinitions>
-										<RowDefinition Height="Auto"/>
-									</Grid.RowDefinitions>
-
-									<!-- STATE A: Enter partner code -->
-									<Grid x:Name="EnterCodeRow">
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="130"
-															  SharedSizeGroup="ConnLabels"/>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="Auto"/>
-										</Grid.ColumnDefinitions>
-
-										<!-- show when NOT connected AND NO pending outgoing -->
-										<Grid.Style>
-											<Style TargetType="Grid">
-												<Setter Property="Visibility"
-														Value="Collapsed"/>
-												<Style.Triggers>
-													<MultiDataTrigger>
-														<MultiDataTrigger.Conditions>
-															<Condition Binding="{Binding IsPartnerVerified}"
-																	   Value="False"/>
-															<Condition Binding="{Binding HasPendingOutgoing}"
-																	   Value="False"/>
-														</MultiDataTrigger.Conditions>
-														<Setter Property="Visibility"
-																Value="Visible"/>
-													</MultiDataTrigger>
-												</Style.Triggers>
-											</Style>
-										</Grid.Style>
-
-										<TextBlock Grid.Column="0"
-												   Text="Enter Partner Code:"
-												   VerticalAlignment="Center"/>
-										<TextBox Grid.Column="1"
-												 Width="200"
-												 Text="{Binding EnteredPartnerCode, UpdateSourceTrigger=PropertyChanged}"
-												 Margin="5,0"
-												 VerticalAlignment="Center"/>
-										<Button Grid.Column="2"
-												Content="Send Request"
-												Command="{Binding SendPartnerRequestCommand}"
-												Margin="5,0"
-												VerticalAlignment="Center"
-												beh:AudioBehavior.HoverSound="True"/>
-									</Grid>
-
-									<!-- STATE B: Waiting message -->
-									<Border x:Name="WaitingRow"
-											CornerRadius="6"
-											Padding="8"
-											Margin="0,0,0,0"
-											Background="{DynamicResource CardBackgroundBrush}"
-											BorderBrush="{DynamicResource CardBorderBrush}"
-											BorderThickness="1">
-										<!-- show when NOT connected AND HAS pending outgoing -->
-										<Border.Style>
-											<Style TargetType="Border">
-												<Setter Property="Visibility"
-														Value="Collapsed"/>
-												<Style.Triggers>
-													<MultiDataTrigger>
-														<MultiDataTrigger.Conditions>
-															<Condition Binding="{Binding IsPartnerVerified}"
-																	   Value="False"/>
-															<Condition Binding="{Binding HasPendingOutgoing}"
-																	   Value="True"/>
-														</MultiDataTrigger.Conditions>
-														<Setter Property="Visibility"
-																Value="Visible"/>
-													</MultiDataTrigger>
-												</Style.Triggers>
-											</Style>
-										</Border.Style>
-
-										<StackPanel Orientation="Horizontal"
-													VerticalAlignment="Center">
-											<ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
-												<ItemsControl.ItemTemplate>
-													<DataTemplate>
-														<Grid>
-															<Grid.ColumnDefinitions>
-																<ColumnDefinition Width="*"/>
-																<ColumnDefinition Width="Auto"/>
-															</Grid.ColumnDefinitions>
-
-															<!-- Only show 'pending' rows -->
-															<Grid.Style>
-																<Style TargetType="Grid">
-																	<Setter Property="Visibility"
-																			Value="Collapsed"/>
-																	<Style.Triggers>
-																		<DataTrigger Binding="{Binding Status}"
-																					 Value="pending">
-																			<Setter Property="Visibility"
-																					Value="Visible"/>
-																		</DataTrigger>
-																	</Style.Triggers>
-																</Style>
-															</Grid.Style>
-
-															<TextBlock Grid.Column="0"
-																	   VerticalAlignment="Center"
-																	   Text="{Binding ToUserId, StringFormat=Waiting for {0} to accept…}"/>
-															<Button Grid.Column="1"
-																	Content="Cancel Request"
-																	Margin="8,0,0,0"
-																	Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-																	CommandParameter="{Binding}"
-																	beh:AudioBehavior.HoverSound="True"/>
-														</Grid>
-													</DataTemplate>
-												</ItemsControl.ItemTemplate>
-											</ItemsControl>
-										</StackPanel>
-									</Border>
-
-									<!-- STATE C: Connected summary -->
-									<StackPanel x:Name="ConnectedRow"
-												Orientation="Horizontal">
-										<StackPanel.Style>
-											<Style TargetType="StackPanel">
-												<Setter Property="Visibility"
-														Value="Collapsed"/>
-												<Style.Triggers>
-													<DataTrigger Binding="{Binding IsPartnerVerified}"
-																 Value="True">
-														<Setter Property="Visibility"
-																Value="Visible"/>
-													</DataTrigger>
-												</Style.Triggers>
-											</Style>
-										</StackPanel.Style>
-
-										<TextBlock Text="{Binding ConnectionSummary}"
-												   FontWeight="Bold"
-												   FontSize="16"
-												   VerticalAlignment="Center"
-												   Margin="0,0,8,0"/>
-
-										<!-- New: Disconnect button -->
-										<Button Content="Disconnect"
-												FontSize="16"
-												Command="{Binding DisconnectPartnerCommand}"
-												VerticalAlignment="Center"
-												beh:AudioBehavior.HoverSound="True"/>
-									</StackPanel>
-								</Grid>
-							</Grid>
-
-							<!-- Requests Row -->
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-
-								<GroupBox Grid.Column="0"
-										  Header="Incoming Requests"
-										  Margin="0,0,5,0">
-									<ItemsControl ItemsSource="{Binding IncomingPartnerRequests}">
-										<ItemsControl.ItemTemplate>
-											<DataTemplate>
-												<StackPanel Orientation="Horizontal"
-															Margin="5">
-													<TextBlock Text="{Binding FromDisplayName}"
-															   FontWeight="Bold"
-															   Margin="0,0,10,0"/>
-													<Button Content="Accept"
-															Command="{Binding DataContext.AcceptPartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-															CommandParameter="{Binding}"
-															beh:AudioBehavior.HoverSound="True"/>
-													<Button Content="Decline"
-															Command="{Binding DataContext.DeclinePartnerInviteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-															CommandParameter="{Binding}"
-															Margin="5,0,0,0"
-															beh:AudioBehavior.HoverSound="True"/>
-												</StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
-								</GroupBox>
-
-								<GroupBox Grid.Column="1"
-										  Header="Outgoing Requests"
-										  Margin="5,0,0,0">
-									<ItemsControl ItemsSource="{Binding OutgoingPartnerRequests}">
-										<ItemsControl.ItemTemplate>
-											<DataTemplate>
-												<StackPanel Orientation="Horizontal"
-															Margin="5">
-													<TextBlock Text="{Binding ToUserId}"
-															   FontWeight="Bold"
-															   Margin="0,0,10,0"/>
-													<TextBlock Text="{Binding Status}"
-															   Margin="0,0,10,0"/>
-													<Button Content="Cancel"
-															Command="{Binding DataContext.CancelPartnerRequestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-															CommandParameter="{Binding}"
-															beh:AudioBehavior.HoverSound="True"/>
-												</StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
-								</GroupBox>
-							</Grid>
-
-						</StackPanel>
-					</StackPanel>
-
-					<!-- ================= Activity Center Tab ================= -->
-					<Border>
-						<Border.Style>
-							<Style TargetType="Border">
-								<Setter Property="Visibility"
-										Value="Collapsed"/>
+						</TextBlock.Style>
+					</TextBlock>
+				</Button>
+				<Button Style="{StaticResource IconChipButton}"
+						Content="⚙"
+						ToolTip="Settings (coming soon)"
+						IsEnabled="False"
+						beh:AudioBehavior.HoverSound="True"/>
+				<Button Style="{StaticResource IconChipButton}"
+						ToolTip="{Binding ThemeButtonText}"
+						Command="{Binding ToggleThemeCommand}"
+						beh:AudioBehavior.HoverSound="True">
+					<TextBlock>
+						<TextBlock.Style>
+							<Style TargetType="TextBlock">
+								<Setter Property="Text"
+										Value="☀"/>
 								<Style.Triggers>
-									<DataTrigger Binding="{Binding SelectedTopTab}"
-												 Value="1">
-										<Setter Property="Visibility"
-												Value="Visible"/>
+									<DataTrigger Binding="{Binding IsDarkTheme}"
+												 Value="True">
+										<Setter Property="Text"
+												Value="🌙"/>
 									</DataTrigger>
 								</Style.Triggers>
 							</Style>
-						</Border.Style>
-						<Border Style="{StaticResource SubCard}">
-							<Grid>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="*"/>
-								</Grid.RowDefinitions>
+						</TextBlock.Style>
+					</TextBlock>
+				</Button>
+			</StackPanel>
+		</Grid>
 
-								<!-- Input row (text + send) -->
-								<Grid Grid.Row="0"
-									  Margin="0">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="Auto"/>
-									</Grid.ColumnDefinitions>
+		<!-- PILL TABS (no title, no card) -->
+		<Grid Margin="0,6,0,0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<!-- tabs -->
+				<RowDefinition Height="Auto"/>
+				<!-- content -->
+			</Grid.RowDefinitions>
 
-									<TextBox x:Name="ChatInput"
-											 Grid.Column="0"
-											 MinWidth="200"
-											 Height="28"
-											 Margin="0"
-											 Text="{Binding NewActivityMessage, UpdateSourceTrigger=PropertyChanged}">
-										<TextBox.InputBindings>
-											<KeyBinding Key="Enter"
-														Command="{Binding SendActivityMessageCommand}"/>
-										</TextBox.InputBindings>
-									</TextBox>
+			<!-- Strip -->
+			<TabControl	 x:Name="TopTabs"
+						 Grid.Row="0"
+						 Style="{StaticResource PillTabs}"
+						 ItemContainerStyle="{StaticResource PillTabItem}"
+						 SelectedIndex="{Binding SelectedTopTab, Mode=TwoWay}"
+						 beh:TabCloseOnDoubleClickBehavior.Enabled="True"
+						 HorizontalAlignment="Stretch">
+				<TabItem Header="Activity Center"/>
+				<TabItem Header="Task Builder"/>
+				<TabItem Header="Pending Tasks"/>
+				<TabItem Header="Completed"/>
+				<TabItem Header="Connections"/>
+			</TabControl>
 
-									<Button Grid.Column="1"
-											Content="Send"
-											Width="80"
-											Height="28"
-											Margin="0"
-											Command="{Binding SendActivityMessageCommand}"
-											beh:AudioBehavior.HoverSound="True"/>
-								</Grid>
-
-								<!-- Feed -->
-								<ListBox Grid.Row="1"
-										 Style="{StaticResource ActivityListStyle}"
-										 Height="180"
-										 ItemsSource="{Binding ActivityFeed}"
-										 ScrollViewer.VerticalScrollBarVisibility="Auto"
-										 AlternationCount="2">
-									<ListBox.ItemContainerStyle>
-										<Style TargetType="ListBoxItem">
-											<Setter Property="HorizontalContentAlignment"
-													Value="Stretch"/>
-											<Setter Property="Padding"
-													Value="0"/>
-											<Setter Property="Background"
-													Value="Transparent"/>
-											<Setter Property="BorderThickness"
-													Value="0"/>
-											<Style.Triggers>
-												<Trigger Property="ItemsControl.AlternationIndex"
-														 Value="1">
-													<Setter Property="Background"
-															Value="{DynamicResource ActivityRowAltBrush}"/>
-												</Trigger>
-											</Style.Triggers>
-										</Style>
-									</ListBox.ItemContainerStyle>
-
-									<!-- (reuse your existing DataTemplate exactly) -->
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<Grid Margin="6,3">
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="4"/>
-													<!-- accent -->
-													<ColumnDefinition Width="84"/>
-													<!-- timestamp -->
-													<ColumnDefinition Width="*"/>
-													<!-- message -->
-												</Grid.ColumnDefinitions>
-
-												<!-- Accent by actor -->
-												<Border Grid.Column="0"
-														CornerRadius="2">
-													<Border.Style>
-														<Style TargetType="Border">
-															<Setter Property="Background"
-																	Value="{DynamicResource CardBorderBrush}"/>
-															<Style.Triggers>
-																<DataTrigger Binding="{Binding IsMine}"
-																			 Value="True">
-																	<Setter Property="Background"
-																			Value="{DynamicResource MeTaskTextBrush}"/>
-																</DataTrigger>
-																<DataTrigger Binding="{Binding IsMine}"
-																			 Value="False">
-																	<Setter Property="Background"
-																			Value="{DynamicResource PartnerTaskTextBrush}"/>
-																</DataTrigger>
-															</Style.Triggers>
-														</Style>
-													</Border.Style>
-												</Border>
-
-												<!-- Timestamp (24h “roboty” style) -->
-												<TextBlock Grid.Column="1"
-														   Style="{StaticResource ActivityTimestampStyle}"
-														   Text="{Binding Timestamp, StringFormat={}{0:MM/dd HH:mm}}"/>
-
-												<!-- Message -->
-												<Grid Grid.Column="2"
-													  VerticalAlignment="Center">
-													<!-- Normal system entry -->
-													<TextBlock Text="{Binding Message}"
-															   TextWrapping="Wrap">
-														<TextBlock.Style>
-															<Style TargetType="TextBlock">
-																<Setter Property="Visibility"
-																		Value="Visible"/>
-																<Style.Triggers>
-																	<DataTrigger Binding="{Binding Kind}"
-																				 Value="chat.message">
-																		<Setter Property="Visibility"
-																				Value="Collapsed"/>
-																	</DataTrigger>
-																</Style.Triggers>
-															</Style>
-														</TextBlock.Style>
-													</TextBlock>
-
-													<!-- Chat entry -->
-													<TextBlock TextWrapping="Wrap">
-														<TextBlock.Inlines>
-															<Run Text="{Binding Actor}"
-																 FontWeight="Bold"/>
-															<Run Text=": "/>
-															<Run Text="{Binding Message}"/>
-														</TextBlock.Inlines>
-														<TextBlock.Style>
-															<Style TargetType="TextBlock">
-																<Setter Property="Visibility"
-																		Value="Collapsed"/>
-																<Style.Triggers>
-																	<DataTrigger Binding="{Binding Kind}"
-																				 Value="chat.message">
-																		<Setter Property="Visibility"
-																				Value="Visible"/>
-																	</DataTrigger>
-																</Style.Triggers>
-															</Style>
-														</TextBlock.Style>
-													</TextBlock>
-													<!-- ================== ADD: REACTION DISPLAY (top-right) ================== -->
-													<Grid HorizontalAlignment="Right"
-														  VerticalAlignment="Top"
-														  Margin="0,4,6,0">
-
-														<!-- Placeholder: show only when BOTH reactions are empty -->
-														<TextBlock x:Name="PlaceholderDots"
-																   Text="•••"
-																   Foreground="{DynamicResource MutedTextBrush}"
-																   FontWeight="SemiBold"
-																   Opacity="0.8">
-															<TextBlock.Style>
-																<Style TargetType="TextBlock">
-																	<Setter Property="Visibility"
-																			Value="Collapsed"/>
-																	<Style.Triggers>
-																		<MultiDataTrigger>
-																			<MultiDataTrigger.Conditions>
-																				<Condition Binding="{Binding Tag, ElementName=MyReactText}"
-																						   Value=""/>
-																				<Condition Binding="{Binding Tag, ElementName=PartnerReactText}"
-																						   Value=""/>
-																			</MultiDataTrigger.Conditions>
-																			<Setter Property="Visibility"
-																					Value="Visible"/>
-																		</MultiDataTrigger>
-																	</Style.Triggers>
-																</Style>
-															</TextBlock.Style>
-														</TextBlock>
-
-														<!-- Reactions row -->
-														<StackPanel x:Name="ReactionsRow"
-																	Orientation="Horizontal">
-															<StackPanel.Style>
-																<Style TargetType="StackPanel">
-																	<Setter Property="Visibility"
-																			Value="Visible"/>
-																	<Style.Triggers>
-																		<MultiDataTrigger>
-																			<MultiDataTrigger.Conditions>
-																				<Condition Binding="{Binding Tag, ElementName=MyReactText}"
-																						   Value=""/>
-																				<Condition Binding="{Binding Tag, ElementName=PartnerReactText}"
-																						   Value=""/>
-																			</MultiDataTrigger.Conditions>
-																			<Setter Property="Visibility"
-																					Value="Collapsed"/>
-																		</MultiDataTrigger>
-																	</Style.Triggers>
-																</Style>
-															</StackPanel.Style>
-
-															<!-- My reaction -->
-															<TextBlock x:Name="MyReactText"
-																	   Style="{StaticResource ReactionGlyph}"
-																	   Foreground="{DynamicResource MeTaskTextBrush}">
-																<TextBlock.Tag>
-																	<MultiBinding Converter="{StaticResource DictLookup}">
-																		<Binding Path="Reactions"/>
-																		<Binding Path="DataContext.UserId"
-																				 RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-																	</MultiBinding>
-																</TextBlock.Tag>
-																<TextBlock.Visibility>
-																	<Binding Path="Text"
-																			 RelativeSource="{RelativeSource Self}"
-																			 Converter="{StaticResource NullToCollapsedConverter}"/>
-																</TextBlock.Visibility>
-															</TextBlock>
-
-															<!-- Partner reaction -->
-															<TextBlock x:Name="PartnerReactText"
-																	   Style="{StaticResource ReactionGlyph}"
-																	   Foreground="{DynamicResource PartnerTaskTextBrush}">
-																<TextBlock.Tag>
-																	<MultiBinding Converter="{StaticResource DictLookup}">
-																		<Binding Path="Reactions"/>
-																		<Binding Path="DataContext.PartnerId"
-																				 RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-																	</MultiBinding>
-																</TextBlock.Tag>
-																<TextBlock.Visibility>
-																	<Binding Path="Text"
-																			 RelativeSource="{RelativeSource Self}"
-																			 Converter="{StaticResource NullToCollapsedConverter}"/>
-																</TextBlock.Visibility>
-															</TextBlock>
-														</StackPanel>
-													</Grid>
-													<!-- ================== /ADD: REACTION DISPLAY ================== -->
-
-													<!-- ================== ADD: REACTION PICKER (toggle + popup) ================== -->
-													<ToggleButton x:Name="ReactToggle"
-																  Background="Transparent"
-																  BorderThickness="0"
-																  HorizontalAlignment="Right"
-																  VerticalAlignment="Top"
-																  Margin="0,4,6,0"
-																  Content="⋯"
-																  Foreground="{DynamicResource MutedTextBrush}"
-																  ToolTip="React"/>
-													<Popup PlacementTarget="{Binding ElementName=ReactToggle}"
-														   Placement="Top"
-														   StaysOpen="False"
-														   IsOpen="{Binding IsChecked, ElementName=ReactToggle}">
-														<Border Background="{DynamicResource ControlBackgroundBrush}"
-																BorderBrush="{DynamicResource ControlBorderBrush}"
-																CornerRadius="8"
-																Padding="6"
-																BorderThickness="1">
-															<StackPanel Orientation="Horizontal">
-
-																<!-- Each button passes (ActivityEntry, key) -->
-																<Button Content="😊"
-																		Margin="2"
-																		Padding="4"
-																		Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-																		CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=happy}"/>
-																<Button Content="😢"
-																		Margin="2"
-																		Padding="4"
-																		Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-																		CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=sad}"/>
-																<Button Content="👍"
-																		Margin="2"
-																		Padding="4"
-																		Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-																		CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=thumbsUp}"/>
-																<Button Content="👎"
-																		Margin="2"
-																		Padding="4"
-																		Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-																		CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=thumbsDown}"/>
-																<Button Content="😮"
-																		Margin="2"
-																		Padding="4"
-																		Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-																		CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=shocked}"/>
-
-															</StackPanel>
-														</Border>
-													</Popup>
-													<!-- ================== /ADD: REACTION PICKER ================== -->
-
-												</Grid>
-											</Grid>
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</Grid>
-						</Border>
-					</Border>
-
-					<!-- ================= Task Builder Tab ================= -->
-					<Border>
-						<Border.Style>
-							<Style TargetType="Border">
+			<!-- CONTENT PANELS (toggle by SelectedTopTab) -->
+			<!-- Activity Center (index 0) -->
+			<views:ActivityCenterSection Grid.Row="1">
+				<views:ActivityCenterSection.Style>
+					<Style TargetType="views:ActivityCenterSection">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding SelectedTopTab}"
+											   Value="0"/>
+									<Condition Binding="{Binding ElementName=TopTabs,
+                                  Path=(beh:TabCloseOnDoubleClickBehavior.IsCollapsed)}"
+											   Value="False"/>
+								</MultiDataTrigger.Conditions>
 								<Setter Property="Visibility"
-										Value="Collapsed"/>
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding SelectedTopTab}"
-												 Value="2">
-										<Setter Property="Visibility"
-												Value="Visible"/>
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</Border.Style>
-						<WrapPanel Margin="0,4,0,0"
-								   ItemHeight="Auto"
-								   ItemWidth="Auto">
-							<StackPanel Margin="6,2"
-										MinWidth="200">
-								<TextBlock Text="Title"
-										   Margin="5,0,5,0"/>
-								<TextBox Width="200"
-										 Text="{Binding NewTaskTitle}"/>
-							</StackPanel>
+										Value="Visible"/>
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</views:ActivityCenterSection.Style>
+			</views:ActivityCenterSection>
 
-							<!-- Description -->
-							<StackPanel Margin="6,2"
-										MinWidth="220">
-								<TextBlock Text="Description"
-										   Margin="5,0,5,0"/>
-								<TextBox Width="220"
-										 Height="Auto"
-										 AcceptsReturn="True"
-										 TextWrapping="Wrap"
-										 Text="{Binding NewTaskDescription, UpdateSourceTrigger=PropertyChanged}"
-										 ToolTip="Optional task description"/>
-							</StackPanel>
+			<!-- Task Builder (index 1) -->
+			<views:TaskBuilderSection Grid.Row="1">
+				<views:TaskBuilderSection.Style>
+					<Style TargetType="views:TaskBuilderSection">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding SelectedTopTab}"
+											   Value="1"/>
+									<Condition Binding="{Binding ElementName=TopTabs,
+                                  Path=(beh:TabCloseOnDoubleClickBehavior.IsCollapsed)}"
+											   Value="False"/>
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Visibility"
+										Value="Visible"/>
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</views:TaskBuilderSection.Style>
+			</views:TaskBuilderSection>
 
-							<!-- Category -->
-							<StackPanel Margin="6,2"
-										MinWidth="160">
-								<TextBlock Text="Category"
-										   Margin="5,0,5,0"/>
-								<ComboBox Width="160"
-										  ItemsSource="{Binding Categories}"
-										  SelectedItem="{Binding NewTaskCategory, Mode=TwoWay}"
-										  IsEditable="False"/>
-							</StackPanel>
+			<!-- Pending Tasks (index 2) -->
+			<views:PendingTasksSection Grid.Row="1">
+				<views:PendingTasksSection.Style>
+					<Style TargetType="views:PendingTasksSection">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding SelectedTopTab}"
+											   Value="2"/>
+									<Condition Binding="{Binding ElementName=TopTabs,
+                                  Path=(beh:TabCloseOnDoubleClickBehavior.IsCollapsed)}"
+											   Value="False"/>
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Visibility"
+										Value="Visible"/>
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</views:PendingTasksSection.Style>
+			</views:PendingTasksSection>
 
-							<!-- Due Date -->
-							<StackPanel Margin="6,2"
-										MinWidth="150">
-								<TextBlock Text="Due Date"
-										   Margin="5,0,5,0"/>
-								<DatePicker Width="150"
-											SelectedDate="{Binding NewTaskDueDate}"/>
-							</StackPanel>
+			<!-- Completed (index 3) -->
+			<views:CompletedTasksSection Grid.Row="1">
+				<views:CompletedTasksSection.Style>
+					<Style TargetType="views:CompletedTasksSection">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding SelectedTopTab}"
+											Value="3"/>
+									<Condition Binding="{Binding ElementName=TopTabs,
+                                  Path=(beh:TabCloseOnDoubleClickBehavior.IsCollapsed)}"
+											   Value="False"/>
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Visibility"
+										Value="Visible"/>
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</views:CompletedTasksSection.Style>
+			</views:CompletedTasksSection>
 
-							<!-- Media Request (dropdown only) -->
-							<StackPanel Margin="6,2"
-										MinWidth="170">
-								<TextBlock Text="Media Request"
-										   Margin="5,0,5,0"/>
-								<ComboBox Width="170"
-										  ItemsSource="{Binding MediaRequestTypes}"
-										  SelectedItem="{Binding NewTaskMediaType}"/>
-							</StackPanel>
+			<!-- Connections (index 4) -->
+			<views:ConnectionsSection Grid.Row="1">
+				<views:ConnectionsSection.Style>
+					<Style TargetType="views:ConnectionsSection">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding SelectedTopTab}"
+											   Value="4"/>
+									<Condition Binding="{Binding ElementName=TopTabs,
+                                  Path=(beh:TabCloseOnDoubleClickBehavior.IsCollapsed)}"
+											   Value="False"/>
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Visibility"
+										Value="Visible"/>
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</views:ConnectionsSection.Style>
+			</views:ConnectionsSection>
 
-							<!-- Assign To -->
-							<StackPanel Margin="6,2"
-										MinWidth="160">
-								<TextBlock Text="Assign To"
-										   Margin="5,0,5,0"/>
-								<!-- REPLACE ComboBox with ToggleButton -->
-								<ToggleButton
-									Style="{StaticResource AssignToSwitch}"
-									IsChecked="{Binding AssignToPartner, Mode=TwoWay}"
-									IsEnabled="{Binding IsPartnerVerified}"/>
-							</StackPanel>
-
-							<!-- Add Task button -->
-							<Button Content="Add Task"
-									Width="120"
-									Margin="10,26,0,0"
-									VerticalAlignment="Bottom"
-									Command="{Binding AddTaskCommand}"
-									beh:AudioBehavior.HoverSound="True"/>
-						</WrapPanel>
-					</Border>
-
-
-				</Grid>
-			</Expander.Content>
-		</Expander>
+			<!-- You can add real panels for Pending (index 2) and Completed (index 3) later -->
+		</Grid>
 
 	</StackPanel>
 </UserControl>

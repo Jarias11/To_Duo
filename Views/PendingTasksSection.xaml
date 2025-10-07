@@ -1,0 +1,364 @@
+<UserControl x:Class="TaskMate.Views.PendingTasksSection"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:beh="clr-namespace:TaskMate.Behaviors"
+			 Padding="24,0">
+
+	<UserControl.Resources>
+		<!-- Small round bullet used in section titles -->
+		<Style x:Key="BulletDot"
+			   TargetType="Ellipse">
+			<Setter Property="Width"
+					Value="10"/>
+			<Setter Property="Height"
+					Value="10"/>
+			<Setter Property="Margin"
+					Value="0,0,8,0"/>
+			<Setter Property="VerticalAlignment"
+					Value="Center"/>
+		</Style>
+
+		<!-- Handwritten section title -->
+		<Style x:Key="BulletTitle"
+			   TargetType="TextBlock"
+			   BasedOn="{StaticResource {x:Type TextBlock}}">
+			<Setter Property="FontFamily"
+					Value="{DynamicResource HandTitleFont}"/>
+			<Setter Property="FontSize"
+					Value="28"/>
+			<Setter Property="FontWeight"
+					Value="SemiBold"/>
+			<Setter Property="TextOptions.TextFormattingMode"
+					Value="Display"/>
+			<Setter Property="TextOptions.TextHintingMode"
+					Value="Fixed"/>
+			<Setter Property="Margin"
+					Value="0,0,0,8"/>
+		</Style>
+
+		<!-- Compact “pill” button -->
+		<Style x:Key="PillButton"
+			   TargetType="Button">
+			<Setter Property="MinWidth"
+					Value="36"/>
+			<Setter Property="Height"
+					Value="32"/>
+			<Setter Property="Padding"
+					Value="10,0"/>
+			<Setter Property="Margin"
+					Value="6,0,0,0"/>
+			<Setter Property="FontFamily"
+					Value="{DynamicResource HandScriptFont}"/>
+			<Setter Property="FontSize"
+					Value="14"/>
+			<Setter Property="Foreground"
+					Value="{DynamicResource PrimaryTextBrush}"/>
+			<Setter Property="Background"
+					Value="{DynamicResource ControlBackgroundBrush}"/>
+			<Setter Property="BorderBrush"
+					Value="{DynamicResource ControlBorderBrush}"/>
+			<Setter Property="BorderThickness"
+					Value="1"/>
+			<Setter Property="Cursor"
+					Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="Bd"
+								CornerRadius="16"
+								Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}">
+							<ContentPresenter HorizontalAlignment="Center"
+											  VerticalAlignment="Center"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver"
+									 Value="True">
+								<Setter TargetName="Bd"
+										Property="Background"
+										Value="{DynamicResource HoverBrush}"/>
+							</Trigger>
+							<Trigger Property="IsPressed"
+									 Value="True">
+								<Setter TargetName="Bd"
+										Property="Background"
+										Value="{DynamicResource PressedBrush}"/>
+							</Trigger>
+							<Trigger Property="IsEnabled"
+									 Value="False">
+								<Setter TargetName="Bd"
+										Property="Opacity"
+										Value="0.6"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<!-- green / red variants -->
+		<Style x:Key="ApprovePill"
+			   BasedOn="{StaticResource PillButton}"
+			   TargetType="Button">
+			<Setter Property="Background"
+					Value="{DynamicResource SuccessButtonBrush}"/>
+			<Setter Property="BorderBrush"
+					Value="{DynamicResource SuccessButtonBorderBrush}"/>
+			<Setter Property="Foreground"
+					Value="White"/>
+		</Style>
+		<Style x:Key="DeclinePill"
+			   BasedOn="{StaticResource PillButton}"
+			   TargetType="Button">
+			<Setter Property="Background"
+					Value="{DynamicResource DeclinePillBackgroundBrush}"/>
+			<Setter Property="BorderBrush"
+					Value="{DynamicResource DeclinePillBorderBrush}"/>
+			<Setter Property="Foreground"
+					Value="{DynamicResource DeclinePillForegroundBrush}"/>
+		</Style>
+
+		<!-- “Pending Response” label -->
+		<Style x:Key="StatusChip"
+			   TargetType="Border">
+			<Setter Property="CornerRadius"
+					Value="12"/>
+			<Setter Property="Padding"
+					Value="8,2"/>
+			<Setter Property="Background"
+					Value="{DynamicResource PendingChipBackgroundBrush}"/>
+			<Setter Property="BorderBrush"
+					Value="{DynamicResource PendingChipBorderBrush}"/>
+			<Setter Property="BorderThickness"
+					Value="1"/>
+		</Style>
+
+		<!-- Big soft card (incoming = pink, sent = blue) -->
+		<Style x:Key="IncomingCard"
+			   TargetType="Border">
+			<Setter Property="CornerRadius"
+					Value="10"/>
+			<Setter Property="Padding"
+					Value="14"/>
+			<Setter Property="Margin"
+					Value="0,10,0,0"/>
+			<Setter Property="Background"
+					Value="{DynamicResource PendingIncomingCardBrush}"/>
+			<!-- light pink -->
+			<Setter Property="BorderBrush"
+					Value="{DynamicResource CardBorderBrush}"/>
+			<Setter Property="BorderThickness"
+					Value="1"/>
+			<Setter Property="Effect">
+				<Setter.Value>
+					<DropShadowEffect BlurRadius="8"
+									  ShadowDepth="1"
+									  Opacity="0.12"/>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<Style x:Key="SentCard"
+			   TargetType="Border"
+			   BasedOn="{StaticResource IncomingCard}">
+			<Setter Property="Background"
+					Value="{DynamicResource PendingSentCardBrush}"/>
+			<!-- soft blue -->
+		</Style>
+
+		<!-- Row title / meta -->
+		<Style x:Key="RowTitle"
+			   TargetType="TextBlock"
+			   BasedOn="{StaticResource {x:Type TextBlock}}">
+			<Setter Property="FontFamily"
+					Value="{DynamicResource HandScriptFont}"/>
+			<Setter Property="FontSize"
+					Value="20"/>
+			<Setter Property="FontWeight"
+					Value="SemiBold"/>
+			<Setter Property="Margin"
+					Value="0,0,8,2"/>
+		</Style>
+		<Style x:Key="RowMeta"
+			   TargetType="TextBlock"
+			   BasedOn="{StaticResource {x:Type TextBlock}}">
+			<Setter Property="FontFamily"
+					Value="{DynamicResource HandScriptFont}"/>
+			<Setter Property="FontSize"
+					Value="14"/>
+			<Setter Property="Opacity"
+					Value="0.9"/>
+		</Style>
+	</UserControl.Resources>
+
+	<StackPanel Margin="0,6,0,0"
+				MaxWidth="1000">
+
+		<!-- ===== Tasks Sent to You (incoming / you must decide) ===== -->
+		<StackPanel>
+			<StackPanel Orientation="Horizontal"
+						Margin="2,8,0,4">
+				<Ellipse Style="{StaticResource BulletDot}"
+						 Fill="{DynamicResource PartnerTaskTextBrush}"/>
+				<TextBlock Text="Tasks Sent to You"
+						   Style="{StaticResource BulletTitle}"/>
+			</StackPanel>
+
+			<!-- Empty state -->
+			<Border Padding="18"
+					Margin="0,2,0,0">
+				<Border.Style>
+					<Style TargetType="Border"
+						   BasedOn="{StaticResource Card}">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding PendingTasks.Count}"
+										 Value="0">
+								<Setter Property="Visibility"
+										Value="Visible"/>
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Border.Style>
+
+				<TextBlock Text="No pending tasks from your partner yet.. "
+						   FontFamily="{DynamicResource HandScriptFont}"
+						   FontSize="16"
+						   Opacity="0.8"/>
+			</Border>
+
+			<ItemsControl ItemsSource="{Binding PendingTasks}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border Style="{StaticResource IncomingCard}">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+
+								<StackPanel>
+									<StackPanel Orientation="Horizontal"
+												VerticalAlignment="Center">
+										<TextBlock Text="{Binding Title}"
+												   Style="{StaticResource RowTitle}"/>
+										<Border Margin="6,0,0,0"
+												Padding="6,1"
+												CornerRadius="8"
+												Background="{DynamicResource CategoryChipBackgroundBrush}"
+												BorderBrush="{DynamicResource CategoryChipBorderBrush}"
+												BorderThickness="1"
+												Visibility="{Binding Category, Converter={StaticResource NullToCollapsedConverter}}">
+											<TextBlock Text="{Binding Category}"
+													   FontFamily="{DynamicResource HandScriptFont}"
+													   FontSize="12"/>
+										</Border>
+									</StackPanel>
+
+									<TextBlock Text="{Binding Description}"
+											   Style="{StaticResource RowMeta}"
+											   TextWrapping="Wrap"/>
+									<StackPanel Orientation="Horizontal"
+												Margin="0,6,0,0"
+												Visibility="{Binding DueDate, Converter={StaticResource NullToCollapsedConverter}}">
+										<TextBlock Text="Due: "
+												   Style="{StaticResource RowMeta}"
+												   FontWeight="Bold"/>
+										<TextBlock Text="{Binding DueDate, StringFormat={}{0:MMMM d}, TargetNullValue=''}"
+												   Style="{StaticResource RowMeta}"/>
+									</StackPanel>
+								</StackPanel>
+
+								<!-- Approve / Decline -->
+								<StackPanel Grid.Column="1"
+											Orientation="Horizontal"
+											VerticalAlignment="Top">
+									<Button Content="✓"
+											Style="{StaticResource ApprovePill}"
+											Command="{Binding DataContext.AcceptTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+											CommandParameter="{Binding}"
+											beh:AudioBehavior.HoverSound="True"/>
+									<Button Content="✕"
+											Style="{StaticResource DeclinePill}"
+											Command="{Binding DataContext.DeclineTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+											CommandParameter="{Binding}"
+											beh:AudioBehavior.HoverSound="True"
+											Margin="8,0,0,0"/>
+								</StackPanel>
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</StackPanel>
+
+		<!-- ===== Tasks You Sent (waiting on partner) ===== -->
+		<StackPanel Margin="0,18,0,0">
+			<StackPanel Orientation="Horizontal"
+						Margin="2,8,0,4">
+				<Ellipse Style="{StaticResource BulletDot}"
+						 Fill="{DynamicResource MeTaskTextBrush}"/>
+				<TextBlock Text="Tasks You Sent"
+						   Style="{StaticResource BulletTitle}"/>
+			</StackPanel>
+
+			<!-- NOTE: This list binds to SentPendingTasks (see tiny backend tweak below) -->
+			<ItemsControl ItemsSource="{Binding SentPendingTasks}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border Style="{StaticResource SentCard}">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+
+								<StackPanel>
+									<TextBlock Text="{Binding Title}"
+											   Style="{StaticResource RowTitle}"/>
+									<TextBlock Text="{Binding Description}"
+											   Style="{StaticResource RowMeta}"
+											   TextWrapping="Wrap"/>
+								</StackPanel>
+
+								<Border Grid.Column="1"
+										Style="{StaticResource StatusChip}"
+										VerticalAlignment="Top">
+									<TextBlock Text="Pending Response"
+											   FontFamily="{DynamicResource HandScriptFont}"
+											   FontSize="13"/>
+								</Border>
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+
+			<!-- Empty spacer if nothing sent -->
+			<Border Padding="18"
+					Margin="0,2,0,0">
+				<Border.Style>
+					<Style TargetType="Border"
+						   BasedOn="{StaticResource Card}">
+						<Setter Property="Visibility"
+								Value="Collapsed"/>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding SentPendingTasks.Count}"
+										 Value="0">
+								<Setter Property="Visibility"
+										Value="Visible"/>
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Border.Style>
+				<TextBlock Text="No requests sent yet"
+						   FontFamily="{DynamicResource HandScriptFont}"
+						   FontSize="16"
+						   Opacity="0.8"/>
+			</Border>
+		</StackPanel>
+
+	</StackPanel>
+</UserControl>

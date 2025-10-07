@@ -9,6 +9,61 @@
         <SolidColorBrush x:Key="MutedTextBrush"
                          Color="#666666"/>
 
+
+
+
+        <!-- Notebook colors (Light) -->
+        <SolidColorBrush x:Key="NotebookBaseBrush"
+                         Color="#FFFBF9F4"/>
+        <!-- slightly whiter than before -->
+        <SolidColorBrush x:Key="NotebookRuleBrush"
+                         Color="#EDE7DE"/>
+        <!-- subtle beige-gray line -->
+        <SolidColorBrush x:Key="NotebookMarginBrush"
+                         Color="#66F08A8A"/>
+        <!-- faint red margin -->
+
+
+        <!-- Notebook paper (Light) -->
+        <DrawingBrush x:Key="NotebookPaperBrush.Light"
+                      TileMode="Tile"
+                      ViewportUnits="Absolute"
+                      ViewboxUnits="Absolute"
+                      Stretch="Fill"
+                      Viewport="0,0,1,40"
+                      Viewbox="0,0,1,28">
+                <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                                <GeometryDrawing Brush="{DynamicResource NotebookBaseBrush}">
+                                        <GeometryDrawing.Geometry>
+                                                <RectangleGeometry Rect="0,0,1,28"/>
+                                        </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing>
+                                        <GeometryDrawing.Pen>
+                                                <Pen Thickness="1"
+                                                     Brush="{DynamicResource NotebookRuleBrush}"/>
+                                        </GeometryDrawing.Pen>
+                                        <GeometryDrawing.Geometry>
+                                                <LineGeometry StartPoint="0,27.5"
+                                                              EndPoint="1,27.5"/>
+                                        </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                        </DrawingGroup>
+                </DrawingBrush.Drawing>
+        </DrawingBrush>
+
+        <!-- Header look -->
+        <SolidColorBrush x:Key="TitleAccentBrush"
+                         Color="#7A5A3A"/>
+        <!-- warm ink on light -->
+        <SolidColorBrush x:Key="TopBarChipBackgroundBrush"
+                         Color="#F7F3EC"/>
+        <SolidColorBrush x:Key="TopBarChipBorderBrush"
+                         Color="#E6DDD2"/>
+
+
+
         <!-- Cards & borders -->
         <SolidColorBrush x:Key="CardBackgroundBrush"
                          Color="#FAFAFA"/>
@@ -18,6 +73,18 @@
         <!-- Sub-cards (lists) -->
         <SolidColorBrush x:Key="SubCardLeftBrush"
                          Color="#E8F0FE"/>
+        <!-- Activity Center (Light; not white, warm parchment) -->
+        <SolidColorBrush x:Key="ActivityCardBackgroundBrush"
+                         Color="#F6F1E8"/>
+        <SolidColorBrush x:Key="ActivityCardBorderBrush"
+                         Color="#E6DDD2"/>
+
+        <!-- List background + zebra stripe (Light) -->
+        <SolidColorBrush x:Key="ActivityBackgroundBrush"
+                         Color="#F7F3EC"/>
+        <SolidColorBrush x:Key="ActivityRowAltBrush"
+                         Color="#EEE6DB"/>
+        <!-- matches TopBarChip border tone -->
         <!-- My Tasks -->
         <SolidColorBrush x:Key="SubCardRightBrush"
                          Color="#F3E8FF"/>
@@ -43,18 +110,73 @@
         <SolidColorBrush x:Key="ControlBorderBrush"
                          Color="#DDDDDD"/>
         <SolidColorBrush x:Key="TabItemBackgroundBrush"
-                         Color="#F0F0F0"/>
-        <SolidColorBrush x:Key="TabItemHoverBrush"
-                         Color="#E7E7E7"/>
-        <SolidColorBrush x:Key="TabItemSelectedBrush"
-                         Color="#E0E0E0"/>
+                         Color="#00FFFFFF"/>
+        <!-- transparent -->
         <SolidColorBrush x:Key="TabItemBorderBrush"
-                         Color="#D5D5D5"/>
+                         Color="#00FFFFFF"/>
+        <SolidColorBrush x:Key="TabItemHoverBrush"
+                         Color="#EEE7DE"/>
+        <SolidColorBrush x:Key="TabItemSelectedBrush"
+                         Color="#3A2F27"/>
+        <!-- cocoa -->
         <!-- darker versions of the list backgrounds -->
         <SolidColorBrush x:Key="SubCardLeftHeaderBrush"
-                        Color="#D7E3FF"/>
+                         Color="#D7E3FF"/>
         <!-- darker than #E8F0FE -->
         <SolidColorBrush x:Key="SubCardRightHeaderBrush"
-                        Color="#EAD7FF"/>
+                         Color="#EAD7FF"/>
         <!-- darker than #F3E8FF -->
+        <!-- Success/confirm button brushes (Light) -->
+        <SolidColorBrush x:Key="SuccessButtonBrush"
+                         Color="#4CAF50"/>
+        <SolidColorBrush x:Key="SuccessButtonHoverBrush"
+                         Color="#43A047"/>
+        <SolidColorBrush x:Key="SuccessButtonPressedBrush"
+                         Color="#388E3C"/>
+        <SolidColorBrush x:Key="SuccessButtonBorderBrush"
+                         Color="#2E7D32"/>
+
+        <!-- Bulletin board (Light) -->
+        <SolidColorBrush x:Key="BulletinFrameBrush"
+                         Color="#8A6A48"/>
+        <!-- medium warm brown -->
+        <LinearGradientBrush x:Key="BulletinBoardBrush"
+                             StartPoint="0,0"
+                             EndPoint="1,1">
+                <!-- paler tan to match the app -->
+                <GradientStop Color="#F0E1CC"
+                              Offset="0"/>
+                <GradientStop Color="#E6D1B2"
+                              Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="BulletinBevelBrush"
+                             StartPoint="0,0"
+                             EndPoint="0,1">
+                <GradientStop Color="#66FFFFFF"
+                              Offset="0"/>
+                <GradientStop Color="#00FFFFFF"
+                              Offset="0.38"/>
+                <GradientStop Color="#26000000"
+                              Offset="1"/>
+        </LinearGradientBrush>
+        <!-- Pushpin colors (Light) -->
+        <SolidColorBrush x:Key="PushpinHeadBrush"
+                        Color="#E05555"/>
+        <SolidColorBrush x:Key="PushpinHeadStrokeBrush"
+                        Color="#AA2E2E"/>
+        <SolidColorBrush x:Key="PushpinNeedleBrush"
+                        Color="#6B6B6B"/>
+
+          <!-- Pending cards / chip / decline -->
+<SolidColorBrush x:Key="PendingIncomingCardBrush"   Color="#FFEFF5"/>  <!-- same pink -->
+<SolidColorBrush x:Key="PendingSentCardBrush"       Color="#E9F2FF"/>  <!-- same blue -->
+<SolidColorBrush x:Key="PendingChipBackgroundBrush" Color="#E3F2FD"/>
+<SolidColorBrush x:Key="PendingChipBorderBrush"     Color="#BBDEFB"/>
+
+<SolidColorBrush x:Key="DeclinePillBackgroundBrush" Color="#FADBD8"/>
+<SolidColorBrush x:Key="DeclinePillBorderBrush"     Color="#E6B0AA"/>
+<SolidColorBrush x:Key="DeclinePillForegroundBrush" Color="#8B3A3A"/>
+
+<SolidColorBrush x:Key="CategoryChipBackgroundBrush" Color="#FFF7E9"/>
+<SolidColorBrush x:Key="CategoryChipBorderBrush"     Color="#F3CF9B"/>              
 </ResourceDictionary>

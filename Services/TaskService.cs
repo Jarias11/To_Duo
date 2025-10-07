@@ -11,6 +11,7 @@ namespace TaskMate.Services {
 	public class TaskService : ITaskService {
 		public ObservableCollection<TaskItem> Tasks { get; } = new();
 		public ObservableCollection<TaskItem> PendingTasks { get; } = new();
+		public ObservableCollection<TaskItem> SentPendingTasks { get; } = new();
 
 
 

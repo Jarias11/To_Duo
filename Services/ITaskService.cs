@@ -7,6 +7,7 @@ namespace TaskMate.Services
     {
         ObservableCollection<TaskItem> Tasks { get; }
         ObservableCollection<TaskItem> PendingTasks { get; }
+        public ObservableCollection<TaskItem> SentPendingTasks { get; } 
 
         // Load from disk + cloud and populate collections
         Task InitializeAsync(string groupId);

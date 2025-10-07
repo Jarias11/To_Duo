@@ -20,6 +20,7 @@ namespace TaskMate.Services {
 		// UI targets provided by the VM
 		private ObservableCollection<TaskItem>? _tasks;
 		private ObservableCollection<TaskItem>? _pending;
+		private ObservableCollection<TaskItem>? _pendingSent;
 		private ICollectionView? _myView;
 		private ICollectionView? _partnerView;
 
@@ -47,10 +48,12 @@ namespace TaskMate.Services {
 		public void Attach(
 			ObservableCollection<TaskItem> tasks,
 			ObservableCollection<TaskItem> pendingRequests,
+			ObservableCollection<TaskItem> sentPendingRequests,
 			ICollectionView myTasksView,
 			ICollectionView partnerTasksView) {
 			_tasks = tasks;
 			_pending = pendingRequests;
+			_pendingSent = sentPendingRequests;
 			_myView = myTasksView;
 			_partnerView = partnerTasksView;
 		}
@@ -138,10 +141,12 @@ namespace TaskMate.Services {
 						_tasks.Clear();
 						foreach(var t in keepMine) _tasks.Add(t);
 						_pending.Clear(); // pending rows belong to group; drop all
+						_pendingSent?.Clear();
 					}
 					else if(groupChanged) {
 						// Same partner; only group changed → keep partner tasks, drop pending
 						_pending.Clear();
+						_pendingSent?.Clear();
 					}
 					_myView?.Refresh();
 					_partnerView?.Refresh();
@@ -204,9 +209,10 @@ namespace TaskMate.Services {
 						return false;
 					}
 
-					var mine = cloud.Where(IsMineToDecide).ToList(); // 👈 actually use the helper
+					var mine = cloud.Where(IsMineToDecide).ToList(); //  actually use the helper
+					var sent = cloud.Where(t => !IsMineToDecide(t)).ToList();
 
-					// 👇 Toast only brand-new "mine" requests (dedup with a HashSet<Guid>)
+					//  Toast only brand-new "mine" requests (dedup with a HashSet<Guid>)
 					foreach(var t in mine) {
 						if(_lastPendingMine.Add(t.Id)) {
 							// We don't have display names; show a friendly label from CreatedBy
@@ -221,15 +227,9 @@ namespace TaskMate.Services {
 						}
 					}
 
-					foreach(var t in cloud) t.CanDecide = false;
-					foreach(var t in mine) t.CanDecide = true;
-
-					TaskCollectionHelpers.ReplaceAll(
-						_pending,
-						mine,
-						assignedTo: TaskMate.Models.Enums.Assignee.Partner,
-						requestMode: true
-					);
+					TaskCollectionHelpers.ReplaceAll(_pending, mine, assignedTo: Assignee.Partner, requestMode: true);
+					if(_pendingSent != null)
+						TaskCollectionHelpers.ReplaceAll(_pendingSent, sent, assignedTo: Assignee.Partner, requestMode: true); //
 					foreach(var t in _pending)
 						t.CanDecide = true;
 					// keep dedupe set tight (drop ids no longer pending)

@@ -15,6 +15,10 @@ namespace TaskMate.ViewModels {
     public class MainViewModel : INotifyPropertyChanged, IDisposable {
         //Public properties
         public Assignee[] Assignees { get; } = (Assignee[])Enum.GetValues(typeof(Assignee));
+        // ADD near other public props
+        public bool IsMuted => !_settings.SoundsEnabled;
+        public bool IsDarkTheme => _settings.Theme == AppTheme.Dark;
+        public string SoundButtonText => _settings.SoundsEnabled ? "Mute" : "Unmute";
         public bool ShowPartnerList => IsPartnerVerified;
         public bool NeedsProfileSetup => _settings.NeedsProfileSetup;
         public string UserId => _partner.UserId;
@@ -102,6 +106,7 @@ namespace TaskMate.ViewModels {
         public ICollectionView PartnerCompletedTasks { get; }
         public ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
         public ObservableCollection<TaskItem> PendingTasks => _taskService.PendingTasks;
+        public ObservableCollection<TaskItem> SentPendingTasks => _taskService.SentPendingTasks;
         public ObservableCollection<string> Categories { get; } = new() { CreateNewCategory };
         public ObservableCollection<PartnerRequest> IncomingPartnerRequests { get; } = new();
         public ObservableCollection<PartnerRequest> OutgoingPartnerRequests { get; } = new();
@@ -163,8 +168,15 @@ namespace TaskMate.ViewModels {
             var saved = _settings.Theme;
             _themeService.Apply(saved);
             ThemeButtonText = saved == AppTheme.Light ? "Dark Mode" : "Light Mode";
+            // make sure UI reflects initial state
+            SoundService.Enable(_settings.SoundsEnabled);
+            OnPropertyChanged(nameof(IsDarkTheme));
+            OnPropertyChanged(nameof(IsMuted));
+            OnPropertyChanged(nameof(SoundButtonText));
+
+
             // Live sync
-            _live.Attach(Tasks, PendingTasks, MyTasksView, PartnerTasksView);
+            _live.Attach(Tasks, PendingTasks, SentPendingTasks, MyTasksView, PartnerTasksView);
             _pairing.PartnerDisconnected += () => {
                 IsPartnerVerified = false;
                 HasPendingOutgoing = _pairing.HasPendingOutgoing; // stay in sync
@@ -251,6 +263,7 @@ namespace TaskMate.ViewModels {
                 _settings.Theme = next;
                 _settings.Save();
                 ThemeButtonText = next == AppTheme.Light ? "Dark Mode" : "Light Mode";
+                OnPropertyChanged(nameof(IsDarkTheme));
             });
             SaveDisplayNameCommand = new RelayCommand(
                 _ => SaveDisplayName(),
@@ -300,7 +313,7 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             });
             PopOutBothCommand = new RelayCommand(_ => {
                 var w = new TaskMate.Views.TaskBoardPopoutWindow { DataContext = this };
-                ShowPopoutAndHideMain(w); 
+                ShowPopoutAndHideMain(w);
                 SoundService.PlayTaskCreated();
             });
 
@@ -329,6 +342,8 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                 _settings.SoundsEnabled = next;
                 _settings.Save();
                 SoundService.Enable(next);
+                OnPropertyChanged(nameof(IsMuted));          // <— notify
+                OnPropertyChanged(nameof(SoundButtonText));  // (optional tooltip)
             });
 
 

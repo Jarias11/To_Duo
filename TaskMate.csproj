@@ -33,6 +33,12 @@
   <Content Include="Assets\Sounds\sent.wav">
     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>
+  <!-- stop SDK default globs from claiming the files as <None> -->
+  <None Remove="Assets/Fonts/**" />
+  <!-- embed all TTF/OTF fonts as WPF resources -->
+  <Resource Include="Assets/Fonts/**/*.ttf" />
+  <Resource Include="Assets/Fonts/**/*.otf" />
   <PackageReference Include="NAudio" Version="2.2.1" />
+
   </ItemGroup>
 </Project>

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TaskMate.Notifier")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd81d084d76cb83d5220f4d1c50e23123b6a06f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6366fba8e780352fc66ffc16fe3c755f4df28295")]
 [assembly: System.Reflection.AssemblyProductAttribute("TaskMate.Notifier")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TaskMate.Notifier")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

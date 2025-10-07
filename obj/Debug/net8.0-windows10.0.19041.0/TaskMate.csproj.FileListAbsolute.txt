@@ -75,3 +75,13 @@ C:\Users\Jarias\Documents\To-Duo\bin\Debug\net8.0-windows10.0.19041.0\Assets\Sou
 C:\Users\Jarias\Documents\To-Duo\bin\Debug\net8.0-windows10.0.19041.0\Assets\Sounds\pendingPartnerRequest.wav
 C:\Users\Jarias\Documents\To-Duo\bin\Debug\net8.0-windows10.0.19041.0\Assets\Sounds\partnerDisconnected.wav
 C:\Users\Jarias\Documents\To-Duo\bin\Debug\net8.0-windows10.0.19041.0\Assets\Sounds\sent.wav
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\ConnectionsSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\ConnectionsSection.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\ActivityCenterSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\ActivityCenterSection.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\TaskBuilderSection.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\TaskBuilderSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\PendingTasksSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\PendingTasksSection.baml
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\CompletedTasksSection.g.cs
+C:\Users\Jarias\Documents\To-Duo\obj\Debug\net8.0-windows10.0.19041.0\Views\CompletedTasksSection.baml

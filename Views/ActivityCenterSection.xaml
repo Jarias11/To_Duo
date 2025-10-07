@@ -1,0 +1,305 @@
+<!-- Views/ActivityCenterSection.xaml -->
+<UserControl x:Class="TaskMate.Views.ActivityCenterSection"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:conv="clr-namespace:TaskMate.Converters">
+	<Border Style="{StaticResource ActivityCard}">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+
+			<!-- Input row -->
+			<Grid Grid.Row="0"
+				  Margin="0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBox x:Name="ChatInput"
+						 Grid.Column="0"
+						 MinWidth="200"
+						 Height="28"
+						 Margin="0"
+						 Text="{Binding NewActivityMessage, UpdateSourceTrigger=PropertyChanged}">
+					<TextBox.InputBindings>
+						<KeyBinding Key="Enter"
+									Command="{Binding SendActivityMessageCommand}"/>
+					</TextBox.InputBindings>
+				</TextBox>
+
+				<Button Grid.Column="1"
+						Style="{StaticResource ActivitySendButton}"
+						Content="Send"
+						Command="{Binding SendActivityMessageCommand}"/>
+			</Grid>
+
+			<!-- Feed -->
+			<ListBox Grid.Row="1"
+					 Style="{StaticResource ActivityListStyle}"
+					 Height="180"
+					 ItemsSource="{Binding ActivityFeed}"
+					 ScrollViewer.VerticalScrollBarVisibility="Auto"
+					 AlternationCount="2">
+				<ListBox.ItemContainerStyle>
+					<Style TargetType="ListBoxItem">
+						<Setter Property="HorizontalContentAlignment"
+								Value="Stretch"/>
+						<Setter Property="Padding"
+								Value="0"/>
+						<Setter Property="Background"
+								Value="Transparent"/>
+						<Setter Property="BorderThickness"
+								Value="0"/>
+						<Setter Property="Foreground"
+								Value="{DynamicResource PrimaryTextBrush}"/>
+						<Style.Triggers>
+							<Trigger Property="ItemsControl.AlternationIndex"
+									 Value="1">
+								<Setter Property="Background"
+										Value="{DynamicResource ActivityRowAltBrush}"/>
+							</Trigger>
+						</Style.Triggers>
+					</Style>
+				</ListBox.ItemContainerStyle>
+
+				<!-- (reuse your existing DataTemplate exactly) -->
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid Margin="6,3"
+								TextElement.Foreground="{DynamicResource PrimaryTextBrush}">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="4"/>
+								<!-- accent -->
+								<ColumnDefinition Width="84"/>
+								<!-- timestamp -->
+								<ColumnDefinition Width="*"/>
+								<!-- message -->
+							</Grid.ColumnDefinitions>
+
+							<!-- Accent by actor -->
+							<Border Grid.Column="0"
+									CornerRadius="2">
+								<Border.Style>
+									<Style TargetType="Border">
+										<Setter Property="Background"
+												Value="{DynamicResource CardBorderBrush}"/>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding IsMine}"
+														 Value="True">
+												<Setter Property="Background"
+														Value="{DynamicResource MeTaskTextBrush}"/>
+											</DataTrigger>
+											<DataTrigger Binding="{Binding IsMine}"
+														 Value="False">
+												<Setter Property="Background"
+														Value="{DynamicResource PartnerTaskTextBrush}"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</Border.Style>
+							</Border>
+
+							<!-- Timestamp (24h “roboty” style) -->
+							<TextBlock Grid.Column="1"
+									   Style="{StaticResource ActivityTimestampStyle}"
+									   Text="{Binding Timestamp, StringFormat={}{0:MM/dd HH:mm}}"/>
+
+							<!-- Message -->
+							<Grid Grid.Column="2"
+								  VerticalAlignment="Center">
+								<!-- Normal system entry -->
+								<TextBlock Text="{Binding Message}"
+										   TextWrapping="Wrap">
+									<TextBlock.Style>
+										<Style TargetType="TextBlock">
+											<Setter Property="Visibility"
+													Value="Visible"/>
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding Kind}"
+															 Value="chat.message">
+													<Setter Property="Visibility"
+															Value="Collapsed"/>
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+
+								<!-- Chat entry -->
+								<TextBlock TextWrapping="Wrap">
+									<TextBlock.Inlines>
+										<Run Text="{Binding Actor}"
+											 FontWeight="Bold"/>
+										<Run Text=": "/>
+										<Run Text="{Binding Message}"/>
+									</TextBlock.Inlines>
+									<TextBlock.Style>
+										<Style TargetType="TextBlock">
+											<Setter Property="Visibility"
+													Value="Collapsed"/>
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding Kind}"
+															 Value="chat.message">
+													<Setter Property="Visibility"
+															Value="Visible"/>
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+								<!-- ================== ADD: REACTION DISPLAY (top-right) ================== -->
+								<Grid HorizontalAlignment="Right"
+									  VerticalAlignment="Top"
+									  Margin="0,4,6,0">
+
+									<!-- Placeholder: show only when BOTH reactions are empty -->
+									<TextBlock x:Name="PlaceholderDots"
+											   Text="•••"
+											   Foreground="{DynamicResource MutedTextBrush}"
+											   FontWeight="SemiBold"
+											   Opacity="0.8">
+										<TextBlock.Style>
+											<Style TargetType="TextBlock">
+												<Setter Property="Visibility"
+														Value="Collapsed"/>
+												<Style.Triggers>
+													<MultiDataTrigger>
+														<MultiDataTrigger.Conditions>
+															<Condition Binding="{Binding Tag, ElementName=MyReactText}"
+																	   Value=""/>
+															<Condition Binding="{Binding Tag, ElementName=PartnerReactText}"
+																	   Value=""/>
+														</MultiDataTrigger.Conditions>
+														<Setter Property="Visibility"
+																Value="Visible"/>
+													</MultiDataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+									</TextBlock>
+
+									<!-- Reactions row -->
+									<StackPanel x:Name="ReactionsRow"
+												Orientation="Horizontal">
+										<StackPanel.Style>
+											<Style TargetType="StackPanel">
+												<Setter Property="Visibility"
+														Value="Visible"/>
+												<Style.Triggers>
+													<MultiDataTrigger>
+														<MultiDataTrigger.Conditions>
+															<Condition Binding="{Binding Tag, ElementName=MyReactText}"
+																	   Value=""/>
+															<Condition Binding="{Binding Tag, ElementName=PartnerReactText}"
+																	   Value=""/>
+														</MultiDataTrigger.Conditions>
+														<Setter Property="Visibility"
+																Value="Collapsed"/>
+													</MultiDataTrigger>
+												</Style.Triggers>
+											</Style>
+										</StackPanel.Style>
+
+										<!-- My reaction -->
+										<TextBlock x:Name="MyReactText"
+												   Style="{StaticResource ReactionGlyph}"
+												   Foreground="{DynamicResource MeTaskTextBrush}">
+											<TextBlock.Tag>
+												<MultiBinding Converter="{StaticResource DictLookup}">
+													<Binding Path="Reactions"/>
+													<Binding Path="DataContext.UserId"
+															 RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+												</MultiBinding>
+											</TextBlock.Tag>
+											<TextBlock.Visibility>
+												<Binding Path="Text"
+														 RelativeSource="{RelativeSource Self}"
+														 Converter="{StaticResource NullToCollapsedConverter}"/>
+											</TextBlock.Visibility>
+										</TextBlock>
+
+										<!-- Partner reaction -->
+										<TextBlock x:Name="PartnerReactText"
+												   Style="{StaticResource ReactionGlyph}"
+												   Foreground="{DynamicResource PartnerTaskTextBrush}">
+											<TextBlock.Tag>
+												<MultiBinding Converter="{StaticResource DictLookup}">
+													<Binding Path="Reactions"/>
+													<Binding Path="DataContext.PartnerId"
+															 RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+												</MultiBinding>
+											</TextBlock.Tag>
+											<TextBlock.Visibility>
+												<Binding Path="Text"
+														 RelativeSource="{RelativeSource Self}"
+														 Converter="{StaticResource NullToCollapsedConverter}"/>
+											</TextBlock.Visibility>
+										</TextBlock>
+									</StackPanel>
+								</Grid>
+								<!-- ================== /ADD: REACTION DISPLAY ================== -->
+
+								<!-- ================== ADD: REACTION PICKER (toggle + popup) ================== -->
+								<ToggleButton x:Name="ReactToggle"
+											  Background="Transparent"
+											  BorderThickness="0"
+											  HorizontalAlignment="Right"
+											  VerticalAlignment="Top"
+											  Margin="0,4,6,0"
+											  Content="⋯"
+											  Foreground="{DynamicResource MutedTextBrush}"
+											  ToolTip="React"/>
+								<Popup PlacementTarget="{Binding ElementName=ReactToggle}"
+									   Placement="Top"
+									   StaysOpen="False"
+									   IsOpen="{Binding IsChecked, ElementName=ReactToggle}">
+									<Border Background="{DynamicResource ControlBackgroundBrush}"
+											BorderBrush="{DynamicResource ControlBorderBrush}"
+											CornerRadius="8"
+											Padding="6"
+											BorderThickness="1">
+										<StackPanel Orientation="Horizontal">
+
+											<!-- Each button passes (ActivityEntry, key) -->
+											<Button Content="😊"
+													Margin="2"
+													Padding="4"
+													Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+													CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=happy}"/>
+											<Button Content="😢"
+													Margin="2"
+													Padding="4"
+													Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+													CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=sad}"/>
+											<Button Content="👍"
+													Margin="2"
+													Padding="4"
+													Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+													CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=thumbsUp}"/>
+											<Button Content="👎"
+													Margin="2"
+													Padding="4"
+													Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+													CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=thumbsDown}"/>
+											<Button Content="😮"
+													Margin="2"
+													Padding="4"
+													Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+													CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=shocked}"/>
+
+										</StackPanel>
+									</Border>
+								</Popup>
+								<!-- ================== /ADD: REACTION PICKER ================== -->
+
+							</Grid>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Grid>
+	</Border>
+</UserControl>

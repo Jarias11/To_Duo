@@ -9,38 +9,45 @@
         Title="TaskMate"
         Height="900"
         Width="1000"
-        MinWidth="600"
+        MinWidth="750"
         MinHeight="600"
-        Background="{DynamicResource WindowBackgroundBrush}">
+        Background="{DynamicResource NotebookPaperBrush}">
         <Window.Resources>
         </Window.Resources>
 
-        <Grid Margin="10">
+        <Grid Margin="10"
+              Background="{x:Null}">
+
+
+
+
                 <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-
-                <!-- === TOP SECTIONS: Dashboard, Connections, Task Builder === -->
-                <views:TopDashboardSection Grid.Row="0"/>
-
-
-
-
-
-                <!-- TASK LISTS in a big card -->
-                <!-- === MIDDLE AREA: one owner ScrollViewer === -->
-                <ScrollViewer Grid.Row="1"
-                              VerticalScrollBarVisibility="Hidden"
+                <!-- === TOP + MIDDLE: one owner ScrollViewer === -->
+                <ScrollViewer Grid.Row="0"
+                              Grid.RowSpan="2"
+                              VerticalScrollBarVisibility="hidden"
                               CanContentScroll="False"
                               PanningMode="VerticalFirst"
-                              PanningDeceleration="0.001">
+                              PanningDeceleration="0.001"
+                              MaxWidth="2000">
                         <StackPanel>
 
+                                <views:TopDashboardSection/>
+
+
+
+
+
+
+
+
                                 <!-- TASK BOARD (collapsible, default open) -->
-                                <Expander Style="{StaticResource CardExpander}"
+                                <Expander Style="{StaticResource BulletinExpander}"
                                           IsExpanded="True">
                                         <Expander.Header>
                                                 <Grid>
@@ -53,10 +60,12 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
 
-                                                        <!-- Title -->
-                                                        <TextBlock Grid.Column="0"
+                                                        <!-- Title centered across the whole header -->
+                                                        <TextBlock Grid.ColumnSpan="5"
                                                                    Text="Task Board"
                                                                    Style="{StaticResource SectionHeader}"
+                                                                   FontSize="20"
+                                                                   HorizontalAlignment="Center"
                                                                    Margin="0"/>
 
                                                         <!-- Tiny stats -->
@@ -126,550 +135,313 @@
                                                                            Margin="8,0,0,0"/>
                                                         </StackPanel>
                                                         <Button Grid.Column="4"
-                                                                Content="↗"
+                                                                Style="{StaticResource PushpinButton}"
                                                                 ToolTip="Pop out both lists"
-                                                                Width="26"
-                                                                Height="26"
-                                                                Padding="0"
-                                                                Margin="8,0,0,0"
                                                                 Command="{Binding PopOutBothCommand}"
                                                                 beh:AudioBehavior.HoverSound="True"/>
                                                 </Grid>
                                         </Expander.Header>
 
                                         <!-- Card chrome inside the expander -->
-                                        <Border Style="{StaticResource Card}">
-                                                <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                        </Grid.ColumnDefinitions>
 
-                                                        <!-- ============ MY TASKS (left) ============ -->
-                                                        <Border Grid.Column="0"
-                                                                Style="{StaticResource SubCard}"
-                                                                Background="{DynamicResource SubCardLeftBrush}">
-                                                                <!-- shared-size so the 'Due' column aligns across lists -->
-                                                                <Grid Grid.IsSharedSizeScope="True">
-                                                                        <Grid.RowDefinitions>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                        </Grid.RowDefinitions>
+                                        <Grid VerticalAlignment="Top">
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
 
-                                                                        <StackPanel Grid.Row="0"
-                                                                                    Orientation="Horizontal">
-                                                                                <TextBlock Text="My Tasks"
-                                                                                           Style="{StaticResource SectionHeader}"
-                                                                                           Margin="0,0,6,0"/>
-                                                                                <Button Content="↗"
-                                                                                        Width="22"
-                                                                                        Height="22"
-                                                                                        Padding="0"
-                                                                                        ToolTip="Pop out My Tasks"
-                                                                                        Command="{Binding PopOutMineCommand}"
-                                                                                        beh:AudioBehavior.HoverSound="True"/>
-                                                                        </StackPanel>
+                                                <!-- ============ MY TASKS (left) ============ -->
+                                                <Border Grid.Column="0"
+                                                        Style="{StaticResource SubCard}"
+                                                        Background="{DynamicResource SubCardLeftBrush}"
+                                                        VerticalAlignment="Top">
+                                                        <!-- shared-size so the 'Due' column aligns across lists -->
+                                                        <Grid Grid.IsSharedSizeScope="True">
+                                                                <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                </Grid.RowDefinitions>
 
-                                                                        <!-- Header: ✓ | Task ......... | Due -->
-                                                                        <Grid Grid.Row="1"
-                                                                              Background="{DynamicResource HeaderRowBackgroundBrush}"
-                                                                              Margin="0,0,0,6">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="30"/>
-                                                                                        <!-- checkbox -->
-                                                                                        <ColumnDefinition Width="*"/>
-                                                                                        <!-- title -->
-                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                          SharedSizeGroup="DueCol"
-                                                                                                          MinWidth="90"/>
-                                                                                        <!-- due -->
-                                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Row="0"
+                                                                            Orientation="Horizontal">
+                                                                        <TextBlock Text="My Tasks"
+                                                                                   Style="{StaticResource SectionHeader}"
+                                                                                   Margin="0,0,6,0"/>
+                                                                </StackPanel>
+                                                                <Button Style="{StaticResource PushpinButton}"
+                                                                        ToolTip="Pop out My Tasks"
+                                                                        Command="{Binding PopOutMineCommand}"
+                                                                        beh:AudioBehavior.HoverSound="True"
+                                                                        Grid.RowSpan="3"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Top"
+                                                                        Margin="0,-12,0,0"
+                                                                        Panel.ZIndex="10"/>
 
-                                                                                <TextBlock Text="✓"
-                                                                                           Grid.Column="0"
-                                                                                           FontWeight="Bold"/>
-                                                                                <TextBlock Text="Task"
-                                                                                           Grid.Column="1"
-                                                                                           FontWeight="Bold"/>
-                                                                                <TextBlock Text="Due"
-                                                                                           Grid.Column="2"
-                                                                                           FontWeight="Bold"
-                                                                                           HorizontalAlignment="Left"
-                                                                                           Margin="8,0,0,0"/>
-                                                                        </Grid>
 
-                                                                        <!-- Items: two-line template (Title + Due on top; Category below) -->
-                                                                        <ItemsControl Grid.Row="2"
-                                                                                      ItemsSource="{Binding MyTasksView}">
-                                                                                <ItemsControl.ItemsPanel>
-                                                                                        <ItemsPanelTemplate>
-                                                                                                <StackPanel/>
-                                                                                        </ItemsPanelTemplate>
-                                                                                </ItemsControl.ItemsPanel>
-                                                                                <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                                <Button Style="{StaticResource TaskCardButtonStyle}"
-                                                                                                        Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}"
-                                                                                                        beh:AudioBehavior.HoverSound="True">
-                                                                                                        <Grid>
-                                                                                                                <Grid.ColumnDefinitions>
-                                                                                                                        <ColumnDefinition Width="30"/>
-                                                                                                                        <ColumnDefinition Width="*"/>
-                                                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                                                          SharedSizeGroup="DueCol"
-                                                                                                                                          MinWidth="110"/>
-                                                                                                                </Grid.ColumnDefinitions>
-                                                                                                                <Grid.RowDefinitions>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                </Grid.RowDefinitions>
+                                                                <!-- Header: ✓ | Task ......... | Due -->
+                                                                <Grid Grid.Row="1"
+                                                                      Background="{DynamicResource HeaderRowBackgroundBrush}"
+                                                                      Margin="0,0,0,6">
+                                                                        <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="30"/>
+                                                                                <!-- checkbox -->
+                                                                                <ColumnDefinition Width="*"/>
+                                                                                <!-- title -->
+                                                                                <ColumnDefinition Width="Auto"
+                                                                                                  SharedSizeGroup="DueCol"
+                                                                                                  MinWidth="90"/>
+                                                                                <!-- due -->
+                                                                        </Grid.ColumnDefinitions>
 
-                                                                                                                <!-- Heads-up: until we add a tiny one-liner later, clicking the checkbox will also click the row. -->
-                                                                                                                <CheckBox Grid.RowSpan="2"
-                                                                                                                          IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                                                                          Margin="2"
-                                                                                                                          Command="{Binding DataContext.ToggleCompleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                                          CommandParameter="{Binding}"/>
-
-                                                                                                                <TextBlock Grid.Column="1"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding Title}"
-                                                                                                                           Margin="0,0,8,0"
-                                                                                                                           TextTrimming="CharacterEllipsis"
-                                                                                                                           TextWrapping="NoWrap"
-                                                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
-                                                                                                                           VerticalAlignment="Center"/>
-
-                                                                                                                <TextBlock Grid.Column="2"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding DueDate, StringFormat={}{0:d}}"
-                                                                                                                           HorizontalAlignment="Right"
-                                                                                                                           VerticalAlignment="Center"/>
-
-                                                                                                                <TextBlock Grid.Column="1"
-                                                                                                                           Grid.Row="1"
-                                                                                                                           Grid.ColumnSpan="2"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Opacity="0.8"
-                                                                                                                           FontSize="12"
-                                                                                                                           Text="{Binding Category}"
-                                                                                                                           TextTrimming="CharacterEllipsis"/>
-                                                                                                        </Grid>
-                                                                                                </Button>
-
-                                                                                        </DataTemplate>
-                                                                                </ItemsControl.ItemTemplate>
-                                                                        </ItemsControl>
+                                                                        <TextBlock Text="✓"
+                                                                                   Grid.Column="0"
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                        <TextBlock Text="Task"
+                                                                                   Grid.Column="1"
+                                                                                   FontWeight="Bold"/>
+                                                                        <TextBlock Text="Due"
+                                                                                   Grid.Column="2"
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Right"
+                                                                                   Margin="8,0,0,0"/>
                                                                 </Grid>
-                                                        </Border>
 
-                                                        <!-- ============ PARTNER TASKS (right) ============ -->
-                                                        <Border Grid.Column="1"
-                                                                Style="{StaticResource SubCard}"
-                                                                Background="{DynamicResource SubCardRightBrush}"
-                                                                Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
-                                                                <Grid Grid.IsSharedSizeScope="True">
-                                                                        <Grid.RowDefinitions>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                        </Grid.RowDefinitions>
+                                                                <!-- Items: two-line template (Title + Due on top; Category below) -->
+                                                                <ItemsControl Grid.Row="2"
+                                                                              ItemsSource="{Binding MyTasksView}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                                <ItemsPanelTemplate>
+                                                                                        <StackPanel/>
+                                                                                </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
 
-                                                                        <StackPanel Grid.Row="0"
-                                                                                    Orientation="Horizontal"
-                                                                                    Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
-                                                                                <TextBlock Text="Partner's Tasks"
-                                                                                           Style="{StaticResource SectionHeader}"
-                                                                                           Margin="0,0,6,0"/>
-                                                                                <Button Content="↗"
-                                                                                        Width="22"
-                                                                                        Height="22"
-                                                                                        Padding="0"
-                                                                                        ToolTip="Pop out Partner Tasks"
-                                                                                        Command="{Binding PopOutPartnerCommand}"
-                                                                                        beh:AudioBehavior.HoverSound="True"/>
-                                                                        </StackPanel>
+                                                                                        <Grid>
+                                                                                                <Grid.ColumnDefinitions>
+                                                                                                        <ColumnDefinition Width="30"/>
+                                                                                                        <!-- checkbox -->
+                                                                                                        <ColumnDefinition Width="*"/>
+                                                                                                        <!-- title -->
+                                                                                                        <ColumnDefinition Width="Auto"
+                                                                                                                          SharedSizeGroup="DueCol"
+                                                                                                                          MinWidth="110"/>
+                                                                                                </Grid.ColumnDefinitions>
+                                                                                                <Grid.RowDefinitions>
+                                                                                                        <RowDefinition Height="Auto"/>
+                                                                                                        <RowDefinition Height="Auto"/>
+                                                                                                </Grid.RowDefinitions>
 
-                                                                        <!-- Header: ✓ | Task ......... | Due -->
-                                                                        <Grid Grid.Row="1"
-                                                                              Background="{DynamicResource HeaderRowBackgroundBrush}"
-                                                                              Margin="0,0,0,6">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="30"/>
-                                                                                        <ColumnDefinition Width="*"/>
-                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                          SharedSizeGroup="DueCol"
-                                                                                                          MinWidth="90"/>
-                                                                                </Grid.ColumnDefinitions>
+                                                                                                <!-- Checkbox: completes directly -->
+                                                                                                <CheckBox Grid.RowSpan="2"
+                                                                                                          Style="{StaticResource CircleCheckBox}"
+                                                                                                          IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                                          Margin="2"
+                                                                                                          Command="{Binding DataContext.ToggleCompleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                          CommandParameter="{Binding}"/>
 
-                                                                                <TextBlock Text="✓"
-                                                                                           Grid.Column="0"
-                                                                                           FontWeight="Bold"/>
-                                                                                <TextBlock Text="Task"
-                                                                                           Grid.Column="1"
-                                                                                           FontWeight="Bold"/>
-                                                                                <TextBlock Text="Due"
-                                                                                           Grid.Column="2"
-                                                                                           FontWeight="Bold"
-                                                                                           HorizontalAlignment="Left"
-                                                                                           Margin="8,0,0,0"/>
-                                                                        </Grid>
+                                                                                                <!-- Title / Due / Category -->
+                                                                                                <TextBlock Grid.Column="1"
+                                                                                                           Grid.Row="0"
+                                                                                                           Style="{StaticResource TaskTitleTextStyle}"
+                                                                                                           Text="{Binding Title}"
+                                                                                                           Margin="0,0,8,-4"
+                                                                                                           TextTrimming="CharacterEllipsis"
+                                                                                                           TextWrapping="NoWrap"
+                                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
+                                                                                                           VerticalAlignment="Center"/>
 
-                                                                        <!-- Items -->
-                                                                        <ItemsControl Grid.Row="2"
-                                                                                      ItemsSource="{Binding PartnerTasksView}">
-                                                                                <ItemsControl.ItemsPanel>
-                                                                                        <ItemsPanelTemplate>
-                                                                                                <StackPanel/>
-                                                                                        </ItemsPanelTemplate>
-                                                                                </ItemsControl.ItemsPanel>
-                                                                                <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                                <Button Style="{StaticResource TaskCardButtonStyle}"
-                                                                                                        Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}"
-                                                                                                        Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                <TextBlock Grid.Column="2"
+                                                                                                           Grid.Row="0"
+                                                                                                           Style="{StaticResource TaskDueTextStyle}"
+                                                                                                           Text="{Binding DueDate, StringFormat={}{0:d}}"
+                                                                                                           HorizontalAlignment="Right"
+                                                                                                           VerticalAlignment="Center"/>
+
+                                                                                                <TextBlock Grid.Column="1"
+                                                                                                           Grid.Row="1"
+                                                                                                           Grid.ColumnSpan="2"
+                                                                                                           Style="{StaticResource TaskCategoryTextStyle}"
+                                                                                                           Text="{Binding Category}"/>
+
+                                                                                                <!-- Transparent overlay button that starts AFTER the checkbox column -->
+                                                                                                <Button Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                                                         CommandParameter="{Binding}"
-                                                                                                        beh:AudioBehavior.HoverSound="True">
-                                                                                                        <Grid>
-                                                                                                                <Grid.ColumnDefinitions>
-                                                                                                                        <ColumnDefinition Width="30"/>
-                                                                                                                        <ColumnDefinition Width="*"/>
-                                                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                                                          SharedSizeGroup="DueCol"
-                                                                                                                                          MinWidth="110"/>
-                                                                                                                </Grid.ColumnDefinitions>
-                                                                                                                <Grid.RowDefinitions>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                </Grid.RowDefinitions>
+                                                                                                        Background="Transparent"
+                                                                                                        BorderThickness="0"
+                                                                                                        Focusable="False"
+                                                                                                        HorizontalAlignment="Stretch"
+                                                                                                        VerticalAlignment="Stretch"
+                                                                                                        Panel.ZIndex="10"
+                                                                                                        Grid.ColumnSpan="3"
+                                                                                                        Margin="30,0,0,0"
+                                                                                                        Style="{StaticResource TaskCardButtonStyle}"/>
+                                                                                        </Grid>
 
-                                                                                                                <CheckBox Grid.RowSpan="2"
-                                                                                                                          IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                                                                          Margin="2"
-                                                                                                                          Command="{Binding DataContext.ToggleCompleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                                          CommandParameter="{Binding}"/>
 
-                                                                                                                <TextBlock Grid.Column="1"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding Title}"
-                                                                                                                           Margin="0,0,8,0"
-                                                                                                                           TextTrimming="CharacterEllipsis"
-                                                                                                                           TextWrapping="NoWrap"
-                                                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
-                                                                                                                           VerticalAlignment="Center"/>
+                                                                                </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                        </Grid>
+                                                </Border>
 
-                                                                                                                <TextBlock Grid.Column="2"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding DueDate, StringFormat={}{0:d}}"
-                                                                                                                           HorizontalAlignment="Right"
-                                                                                                                           VerticalAlignment="Center"/>
+                                                <!-- ============ PARTNER TASKS (right) ============ -->
+                                                <Border Grid.Column="1"
+                                                        Style="{StaticResource SubCard}"
+                                                        Background="{DynamicResource SubCardRightBrush}"
+                                                        VerticalAlignment="Top"
+                                                        Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
+                                                        <Grid Grid.IsSharedSizeScope="True">
+                                                                <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                </Grid.RowDefinitions>
 
-                                                                                                                <TextBlock Grid.Column="1"
-                                                                                                                           Grid.Row="1"
-                                                                                                                           Grid.ColumnSpan="2"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Opacity="0.8"
-                                                                                                                           FontSize="12"
-                                                                                                                           Text="{Binding Category}"
-                                                                                                                           TextTrimming="CharacterEllipsis"/>
-                                                                                                        </Grid>
-                                                                                                </Button>
+                                                                <StackPanel Grid.Row="0"
+                                                                            Orientation="Horizontal"
+                                                                            Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
+                                                                        <TextBlock Text="Partner's Tasks"
+                                                                                   Style="{StaticResource SectionHeader}"
+                                                                                   Margin="0,0,6,0"/>
 
-                                                                                        </DataTemplate>
-                                                                                </ItemsControl.ItemTemplate>
-                                                                        </ItemsControl>
+                                                                </StackPanel>
+                                                                <Button Style="{StaticResource PushpinButton}"
+                                                                        ToolTip="Pop out Partner Tasks"
+                                                                        Command="{Binding PopOutPartnerCommand}"
+                                                                        beh:AudioBehavior.HoverSound="True"
+                                                                        Grid.RowSpan="3"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Top"
+                                                                        Margin="0,-12,0,0"
+                                                                        Panel.ZIndex="10"/>
+
+                                                                <!-- Header: ✓ | Task ......... | Due -->
+                                                                <Grid Grid.Row="1"
+                                                                      Background="{DynamicResource HeaderRowBackgroundBrush}"
+                                                                      Margin="0,0,0,6">
+                                                                        <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="30"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                                <ColumnDefinition Width="Auto"
+                                                                                                  SharedSizeGroup="DueCol"
+                                                                                                  MinWidth="110"/>
+                                                                        </Grid.ColumnDefinitions>
+
+                                                                        <TextBlock Text="✓"
+                                                                                   Grid.Column="0"
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Center"/>
+                                                                        <TextBlock Text="Task"
+                                                                                   Grid.Column="1"
+                                                                                   FontWeight="Bold"/>
+                                                                        <TextBlock Text="Due"
+                                                                                   Grid.Column="2"
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Right"
+                                                                                   Margin="8,0,0,0"/>
                                                                 </Grid>
-                                                        </Border>
-                                                </Grid>
-                                        </Border>
+
+                                                                <!-- Items -->
+                                                                <ItemsControl Grid.Row="2"
+                                                                              ItemsSource="{Binding PartnerTasksView}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                                <ItemsPanelTemplate>
+                                                                                        <StackPanel/>
+                                                                                </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                        <Grid>
+                                                                                                <Grid.ColumnDefinitions>
+                                                                                                        <ColumnDefinition Width="30"/>
+                                                                                                        <!-- checkbox -->
+                                                                                                        <ColumnDefinition Width="*"/>
+                                                                                                        <!-- title -->
+                                                                                                        <ColumnDefinition Width="Auto"
+                                                                                                                          SharedSizeGroup="DueCol"
+                                                                                                                          MinWidth="110"/>
+                                                                                                </Grid.ColumnDefinitions>
+                                                                                                <Grid.RowDefinitions>
+                                                                                                        <RowDefinition Height="Auto"/>
+                                                                                                        <RowDefinition Height="Auto"/>
+                                                                                                </Grid.RowDefinitions>
+
+                                                                                                <!-- Checkbox: completes directly -->
+                                                                                                <CheckBox Grid.RowSpan="2"
+                                                                                                          Style="{StaticResource CircleCheckBox}"
+                                                                                                          IsChecked="{Binding IsCompleted}"
+                                                                                                          Margin="2"
+                                                                                                          Focusable="False"
+                                                                                                          IsHitTestVisible="False"
+                                                                                                          ToolTip="Only your partner can complete this"/>
+
+                                                                                                <!-- Title / Due / Category -->
+                                                                                                <TextBlock Grid.Column="1"
+                                                                                                           Grid.Row="0"
+                                                                                                           Style="{StaticResource TaskTitleTextStyle}"
+                                                                                                           Text="{Binding Title}"
+                                                                                                           Margin="0,0,8,-4"
+                                                                                                           TextTrimming="CharacterEllipsis"
+                                                                                                           TextWrapping="NoWrap"
+                                                                                                           TextDecorations="{Binding IsCompleted, Converter={StaticResource BoolToTextDecorationsConverter}}"
+                                                                                                           VerticalAlignment="Center"/>
+
+                                                                                                <TextBlock Grid.Column="2"
+                                                                                                           Grid.Row="0"
+                                                                                                           Style="{StaticResource TaskDueTextStyle}"
+                                                                                                           Text="{Binding DueDate, StringFormat={}{0:d}}"
+                                                                                                           HorizontalAlignment="Right"
+                                                                                                           VerticalAlignment="Center"/>
+
+                                                                                                <TextBlock Grid.Column="1"
+                                                                                                           Grid.Row="1"
+                                                                                                           Grid.ColumnSpan="2"
+                                                                                                           Style="{StaticResource TaskCategoryTextStyle}"
+                                                                                                           Text="{Binding Category}"/>
+
+                                                                                                <!-- Transparent overlay button that starts AFTER the checkbox column -->
+                                                                                                <Button Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                                        CommandParameter="{Binding}"
+                                                                                                        Background="Transparent"
+                                                                                                        BorderThickness="0"
+                                                                                                        Focusable="False"
+                                                                                                        HorizontalAlignment="Stretch"
+                                                                                                        VerticalAlignment="Stretch"
+                                                                                                        Panel.ZIndex="10"
+                                                                                                        Grid.ColumnSpan="3"
+                                                                                                        Margin="30,0,0,0"
+                                                                                                        Style="{StaticResource TaskCardButtonStyle}"/>
+                                                                                        </Grid>
+                                                                                </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                        </Grid>
+                                                </Border>
+                                        </Grid>
+
                                 </Expander>
 
 
-                                <!-- COMPLETED TASKS (collapsible) -->
-                                <Expander Style="{StaticResource CardExpander}"
-                                          Margin="0,10,0,0">
-                                        <Expander.Header>
-                                                <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="Completed Tasks"
-                                                                   Style="{StaticResource SectionHeader}"
-                                                                   Margin="0"/>
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="▼"
-                                                                   Opacity="0.6"
-                                                                   Margin="8,0,0,0"/>
-                                                </Grid>
-                                        </Expander.Header>
 
-                                        <Border Style="{StaticResource Card}">
-                                                <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <!-- MY COMPLETED -->
-                                                        <Border Grid.Column="0"
-                                                                Style="{StaticResource SubCard}"
-                                                                Background="{DynamicResource SubCardLeftBrush}">
-                                                                <!-- keep 'Completed' column aligned with partner list -->
-                                                                <Grid Grid.IsSharedSizeScope="True">
-                                                                        <Grid.RowDefinitions>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                        </Grid.RowDefinitions>
-
-                                                                        <TextBlock Grid.Row="0"
-                                                                                   Text="My Completed"
-                                                                                   Style="{StaticResource SectionHeader}"/>
-
-                                                                        <!-- Header: Task ......... | Completed -->
-                                                                        <Grid Grid.Row="1"
-                                                                              Background="{DynamicResource HeaderRowBackgroundBrush}"
-                                                                              Margin="0,0,0,6">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="*"/>
-                                                                                        <!-- title -->
-                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                          SharedSizeGroup="CompletedCol"
-                                                                                                          MinWidth="90"/>
-                                                                                        <!-- completed -->
-                                                                                </Grid.ColumnDefinitions>
-                                                                                <TextBlock Text="Task"
-                                                                                           Grid.Column="0"
-                                                                                           FontWeight="Bold"/>
-                                                                                <TextBlock Text="Completed"
-                                                                                           Grid.Column="1"
-                                                                                           FontWeight="Bold"
-                                                                                           HorizontalAlignment="Left"
-                                                                                           Margin="8,0,0,0"/>
-                                                                        </Grid>
-
-                                                                        <!-- Items: Title + Completed (top), Category (below) -->
-                                                                        <ItemsControl Grid.Row="2"
-                                                                                      ItemsSource="{Binding MyCompletedTasks}">
-                                                                                <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                                <Button Style="{StaticResource TaskCardButtonStyle}"
-                                                                                                        Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}"
-                                                                                                        beh:AudioBehavior.HoverSound="True">
-                                                                                                        <Grid>
-                                                                                                                <Grid.ColumnDefinitions>
-                                                                                                                        <ColumnDefinition Width="*"/>
-                                                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                                                          SharedSizeGroup="CompletedCol"
-                                                                                                                                          MinWidth="90"/>
-                                                                                                                </Grid.ColumnDefinitions>
-                                                                                                                <Grid.RowDefinitions>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                </Grid.RowDefinitions>
-
-                                                                                                                <TextBlock Grid.Column="0"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding Title}"
-                                                                                                                           TextDecorations="Strikethrough"
-                                                                                                                           Margin="0,0,8,0"
-                                                                                                                           TextTrimming="CharacterEllipsis"
-                                                                                                                           TextWrapping="NoWrap"
-                                                                                                                           VerticalAlignment="Center"/>
-
-                                                                                                                <TextBlock Grid.Column="1"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding CompletedAt, StringFormat={}{0:d}}"
-                                                                                                                           HorizontalAlignment="Left"
-                                                                                                                           Margin="8,0,0,0"
-                                                                                                                           VerticalAlignment="Center"/>
-
-                                                                                                                <TextBlock Grid.Column="0"
-                                                                                                                           Grid.Row="1"
-                                                                                                                           Grid.ColumnSpan="2"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Opacity="0.8"
-                                                                                                                           FontSize="12"
-                                                                                                                           Text="{Binding Category}"
-                                                                                                                           TextTrimming="CharacterEllipsis"/>
-                                                                                                        </Grid>
-                                                                                                </Button>
-                                                                                        </DataTemplate>
-                                                                                </ItemsControl.ItemTemplate>
-                                                                        </ItemsControl>
-                                                                </Grid>
-                                                        </Border>
-
-                                                        <!-- PARTNER COMPLETED -->
-                                                        <Border Grid.Column="1"
-                                                                Style="{StaticResource SubCard}"
-                                                                Background="{DynamicResource SubCardRightBrush}"
-                                                                Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
-                                                                <Grid Grid.IsSharedSizeScope="True">
-                                                                        <Grid.RowDefinitions>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                                <RowDefinition Height="Auto"/>
-                                                                        </Grid.RowDefinitions>
-
-                                                                        <TextBlock Grid.Row="0"
-                                                                                   Text="Partner's Completed"
-                                                                                   Style="{StaticResource SectionHeader}"/>
-
-                                                                        <!-- Header: Task ......... | Completed -->
-                                                                        <Grid Grid.Row="1"
-                                                                              Background="{DynamicResource HeaderRowBackgroundBrush}"
-                                                                              Margin="0,0,0,6">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="*"/>
-                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                          SharedSizeGroup="CompletedCol"
-                                                                                                          MinWidth="90"/>
-                                                                                </Grid.ColumnDefinitions>
-                                                                                <TextBlock Text="Task"
-                                                                                           Grid.Column="0"
-                                                                                           FontWeight="Bold"/>
-                                                                                <TextBlock Text="Completed"
-                                                                                           Grid.Column="1"
-                                                                                           FontWeight="Bold"
-                                                                                           HorizontalAlignment="Left"
-                                                                                           Margin="8,0,0,0"/>
-                                                                        </Grid>
-
-                                                                        <!-- Items -->
-                                                                        <ItemsControl Grid.Row="2"
-                                                                                      ItemsSource="{Binding PartnerCompletedTasks}">
-                                                                                <ItemsControl.ItemTemplate>
-                                                                                        <DataTemplate>
-                                                                                                <Button Style="{StaticResource TaskCardButtonStyle}"
-                                                                                                        Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}"
-                                                                                                        Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                                        CommandParameter="{Binding}"
-                                                                                                        beh:AudioBehavior.HoverSound="True">
-                                                                                                        <Grid>
-                                                                                                                <Grid.ColumnDefinitions>
-                                                                                                                        <ColumnDefinition Width="*"/>
-                                                                                                                        <ColumnDefinition Width="Auto"
-                                                                                                                                          SharedSizeGroup="CompletedCol"
-                                                                                                                                          MinWidth="90"/>
-                                                                                                                </Grid.ColumnDefinitions>
-                                                                                                                <Grid.RowDefinitions>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                        <RowDefinition Height="Auto"/>
-                                                                                                                </Grid.RowDefinitions>
-
-                                                                                                                <TextBlock Grid.Column="0"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding Title}"
-                                                                                                                           TextDecorations="Strikethrough"
-                                                                                                                           Margin="0,0,8,0"
-                                                                                                                           TextTrimming="CharacterEllipsis"
-                                                                                                                           TextWrapping="NoWrap"
-                                                                                                                           VerticalAlignment="Center"/>
-
-                                                                                                                <TextBlock Grid.Column="1"
-                                                                                                                           Grid.Row="0"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Text="{Binding CompletedAt, StringFormat={}{0:d}}"
-                                                                                                                           HorizontalAlignment="Left"
-                                                                                                                           Margin="8,0,0,0"
-                                                                                                                           VerticalAlignment="Center"/>
-
-                                                                                                                <TextBlock Grid.Column="0"
-                                                                                                                           Grid.Row="1"
-                                                                                                                           Grid.ColumnSpan="2"
-                                                                                                                           Style="{StaticResource TaskRowTextStyle}"
-                                                                                                                           Opacity="0.8"
-                                                                                                                           FontSize="12"
-                                                                                                                           Text="{Binding Category}"
-                                                                                                                           TextTrimming="CharacterEllipsis"/>
-                                                                                                        </Grid>
-                                                                                                </Button>
-
-                                                                                        </DataTemplate>
-                                                                                </ItemsControl.ItemTemplate>
-                                                                        </ItemsControl>
-                                                                </Grid>
-                                                        </Border>
-                                                </Grid>
-                                        </Border>
-                                </Expander>
 
 
                         </StackPanel>
                 </ScrollViewer>
+                <!-- Keep the notebook margin line behind everything -->
+                <Rectangle Grid.RowSpan="3"
+                           Fill="{DynamicResource NotebookMarginBrush}"
+                           Opacity="0.6"
+                           Width="2"
+                           HorizontalAlignment="Left"
+                           Margin="100,0,0,0"
+                           IsHitTestVisible="False"
+                           Panel.ZIndex="-1"/>
 
-                <StackPanel Grid.Row="2"
-                            Margin="5"
-                            Background="#FFFDE7">
-                        <TextBlock Text="Pending Partner Tasks"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   Margin="5"/>
-                        <ItemsControl ItemsSource="{Binding PendingTasks}">
-                                <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                                <!-- ✅ Resources must come before any visual content -->
-                                                <DataTemplate.Resources>
-                                                        <Style x:Key="DecisionBtn"
-                                                               TargetType="Button">
-                                                                <Setter Property="Visibility"
-                                                                        Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding CanDecide}"
-                                                                                     Value="True">
-                                                                                <Setter Property="Visibility"
-                                                                                        Value="Visible"/>
-                                                                        </DataTrigger>
-                                                                </Style.Triggers>
-                                                        </Style>
-                                                </DataTemplate.Resources>
 
-                                                <Border BorderBrush="#E0E0E0"
-                                                        BorderThickness="1"
-                                                        CornerRadius="5"
-                                                        Margin="5"
-                                                        Padding="5"
-                                                        Background="White">
-                                                        <StackPanel Orientation="Horizontal"
-                                                                    VerticalAlignment="Center">
-                                                                <TextBlock Text="{Binding Title}"
-                                                                           Margin="5"
-                                                                           VerticalAlignment="Center"/>
-                                                                <TextBlock Text="{Binding Category}"
-                                                                           Margin="5"
-                                                                           VerticalAlignment="Center"/>
-
-                                                                <Button Content="Accept"
-                                                                        Style="{StaticResource DecisionBtn}"
-                                                                        Command="{Binding DataContext.AcceptTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding}"
-                                                                        Margin="5"
-                                                                        beh:AudioBehavior.HoverSound="True"/>
-
-                                                                <Button Content="Decline"
-                                                                        Style="{StaticResource DecisionBtn}"
-                                                                        Command="{Binding DataContext.DeclineTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                        CommandParameter="{Binding}"
-                                                                        Margin="5"
-                                                                        beh:AudioBehavior.HoverSound="True"/>
-                                                        </StackPanel>
-                                                </Border>
-                                        </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                </StackPanel>
 
                 <!-- First-run Welcome Overlay -->
                 <Grid Visibility="{Binding NeedsProfileSetup, Converter={StaticResource BoolToVisibility}}">

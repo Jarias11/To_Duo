@@ -1,3 +1,4 @@
+<!--	SharedStyles.xaml	-->
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,6 +13,11 @@
 	<conv:DictionaryLookupConverter x:Key="DictLookup"/>
 	<local:BoolToTextDecorationsConverter x:Key="BoolToTextDecorationsConverter"/>
 
+
+	<!-- Family names must match the internal font family, not the filename -->
+	<FontFamily x:Key="HandTitleFont">pack://application:,,,/Assets/Fonts/#Caveat</FontFamily>
+	<FontFamily x:Key="HandScriptFont">pack://application:,,,/Assets/Fonts/#Kalam</FontFamily>
+
 	<!-- Brushes -->
 	<SolidColorBrush x:Key="MeTaskTextBrush"
 					 Color="#4CAF50"/>
@@ -20,9 +26,261 @@
 	<SolidColorBrush x:Key="CompletedCountBrush"
 					 Color="#616161"/>
 
+
+
+
+
 	<!-- Treat null/empty string as false; any text as true -->
 	<conv:BooleanOrMultiConverter x:Key="BooleanOrMultiConverter"/>
 	<conv:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
+
+
+
+
+
+	<!-- Handwritten title + subtitle -->
+	<Style x:Key="NotebookTitle"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandTitleFont}"/>
+		<Setter Property="FontSize"
+				Value="44"/>
+		<Setter Property="FontWeight"
+				Value="SemiBold"/>
+		<Setter Property="Foreground"
+				Value="{DynamicResource TitleAccentBrush}"/>
+		<Setter Property="TextOptions.TextFormattingMode"
+				Value="Display"/>
+		<Setter Property="TextOptions.TextHintingMode"
+				Value="Fixed"/>
+		<!-- Soft “chalk” glow for that handwritten pop -->
+		<Setter Property="Effect">
+			<Setter.Value>
+				<DropShadowEffect ShadowDepth="0"
+								  BlurRadius="1"
+								  Opacity="0.65"
+								  Color="#403A2E"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Margin"
+				Value="0,2,0,2"/>
+	</Style>
+
+	<Style x:Key="NotebookSubtitle"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="FontSize"
+				Value="18"/>
+		<Setter Property="FontStyle"
+				Value="Italic"/>
+		<Setter Property="Foreground"
+				Value="{DynamicResource TitleAccentBrush}"/>
+		<Setter Property="Opacity"
+				Value="0.9"/>
+		<Setter Property="HorizontalAlignment"
+				Value="Center"/>
+	</Style>
+
+	<Style x:Key="TopClockText"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="FontWeight"
+				Value="Normal"/>
+		<Setter Property="FontStyle"
+				Value="Normal"/>
+		<Setter Property="FontSize"
+				Value="14"/>
+		<Setter Property="Foreground"
+				Value="{DynamicResource TitleAccentBrush}"/>
+		<Setter Property="Opacity"
+				Value="0.9"/>
+		<Setter Property="TextOptions.TextFormattingMode"
+				Value="Display"/>
+		<Setter Property="TextOptions.TextHintingMode"
+				Value="Fixed"/>
+	</Style>
+
+	<!-- Small rounded "chip" buttons -->
+	<Style x:Key="IconChipButton"
+		   TargetType="Button">
+		<Setter Property="Width"
+				Value="34"/>
+		<Setter Property="Height"
+				Value="34"/>
+		<Setter Property="Padding"
+				Value="0"/>
+		<Setter Property="Margin"
+				Value="6,0,0,0"/>
+		<Setter Property="Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
+		<Setter Property="Background"
+				Value="{DynamicResource TopBarChipBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource TopBarChipBorderBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border x:Name="Bd"
+							CornerRadius="8"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Padding="8">
+						<ContentPresenter HorizontalAlignment="Center"
+										  VerticalAlignment="Center"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource HoverBrush}"/>
+						</Trigger>
+						<Trigger Property="IsPressed"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource PressedBrush}"/>
+						</Trigger>
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter TargetName="Bd"
+									Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+
+
+
+
+
+	<!-- Pill tab STRIP -->
+	<Style x:Key="PillTabs"
+		   TargetType="TabControl">
+		<Setter Property="Background"
+				Value="{DynamicResource TopBarChipBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource TopBarChipBorderBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<!-- breathing room + guaranteed inner height -->
+		<Setter Property="Padding"
+				Value="0"/>
+		<Setter Property="MinHeight"
+				Value="50"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TabControl">
+					<Border Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="16"
+							Padding="{TemplateBinding Padding}"
+							SnapsToDevicePixels="False"
+							ClipToBounds="False">
+						<!-- Evenly distribute headers in one row -->
+						<UniformGrid x:Name="HeaderPanel"
+									 IsItemsHost="True"
+									 Rows="1"/>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Each pill TAB -->
+	<Style x:Key="PillTabItem"
+		   TargetType="TabItem">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandTitleFont}"/>
+		<Setter Property="FontStyle"
+				Value="Italic"/>
+		<Setter Property="FontSize"
+				Value="18"/>
+		<Setter Property="TextOptions.TextFormattingMode"
+				Value="Display"/>
+		<Setter Property="TextOptions.TextHintingMode"
+				Value="Fixed"/>
+		<Setter Property="HorizontalAlignment"
+				Value="Stretch"/>
+		<Setter Property="MinWidth"
+				Value="0"/>
+		<Setter Property="MinHeight"
+				Value="36"/>
+		<Setter Property="Margin"
+				Value="10,4"/>
+		<Setter Property="Padding"
+				Value="10,12"/>
+		<Setter Property="Background"
+				Value="{DynamicResource TabItemBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource TabItemBorderBrush}"/>
+		<Setter Property="Foreground"
+				Value="{DynamicResource PillTabInactiveTextBrush}"/>
+		<Setter Property="FocusVisualStyle"
+				Value="{x:Null}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TabItem">
+					<Border x:Name="Bd"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="1"
+							CornerRadius="12"
+							Padding="{TemplateBinding Padding}">
+						<ContentPresenter ContentSource="Header"
+										  HorizontalAlignment="Center"
+										  VerticalAlignment="Center"
+										  TextElement.Foreground="{TemplateBinding Foreground}"
+										  TextElement.FontFamily="{TemplateBinding FontFamily}"
+										  TextElement.FontStyle="{TemplateBinding FontStyle}"
+										  TextElement.FontSize="{TemplateBinding FontSize}"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource TabItemHoverBrush}"/>
+						</Trigger>
+						<Trigger Property="IsSelected"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource TabItemSelectedBrush}"/>
+							<Setter Property="Foreground"
+									Value="{DynamicResource PillTabSelectedTextBrush}"/>
+							<Setter Property="FontWeight"
+									Value="SemiBold"/>
+						</Trigger>
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+
+
+
+
+
 
 
 	<!-- 1) The template as a standalone resource -->
@@ -140,8 +398,12 @@
 	<Style x:Key="SectionHeader"
 		   TargetType="TextBlock"
 		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
 		<Setter Property="FontSize"
 				Value="16"/>
+		<Setter Property="FontStyle"
+				Value="Italic"/>
 		<Setter Property="FontWeight"
 				Value="Bold"/>
 		<Setter Property="Margin"
@@ -212,8 +474,11 @@
 			</DataTrigger>
 		</Style.Triggers>
 	</Style>
+	<!-- Paper-flat task row button (replaces TaskCardButtonStyle) -->
 	<Style x:Key="TaskCardButtonStyle"
 		   TargetType="Button">
+		<Setter Property="Margin"
+				Value="0,4,0,4"/>
 		<Setter Property="Background"
 				Value="Transparent"/>
 		<Setter Property="Padding"
@@ -225,29 +490,37 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="Button">
-					<!-- Reuse your existing card chrome -->
-					<Border Style="{DynamicResource TaskItemCard}">
-						<Grid>
-							<ContentPresenter/>
-							<!-- Optional hover highlight -->
-							<Border x:Name="Hover"
-									Background="{DynamicResource HoverBrush}"
-									Opacity="0"
-									CornerRadius="8"/>
-						</Grid>
-					</Border>
+					<Grid>
+						<!-- content -->
+						<ContentPresenter/>
+
+						<!-- subtle hover wash -->
+						<Border x:Name="Hover"
+								Background="{DynamicResource HoverBrush}"
+								Opacity="0"
+								CornerRadius="4"/>
+
+						<!-- faint ruled divider under each row -->
+						<Border VerticalAlignment="Bottom"
+								Height="1"
+								Background="{DynamicResource NotebookRuleBrush}"
+								Opacity="0.55"
+								Margin="30,0,0,0"/>
+						<!-- start after checkbox column -->
+					</Grid>
+
 					<ControlTemplate.Triggers>
 						<Trigger Property="IsMouseOver"
 								 Value="True">
 							<Setter TargetName="Hover"
 									Property="Opacity"
-									Value="0.18"/>
+									Value="0.14"/>
 						</Trigger>
 						<Trigger Property="IsPressed"
 								 Value="True">
 							<Setter TargetName="Hover"
 									Property="Opacity"
-									Value="0.28"/>
+									Value="0.22"/>
 						</Trigger>
 						<Trigger Property="IsEnabled"
 								 Value="False">
@@ -258,6 +531,122 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
+	</Style>
+	<!-- Round checkbox for task rows -->
+	<Style x:Key="CircleCheckBox"
+		   TargetType="CheckBox">
+		<Setter Property="Width"
+				Value="18"/>
+		<Setter Property="Height"
+				Value="18"/>
+		<Setter Property="VerticalAlignment"
+				Value="Center"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="CheckBox">
+					<Grid>
+						<!-- circular track -->
+						<Ellipse x:Name="Circle"
+								 Stroke="{DynamicResource ControlBorderBrush}"
+								 StrokeThickness="1.2"
+								 Fill="{x:Null}"/>
+
+						<!-- check glyph -->
+						<Path x:Name="Tick"
+							  Data="M 3 9 L 7 13 L 15 5"
+							  Stroke="{DynamicResource PrimaryTextBrush}"
+							  StrokeThickness="2"
+							  StrokeStartLineCap="Round"
+							  StrokeEndLineCap="Round"
+							  StrokeLineJoin="Round"
+							  Opacity="0"/>
+					</Grid>
+
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="Circle"
+									Property="Stroke"
+									Value="{DynamicResource HoverBrush}"/>
+						</Trigger>
+
+						<Trigger Property="IsChecked"
+								 Value="True">
+							<Setter TargetName="Circle"
+									Property="Fill"
+									Value="{DynamicResource SuccessButtonBrush}"/>
+							<Setter TargetName="Circle"
+									Property="Stroke"
+									Value="{DynamicResource SuccessButtonBorderBrush}"/>
+							<Setter TargetName="Tick"
+									Property="Opacity"
+									Value="1"/>
+							<Setter TargetName="Tick"
+									Property="Stroke"
+									Value="White"/>
+						</Trigger>
+
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<!-- Larger, handwritten row title (keeps Me/Partner coloring from TaskRowTextStyle) -->
+	<Style x:Key="TaskTitleTextStyle"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource TaskRowTextStyle}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="FontSize"
+				Value="18"/>
+		<Setter Property="FontWeight"
+				Value="Normal"/>
+		<Setter Property="TextOptions.TextFormattingMode"
+				Value="Display"/>
+		<Setter Property="TextOptions.TextHintingMode"
+				Value="Fixed"/>
+		<Setter Property="LineStackingStrategy"
+				Value="BlockLineHeight"/>
+		<Setter Property="LineHeight"
+				Value="18"/>
+	</Style>
+	<!-- Smaller, tighter category line -->
+	<Style x:Key="TaskCategoryTextStyle"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource TaskRowTextStyle}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="FontSize"
+				Value="11"/>
+		<Setter Property="FontStyle"
+				Value="Italic"/>
+		<Setter Property="Opacity"
+				Value="0.9"/>
+		<!-- pull upward slightly -->
+		<Setter Property="Margin"
+				Value="0,-4,0,0"/>
+		<Setter Property="TextTrimming"
+				Value="CharacterEllipsis"/>
+	</Style>
+	<!-- NEW: Due date in handwritten style -->
+	<Style x:Key="TaskDueTextStyle"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource TaskRowTextStyle}">
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="FontSize"
+				Value="14"/>
+		<Setter Property="FontStyle"
+				Value="Italic"/>
+		<Setter Property="TextOptions.TextFormattingMode"
+				Value="Display"/>
+		<Setter Property="TextOptions.TextHintingMode"
+				Value="Fixed"/>
 	</Style>
 
 	<Style TargetType="{x:Type Control}">
@@ -566,13 +955,38 @@
 	</Style>
 
 
+	<!-- Activity Center panel uses themed background/border, but keeps SubCard spacing/shadow -->
+	<Style x:Key="ActivityCard"
+		   TargetType="Border"
+		   BasedOn="{StaticResource SubCard}">
+		<Setter Property="Background"
+				Value="{DynamicResource ActivityCardBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource ActivityCardBorderBrush}"/>
+	</Style>
 
-	<!-- Activity Center theming -->
-	<SolidColorBrush x:Key="ActivityBackgroundBrush"
-					 Color="#F0F0F3"/>
-	<!-- lighter gray -->
-	<SolidColorBrush x:Key="ActivityRowAltBrush"
-					 Color="#E9E9EE"/>
+	<!-- Send button that matches our chip chrome but sized like a normal button -->
+	<Style x:Key="ActivitySendButton"
+		   TargetType="Button"
+		   BasedOn="{StaticResource IconChipButton}">
+		<Setter Property="Width"
+				Value="Auto"/>
+		<Setter Property="MinWidth"
+				Value="90"/>
+		<Setter Property="Height"
+				Value="35"/>
+		<Setter Property="Padding"
+				Value="12,0"/>
+		<Setter Property="Margin"
+				Value="8,0,0,0"/>
+		<Setter Property="HorizontalAlignment"
+				Value="Right"/>
+	</Style>
+
+
+
+
+
 	<Style x:Key="ActivityListStyle"
 		   TargetType="ListBox">
 		<Setter Property="Background"
@@ -583,10 +997,16 @@
 				Value="Bahnschrift,Consolas,Segoe UI"/>
 		<Setter Property="FontSize"
 				Value="11"/>
+		<Setter Property="Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
+		<Setter Property="TextElement.Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
 	</Style>
 	<Style x:Key="ActivityTimestampStyle"
 		   TargetType="TextBlock"
 		   BasedOn="{StaticResource {x:Type TextBlock}}">
+		<Setter Property="Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
 		<Setter Property="FontFamily"
 				Value="Bahnschrift,Consolas,Segoe UI"/>
 		<Setter Property="FontSize"
@@ -916,37 +1336,449 @@
 
 	<!-- Reaction glyph from key -->
 	<Style x:Key="ReactionGlyph"
-			TargetType="TextBlock"
-			BasedOn="{StaticResource ReactionPill}">
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource ReactionPill}">
 		<Setter Property="Text"
 				Value=""/>
 		<Style.Triggers>
 			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
-					Value="happy">
+						 Value="happy">
 				<Setter Property="Text"
 						Value="😊"/>
 			</DataTrigger>
 			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
-					Value="sad">
+						 Value="sad">
 				<Setter Property="Text"
 						Value="😢"/>
 			</DataTrigger>
 			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
-					Value="thumbsUp">
+						 Value="thumbsUp">
 				<Setter Property="Text"
 						Value="👍"/>
 			</DataTrigger>
 			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
-					Value="thumbsDown">
+						 Value="thumbsDown">
 				<Setter Property="Text"
 						Value="👎"/>
 			</DataTrigger>
 			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"
-					Value="shocked">
+						 Value="shocked">
 				<Setter Property="Text"
 						Value="😮"/>
 			</DataTrigger>
 		</Style.Triggers>
+	</Style>
+
+	<!-- Green success button used by Task Builder -->
+	<Style x:Key="SuccessButton"
+		   TargetType="Button">
+		<Setter Property="Foreground"
+				Value="White"/>
+		<Setter Property="Background"
+				Value="{DynamicResource SuccessButtonBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource SuccessButtonBorderBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<Setter Property="Padding"
+				Value="12,6"/>
+		<Setter Property="MinWidth"
+				Value="120"/>
+		<Setter Property="Height"
+				Value="32"/>
+		<Setter Property="Cursor"
+				Value="Hand"/>
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border x:Name="Bd"
+							CornerRadius="10"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}">
+						<ContentPresenter HorizontalAlignment="Center"
+										  VerticalAlignment="Center"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource SuccessButtonHoverBrush}"/>
+						</Trigger>
+						<Trigger Property="IsPressed"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Background"
+									Value="{DynamicResource SuccessButtonPressedBrush}"/>
+						</Trigger>
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter TargetName="Bd"
+									Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+
+
+
+	<!-- === Bulletin Board Expander (header unchanged, content shows on cork) === -->
+	<Style x:Key="BulletinExpander"
+		   TargetType="Expander">
+		<Setter Property="IsExpanded"
+				Value="True"/>
+		<Setter Property="Margin"
+				Value="0,0,0,10"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Expander">
+					<Grid>
+						<!-- Wooden frame with shadow -->
+						<Border x:Name="Frame"
+								Background="{DynamicResource BulletinFrameBrush}"
+								CornerRadius="12">
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="14"
+												  ShadowDepth="2"
+												  Opacity="0.22"/>
+							</Border.Effect>
+						</Border>
+
+						<!-- Cork surface inside frame -->
+						<Border x:Name="Board"
+								Margin="6,6,6,12"
+								Background="{DynamicResource BulletinBoardBrush}"
+								CornerRadius="10"
+								BorderBrush="#8C6A3D"
+								BorderThickness="1"/>
+
+						<!-- Subtle bevel/highlight on the cork -->
+						<Border Margin="6,6,6,12"
+								CornerRadius="10"
+								BorderBrush="{DynamicResource BulletinBevelBrush}"
+								BorderThickness="1"
+								Background="{x:Null}"/>
+
+						<!-- Header + Body laid over the board -->
+						<Grid Margin="18,12,18,14">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition Height="Auto"/>
+							</Grid.RowDefinitions>
+
+							<!-- Header row (full row clickable) -->
+							<ToggleButton x:Name="HeaderSite"
+										  Content="{TemplateBinding Header}"
+										  Focusable="False"
+										  FocusVisualStyle="{x:Null}"
+										  HorizontalContentAlignment="Left"
+										  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+										  OverridesDefaultStyle="True">
+								<ToggleButton.Template>
+									<ControlTemplate TargetType="ToggleButton">
+										<Border x:Name="HeaderBg"
+												Background="Transparent"
+												Padding="12,6"
+												BorderThickness="0"
+												CornerRadius="10">
+											<ContentPresenter VerticalAlignment="Center"/>
+										</Border>
+										<!-- Order matters: put IsChecked last so it wins -->
+										<ControlTemplate.Triggers>
+											<Trigger Property="IsMouseOver"
+													 Value="True">
+												<Setter TargetName="HeaderBg"
+														Property="Background"
+														Value="Transparent"/>
+											</Trigger>
+											<Trigger Property="IsPressed"
+													 Value="True">
+												<Setter TargetName="HeaderBg"
+														Property="Background"
+														Value="Transparent"/>
+											</Trigger>
+											<Trigger Property="IsChecked"
+													 Value="True">
+												<Setter TargetName="HeaderBg"
+														Property="Background"
+														Value="Transparent"/>
+											</Trigger>
+
+										</ControlTemplate.Triggers>
+									</ControlTemplate>
+								</ToggleButton.Template>
+							</ToggleButton>
+
+							<!-- Expander body -->
+							<ContentPresenter x:Name="ExpandSite"
+											  Grid.Row="1"
+											  Margin="0,10,0,0"
+											  Visibility="Collapsed"/>
+						</Grid>
+					</Grid>
+
+					<ControlTemplate.Triggers>
+						<Trigger SourceName="HeaderSite"
+								 Property="IsChecked"
+								 Value="True">
+							<Setter TargetName="ExpandSite"
+									Property="Visibility"
+									Value="Visible"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<!-- Pushpin popout button -->
+	<Style x:Key="PushpinButton"
+		   TargetType="Button">
+		<Setter Property="Width"
+				Value="26"/>
+		<Setter Property="Height"
+				Value="26"/>
+		<Setter Property="Padding"
+				Value="0"/>
+		<Setter Property="Background"
+				Value="Transparent"/>
+		<Setter Property="BorderThickness"
+				Value="0"/>
+		<Setter Property="Cursor"
+				Value="Hand"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Grid>
+						<!-- rotate a little so it looks pinned -->
+						<Grid RenderTransformOrigin="0.5,0.1">
+							<Grid.RenderTransform>
+								<RotateTransform Angle="-15"/>
+							</Grid.RenderTransform>
+
+							<!-- scale group for hover/press -->
+							<Grid x:Name="PinScale"
+								  RenderTransformOrigin="0.5,0.1">
+								<Grid.RenderTransform>
+									<ScaleTransform ScaleX="1"
+													ScaleY="1"/>
+								</Grid.RenderTransform>
+
+								<!-- needle (behind) -->
+								<Path x:Name="Needle"
+									  Data="M 0,0 L 0,12"
+									  Stroke="{DynamicResource PushpinNeedleBrush}"
+									  StrokeThickness="1.6"
+									  StrokeStartLineCap="Round"
+									  StrokeEndLineCap="Round"
+									  HorizontalAlignment="Center"
+									  VerticalAlignment="Top"
+									  Margin="0,14,0,0"
+									  Panel.ZIndex="0"/>
+
+								<!-- head (in front) -->
+								<Ellipse x:Name="Head"
+										 Width="16"
+										 Height="16"
+										 Fill="{DynamicResource PushpinHeadBrush}"
+										 Stroke="{DynamicResource PushpinHeadStrokeBrush}"
+										 StrokeThickness="1"
+										 Panel.ZIndex="1">
+									<Ellipse.Effect>
+										<DropShadowEffect BlurRadius="6"
+														  ShadowDepth="2"
+														  Opacity="0.35"/>
+									</Ellipse.Effect>
+								</Ellipse>
+							</Grid>
+						</Grid>
+					</Grid>
+
+					<ControlTemplate.Triggers>
+
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="PinScale"
+									Property="RenderTransform">
+								<Setter.Value>
+									<ScaleTransform ScaleX="1.08"
+													ScaleY="1.08"/>
+								</Setter.Value>
+							</Setter>
+						</Trigger>
+						<Trigger Property="IsPressed"
+								 Value="True">
+							<Setter TargetName="PinScale"
+									Property="RenderTransform">
+								<Setter.Value>
+									<ScaleTransform ScaleX="0.95"
+													ScaleY="0.95"/>
+								</Setter.Value>
+							</Setter>
+						</Trigger>
+
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<!-- === Connections helpers (theme-safe) ================================= -->
+
+	<!-- Read-only code display with subtle chip chrome -->
+	<Style x:Key="CodeDisplayTextBox"
+		   TargetType="TextBox"
+		   BasedOn="{StaticResource {x:Type TextBox}}">
+		<Setter Property="IsReadOnly"
+				Value="True"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource TopBarChipBorderBrush}"/>
+		<Setter Property="Background"
+				Value="{DynamicResource TopBarChipBackgroundBrush}"/>
+		<Setter Property="FontFamily"
+				Value="Consolas, Cascadia Mono, Segoe UI"/>
+		<Setter Property="FontWeight"
+				Value="SemiBold"/>
+		<Setter Property="Padding"
+				Value="6,2"/>
+		<Setter Property="Height"
+				Value="28"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<Setter Property="Cursor"
+				Value="Arrow"/>
+		<Setter Property="IsReadOnlyCaretVisible"
+				Value="False"/>
+
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TextBox">
+					<Border Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="6"
+							Padding="{TemplateBinding Padding}">
+						<ScrollViewer x:Name="PART_ContentHost"/>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Generic “info” chip -->
+	<Style x:Key="InfoChip"
+		   TargetType="Border">
+		<Setter Property="CornerRadius"
+				Value="12"/>
+		<Setter Property="Padding"
+				Value="8,4"/>
+		<Setter Property="Background"
+				Value="{DynamicResource TopBarChipBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource TopBarChipBorderBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<Setter Property="VerticalAlignment"
+				Value="Center"/>
+
+		<!-- Let any text inside inherit the handwritten look -->
+		<Setter Property="TextElement.FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="TextElement.Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
+		<Setter Property="TextElement.FontSize"
+				Value="14"/>
+	</Style>
+
+	<!-- Pending status chip (blue-ish) -->
+	<Style x:Key="PendingChip"
+		   TargetType="Border"
+		   BasedOn="{StaticResource InfoChip}">
+		<Setter Property="Background"
+				Value="{DynamicResource PendingChipBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource PendingChipBorderBrush}"/>
+	</Style>
+
+	<!-- Small “waiting/cancel” container -->
+	<Style x:Key="PendingInfoCard"
+		   TargetType="Border"
+		   BasedOn="{StaticResource Card}">
+		<Setter Property="Padding"
+				Value="10"/>
+		<Setter Property="Margin"
+				Value="0"/>
+		<Setter Property="Background"
+				Value="{DynamicResource ActivityCardBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource CardBorderBrush}"/>
+	</Style>
+
+	<!-- Decline/Disconnect pill that complements SuccessButton -->
+	<Style x:Key="DeclinePillButton"
+		   TargetType="Button">
+		<Setter Property="Foreground"
+				Value="{DynamicResource DeclinePillForegroundBrush}"/>
+		<Setter Property="Background"
+				Value="{DynamicResource DeclinePillBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource DeclinePillBorderBrush}"/>
+		<Setter Property="BorderThickness"
+				Value="1"/>
+		<Setter Property="Padding"
+				Value="12,6"/>
+		<Setter Property="MinWidth"
+				Value="90"/>
+		<Setter Property="Height"
+				Value="32"/>
+		<Setter Property="Cursor"
+				Value="Hand"/>
+		<Setter Property="FontFamily"
+				Value="{DynamicResource HandScriptFont}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border x:Name="Bd"
+							CornerRadius="10"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}">
+						<ContentPresenter HorizontalAlignment="Center"
+										  VerticalAlignment="Center"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Opacity"
+									Value="0.95"/>
+						</Trigger>
+						<Trigger Property="IsPressed"
+								 Value="True">
+							<Setter TargetName="Bd"
+									Property="Opacity"
+									Value="0.9"/>
+						</Trigger>
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter TargetName="Bd"
+									Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
 	</Style>
 
 

@@ -1,0 +1,203 @@
+<UserControl x:Class="TaskMate.Views.CompletedTasksSection"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:beh="clr-namespace:TaskMate.Behaviors">
+	<!-- Keep the original expander and card styles so visuals remain identical -->
+	<StackPanel 
+		MaxWidth="1000">
+
+		<Border Style="{StaticResource Card}">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<!-- MY COMPLETED -->
+				<Border Grid.Column="0"
+						Style="{StaticResource SubCard}"
+						Background="{DynamicResource SubCardLeftBrush}">
+					<!-- keep 'Completed' column aligned with partner list -->
+					<Grid Grid.IsSharedSizeScope="True">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+
+						<TextBlock Grid.Row="0"
+								   Text="My Completed"
+								   Style="{StaticResource SectionHeader}"/>
+
+						<!-- Header: Task ......... | Completed -->
+						<Grid Grid.Row="1"
+							  Background="{DynamicResource HeaderRowBackgroundBrush}"
+							  Margin="0,0,0,6">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<!-- title -->
+								<ColumnDefinition Width="Auto"
+												  SharedSizeGroup="CompletedCol"
+												  MinWidth="90"/>
+								<!-- completed -->
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="Task"
+									   Grid.Column="0"
+									   FontWeight="Bold"/>
+							<TextBlock Text="Completed"
+									   Grid.Column="1"
+									   FontWeight="Bold"
+									   HorizontalAlignment="Left"
+									   Margin="8,0,0,0"/>
+						</Grid>
+
+						<!-- Items -->
+						<ItemsControl Grid.Row="2"
+									  ItemsSource="{Binding MyCompletedTasks}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Button Style="{StaticResource TaskCardButtonStyle}"
+											Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+											CommandParameter="{Binding}"
+											beh:AudioBehavior.HoverSound="True">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*"/>
+												<ColumnDefinition Width="Auto"
+																  SharedSizeGroup="CompletedCol"
+																  MinWidth="90"/>
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="Auto"/>
+												<RowDefinition Height="Auto"/>
+											</Grid.RowDefinitions>
+
+											<TextBlock Grid.Column="0"
+													   Grid.Row="0"
+													   Style="{StaticResource TaskTitleTextStyle}"
+													   Text="{Binding Title}"
+													   TextDecorations="Strikethrough"
+													   Margin="0,0,8,0"
+													   TextTrimming="CharacterEllipsis"
+													   TextWrapping="NoWrap"
+													   VerticalAlignment="Center"/>
+
+											<TextBlock Grid.Column="1"
+													   Grid.Row="0"
+													   Style="{StaticResource TaskDueTextStyle}"
+													   Text="{Binding CompletedAt, StringFormat={}{0:d}}"
+													   HorizontalAlignment="Left"
+													   Margin="8,0,0,0"
+													   VerticalAlignment="Center"/>
+
+											<TextBlock Grid.Column="0"
+													   Grid.Row="1"
+													   Grid.ColumnSpan="2"
+													   Style="{StaticResource TaskCategoryTextStyle}"
+													   Opacity="0.8"
+													   FontSize="12"
+													   Text="{Binding Category}"
+													   TextTrimming="CharacterEllipsis"/>
+										</Grid>
+									</Button>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</Grid>
+				</Border>
+
+				<!-- PARTNER COMPLETED -->
+				<Border Grid.Column="1"
+						Style="{StaticResource SubCard}"
+						Background="{DynamicResource SubCardRightBrush}"
+						Visibility="{Binding ShowPartnerList, Converter={StaticResource BoolToVisibility}}">
+					<Grid Grid.IsSharedSizeScope="True">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+
+					<TextBlock Grid.Row="0"
+							   Text="Partner's Completed"
+							   Style="{StaticResource SectionHeader}"/>
+
+					<!-- Header: Task ......... | Completed -->
+					<Grid Grid.Row="1"
+						  Background="{DynamicResource HeaderRowBackgroundBrush}"
+						  Margin="0,0,0,6">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"
+											  SharedSizeGroup="CompletedCol"
+											  MinWidth="90"/>
+						</Grid.ColumnDefinitions>
+						<TextBlock Text="Task"
+								   Grid.Column="0"
+								   FontWeight="Bold"/>
+						<TextBlock Text="Completed"
+								   Grid.Column="1"
+								   FontWeight="Bold"
+								   HorizontalAlignment="Left"
+								   Margin="8,0,0,0"/>
+					</Grid>
+
+					<!-- Items -->
+					<ItemsControl Grid.Row="2"
+								  ItemsSource="{Binding PartnerCompletedTasks}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Button Style="{StaticResource TaskCardButtonStyle}"
+										Visibility="{Binding AssignedTo, Converter={StaticResource AssigneeToVisibilityConverter}, ConverterParameter=Partner}"
+										Command="{Binding DataContext.ShowTaskDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+										CommandParameter="{Binding}"
+										beh:AudioBehavior.HoverSound="True">
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"
+															  SharedSizeGroup="CompletedCol"
+															  MinWidth="90"/>
+										</Grid.ColumnDefinitions>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="Auto"/>
+											<RowDefinition Height="Auto"/>
+										</Grid.RowDefinitions>
+
+										<TextBlock Grid.Column="0"
+												   Grid.Row="0"
+												   Style="{StaticResource TaskTitleTextStyle}"
+												   Text="{Binding Title}"
+												   TextDecorations="Strikethrough"
+												   Margin="0,0,8,0"
+												   TextTrimming="CharacterEllipsis"
+												   TextWrapping="NoWrap"
+												   VerticalAlignment="Center"/>
+
+										<TextBlock Grid.Column="1"
+												   Grid.Row="0"
+												   Style="{StaticResource TaskDueTextStyle}"
+												   Text="{Binding CompletedAt, StringFormat={}{0:d}}"
+												   HorizontalAlignment="Left"
+												   Margin="8,0,0,0"
+												   VerticalAlignment="Center"/>
+
+										<TextBlock Grid.Column="0"
+												   Grid.Row="1"
+												   Grid.ColumnSpan="2"
+												   Style="{StaticResource TaskCategoryTextStyle}"
+												   Opacity="0.8"
+												   FontSize="12"
+												   Text="{Binding Category}"
+												   TextTrimming="CharacterEllipsis"/>
+									</Grid>
+								</Button>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+			</Grid>
+		</Border>
+		</Grid>
+		</Border>
+	</StackPanel>
+</UserControl>
