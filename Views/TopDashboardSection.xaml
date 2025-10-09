@@ -292,7 +292,7 @@
 				</views:ConnectionsSection.Style>
 			</views:ConnectionsSection>
 
-			<!-- You can add real panels for Pending (index 2) and Completed (index 3) later -->
+			
 		</Grid>
 
 	</StackPanel>

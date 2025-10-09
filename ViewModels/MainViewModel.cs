@@ -102,8 +102,7 @@ namespace TaskMate.ViewModels {
         public event PropertyChangedEventHandler? PropertyChanged;
         public ICollectionView MyTasksView { get; }
         public ICollectionView PartnerTasksView { get; }
-        public ICollectionView MyCompletedTasks { get; }
-        public ICollectionView PartnerCompletedTasks { get; }
+        public ICollectionView CompletedAllView { get; }
         public ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
         public ObservableCollection<TaskItem> PendingTasks => _taskService.PendingTasks;
         public ObservableCollection<TaskItem> SentPendingTasks => _taskService.SentPendingTasks;
@@ -158,11 +157,8 @@ namespace TaskMate.ViewModels {
             PartnerTasksView = new CollectionViewSource { Source = Tasks }.View;
             PartnerTasksView.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Partner && !t.IsCompleted;
 
-            MyCompletedTasks = new CollectionViewSource { Source = Tasks }.View;
-            MyCompletedTasks.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Me && t.IsCompleted;
-
-            PartnerCompletedTasks = new CollectionViewSource { Source = Tasks }.View;
-            PartnerCompletedTasks.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Partner && t.IsCompleted;
+            CompletedAllView = new CollectionViewSource { Source = Tasks }.View;
+            CompletedAllView.Filter = o => o is TaskItem t && t.IsCompleted;
 
             // Apply saved theme on startup
             var saved = _settings.Theme;
@@ -286,8 +282,7 @@ namespace TaskMate.ViewModels {
                 // refresh the four views so items "jump" between active/completed
                 MyTasksView?.Refresh();
                 PartnerTasksView?.Refresh();
-                MyCompletedTasks?.Refresh();
-                PartnerCompletedTasks?.Refresh();
+                CompletedAllView?.Refresh();
                 _taskService.SaveAll(GroupId);
             });
             SendActivityMessageCommand = new RelayCommand(async _ => {
@@ -318,25 +313,23 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             });
 
             PopOutMineCommand = new RelayCommand(_ => {
-                var w = new TaskMate.Views.TaskListPopoutWindow { DataContext = this };
-                w.PopoutTitle = "My Tasks";
-                w.PopoutItems = MyTasksView;
-                w.PopoutBackground = (Brush)Application.Current.FindResource("SubCardLeftBrush");
-                w.PopoutHeaderBackground = (Brush)Application.Current.FindResource("SubCardLeftHeaderBrush");
-                SoundService.PlayTaskCreated();
-                ShowPopoutAndHideMain(w);
+                var w = new Views.TaskListPopoutWindow {
+                    Owner = Application.Current.MainWindow,
+                    DataContext = this,                 // so MyTasksView / PartnerTasksView are available
+                    ListKind = TaskListKind.Mine        // or Partner
+                };
+                w.Show();
             });
 
             // Partner
             PopOutPartnerCommand = new RelayCommand(_ => {
-                var w = new TaskMate.Views.TaskListPopoutWindow { DataContext = this };
-                w.PopoutTitle = "Partner's Tasks";
-                w.PopoutItems = PartnerTasksView;
-                w.PopoutBackground = (Brush)Application.Current.FindResource("SubCardRightBrush");
-                w.PopoutHeaderBackground = (Brush)Application.Current.FindResource("SubCardRightHeaderBrush");
-                SoundService.PlayTaskCreated();
-                ShowPopoutAndHideMain(w);
-            }, _ => ShowPartnerList);
+                var w = new Views.TaskListPopoutWindow {
+                    Owner = Application.Current.MainWindow,
+                    DataContext = this,                 // so MyTasksView / PartnerTasksView are available
+                    ListKind = TaskListKind.Partner        // or Partner
+                };
+                w.Show();
+            });
             ToggleSoundCommand = new RelayCommand(_ => {
                 var next = !_settings.SoundsEnabled;
                 _settings.SoundsEnabled = next;
@@ -494,8 +487,7 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
 
             SetSort(MyTasksView);
             SetSort(PartnerTasksView);
-            SetSort(MyCompletedTasks);
-            SetSort(PartnerCompletedTasks);
+            SetSort(CompletedAllView);
         }
 
         private void ApplySorts() {
@@ -546,8 +538,7 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
 
             SetSort(MyTasksView);
             SetSort(PartnerTasksView);
-            SetSort(MyCompletedTasks);
-            SetSort(PartnerCompletedTasks);
+            SetSort(CompletedAllView);
             RefreshAllViews();
         }
         private void AttachTaskHandlers(TaskItem t) {
@@ -581,8 +572,7 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
         private void RefreshAllViews() {
             MyTasksView?.Refresh();
             PartnerTasksView?.Refresh();
-            MyCompletedTasks?.Refresh();
-            PartnerCompletedTasks?.Refresh();
+            CompletedAllView?.Refresh();
         }
         private void UpdateHeaderCounts() {
             MyActiveCount = Tasks.Count(t => t.AssignedTo == Assignee.Me && !t.IsCompleted);

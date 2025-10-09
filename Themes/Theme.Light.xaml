@@ -161,22 +161,44 @@
         </LinearGradientBrush>
         <!-- Pushpin colors (Light) -->
         <SolidColorBrush x:Key="PushpinHeadBrush"
-                        Color="#E05555"/>
+                         Color="#E05555"/>
         <SolidColorBrush x:Key="PushpinHeadStrokeBrush"
-                        Color="#AA2E2E"/>
+                         Color="#AA2E2E"/>
         <SolidColorBrush x:Key="PushpinNeedleBrush"
-                        Color="#6B6B6B"/>
+                         Color="#6B6B6B"/>
 
-          <!-- Pending cards / chip / decline -->
-<SolidColorBrush x:Key="PendingIncomingCardBrush"   Color="#FFEFF5"/>  <!-- same pink -->
-<SolidColorBrush x:Key="PendingSentCardBrush"       Color="#E9F2FF"/>  <!-- same blue -->
-<SolidColorBrush x:Key="PendingChipBackgroundBrush" Color="#E3F2FD"/>
-<SolidColorBrush x:Key="PendingChipBorderBrush"     Color="#BBDEFB"/>
+        <!-- Pending cards / chip / decline -->
+        <SolidColorBrush x:Key="PendingIncomingCardBrush"
+                         Color="#FFEFF5"/>
+        <!-- same pink -->
+        <SolidColorBrush x:Key="PendingSentCardBrush"
+                         Color="#E9F2FF"/>
+        <!-- same blue -->
+        <SolidColorBrush x:Key="PendingChipBackgroundBrush"
+                         Color="#E3F2FD"/>
+        <SolidColorBrush x:Key="PendingChipBorderBrush"
+                         Color="#BBDEFB"/>
 
-<SolidColorBrush x:Key="DeclinePillBackgroundBrush" Color="#FADBD8"/>
-<SolidColorBrush x:Key="DeclinePillBorderBrush"     Color="#E6B0AA"/>
-<SolidColorBrush x:Key="DeclinePillForegroundBrush" Color="#8B3A3A"/>
+        <SolidColorBrush x:Key="DeclinePillBackgroundBrush"
+                         Color="#FADBD8"/>
+        <SolidColorBrush x:Key="DeclinePillBorderBrush"
+                         Color="#E6B0AA"/>
+        <SolidColorBrush x:Key="DeclinePillForegroundBrush"
+                         Color="#8B3A3A"/>
+        <SolidColorBrush x:Key="PillTabInactiveTextBrush"
+                        Color="#111111"/>
+        
+        <SolidColorBrush x:Key="PillTabSelectedTextBrush"
+                        Color="#FFFFFF"/>
 
-<SolidColorBrush x:Key="CategoryChipBackgroundBrush" Color="#FFF7E9"/>
-<SolidColorBrush x:Key="CategoryChipBorderBrush"     Color="#F3CF9B"/>              
+        <SolidColorBrush x:Key="CategoryChipBackgroundBrush"
+                         Color="#FFF7E9"/>
+        <SolidColorBrush x:Key="CategoryChipBorderBrush"
+                         Color="#F3CF9B"/>
+        <SolidColorBrush x:Key="BoardBackgroundBrush"
+                         Color="#E6F7EED5"/>
+        <!-- ~90% -->
+        <SolidColorBrush x:Key="BoardOutlineBrush"
+                         Color="#CCB98762"/>
+        <!-- warm brown -->
 </ResourceDictionary>

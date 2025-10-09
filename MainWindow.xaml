@@ -34,7 +34,7 @@
                               CanContentScroll="False"
                               PanningMode="VerticalFirst"
                               PanningDeceleration="0.001"
-                              MaxWidth="2000">
+                              MaxWidth="1500">
                         <StackPanel>
 
                                 <views:TopDashboardSection/>
@@ -57,11 +57,10 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
 
                                                         <!-- Title centered across the whole header -->
-                                                        <TextBlock Grid.ColumnSpan="5"
+                                                        <TextBlock Grid.ColumnSpan="4"
                                                                    Text="Task Board"
                                                                    Style="{StaticResource SectionHeader}"
                                                                    FontSize="20"
@@ -130,15 +129,9 @@
                                                                           SelectedValue="{Binding SelectedSort}"
                                                                           MinWidth="130"
                                                                           Margin="4,0,0,0"/>
-                                                                <TextBlock Text="▼"
-                                                                           Opacity="0.6"
-                                                                           Margin="8,0,0,0"/>
+
                                                         </StackPanel>
-                                                        <Button Grid.Column="4"
-                                                                Style="{StaticResource PushpinButton}"
-                                                                ToolTip="Pop out both lists"
-                                                                Command="{Binding PopOutBothCommand}"
-                                                                beh:AudioBehavior.HoverSound="True"/>
+
                                                 </Grid>
                                         </Expander.Header>
 
@@ -149,6 +142,16 @@
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
+
+                                                <Button Style="{StaticResource PushpinButton}"
+                                                        ToolTip="Pop out both lists"
+                                                        Command="{Binding PopOutBothCommand}"
+                                                        beh:AudioBehavior.HoverSound="True"
+                                                        Grid.ColumnSpan="2"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Top"
+                                                        Margin="0,-70,0,0"
+                                                        Panel.ZIndex="20"/>
 
                                                 <!-- ============ MY TASKS (left) ============ -->
                                                 <Border Grid.Column="0"

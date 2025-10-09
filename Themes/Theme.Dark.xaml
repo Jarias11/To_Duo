@@ -163,29 +163,40 @@
                          Color="#B8B8B8"/>
         <!-- Dark-appropriate, muted tints -->
         <SolidColorBrush x:Key="PendingIncomingCardBrush"
-                        Color="#2E2228"/>
+                         Color="#2E2228"/>
         <!-- muted rose -->
         <SolidColorBrush x:Key="PendingSentCardBrush"
-                        Color="#222A35"/>
+                         Color="#222A35"/>
         <!-- muted navy -->
         <SolidColorBrush x:Key="PendingChipBackgroundBrush"
-                        Color="#232B36"/>
+                         Color="#232B36"/>
         <!-- soft slate blue -->
         <SolidColorBrush x:Key="PendingChipBorderBrush"
-                        Color="#314055"/>
+                         Color="#314055"/>
 
         <SolidColorBrush x:Key="DeclinePillBackgroundBrush"
-                        Color="#3A2626"/>
+                         Color="#3A2626"/>
         <SolidColorBrush x:Key="DeclinePillBorderBrush"
-                        Color="#5A3434"/>
+                         Color="#5A3434"/>
         <SolidColorBrush x:Key="DeclinePillForegroundBrush"
-                        Color="#F2CACA"/>
+                         Color="#F2CACA"/>
+        <SolidColorBrush x:Key="PillTabInactiveTextBrush"
+                        Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="PillTabSelectedTextBrush"
+                        Color="#FFFFFF"/>
+        <!-- stays white on the dark selected pill -->
 
         <SolidColorBrush x:Key="CategoryChipBackgroundBrush"
-                        Color="#2E2A1F"/>
+                         Color="#2E2A1F"/>
         <!-- warm tag -->
         <SolidColorBrush x:Key="CategoryChipBorderBrush"
-                        Color="#4A402A"/>
+                         Color="#4A402A"/>
+        <SolidColorBrush x:Key="BoardBackgroundBrush"
+                         Color="#CC281E15"/>
+        <!-- ~80% cocoa -->
+        <SolidColorBrush x:Key="BoardOutlineBrush"
+                         Color="#995A4430"/>
+        <!-- subtle frame brown -->
 
 
 </ResourceDictionary>

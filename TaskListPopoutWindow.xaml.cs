@@ -1,69 +1,42 @@
-// TaskListPopoutWindow.xaml.cs
-using System.Collections;
+// Views/TaskListPopoutWindow.xaml.cs
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Input;   // <-- NEW (for DragMove + MouseButtonEventArgs)
+using System.Windows.Input;
+using TaskMate.Models.Enums;
+using TaskMate.ViewModels;
 
 namespace TaskMate.Views {
   public partial class TaskListPopoutWindow : Window {
+    public static readonly DependencyProperty ListKindProperty =
+        DependencyProperty.Register(nameof(ListKind), typeof(TaskListKind), typeof(TaskListPopoutWindow),
+            new PropertyMetadata(TaskListKind.Mine));
 
-    public static readonly DependencyProperty PopoutTitleProperty =
-      DependencyProperty.Register(nameof(PopoutTitle), typeof(string),
-        typeof(TaskListPopoutWindow), new PropertyMetadata(default(string)));
-
-    public static readonly DependencyProperty PopoutItemsProperty =
-      DependencyProperty.Register(nameof(PopoutItems), typeof(IEnumerable),
-        typeof(TaskListPopoutWindow), new PropertyMetadata(null));
-
-    // background brush for the colored sub-card
-    public static readonly DependencyProperty PopoutBackgroundProperty =
-      DependencyProperty.Register(nameof(PopoutBackground), typeof(Brush),
-        typeof(TaskListPopoutWindow), new PropertyMetadata(null));
-
-    public string PopoutTitle {
-      get => (string)GetValue(PopoutTitleProperty);
-      set => SetValue(PopoutTitleProperty, value);
+    public TaskListKind ListKind {
+      get => (TaskListKind)GetValue(ListKindProperty);
+      set => SetValue(ListKindProperty, value);
     }
 
-    public IEnumerable PopoutItems {
-      get => (IEnumerable)GetValue(PopoutItemsProperty);
-      set => SetValue(PopoutItemsProperty, value);
-    }
-
-    public Brush PopoutBackground {
-      get => (Brush)GetValue(PopoutBackgroundProperty);
-      set => SetValue(PopoutBackgroundProperty, value);
-    }
-    public static readonly DependencyProperty PopoutHeaderBackgroundProperty =
-    DependencyProperty.Register(nameof(PopoutHeaderBackground), typeof(Brush),
-        typeof(TaskListPopoutWindow), new PropertyMetadata(null));
-
-    public Brush PopoutHeaderBackground {
-      get => (Brush)GetValue(PopoutHeaderBackgroundProperty);
-      set => SetValue(PopoutHeaderBackgroundProperty, value);
-    }
+    // Pin: you already have the behavior; keep the ICommand if you had it in the VM.
+    public ICommand TogglePinCommand { get; }
+    public ICommand StartDragCommand { get; }
+    public ICommand CloseCommand { get; }
 
     public TaskListPopoutWindow() {
       InitializeComponent();
 
-      // --- NEW: make this feel like a popout that stays tied to the app ---
-      Owner = Application.Current?.MainWindow;                  // center relative to main
-      WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      Topmost = true;                 // default pinned
+      TogglePinCommand = new RelayCommand(_ => Topmost = !Topmost);
+      StartDragCommand = new RelayCommand(_ => { try { DragMove(); } catch { } });
+      CloseCommand = new RelayCommand(_ => Close());
+
+      Loaded += (_, __) => {
+        if(Application.Current?.MainWindow is Window mw) mw.Hide();
+      };
+      Closed += (_, __) => {
+        if(Application.Current?.MainWindow is Window mw) mw.Show();
+      };
+
+      if(DataContext == null && Application.Current?.MainWindow is Window mw2)
+        DataContext = mw2.DataContext;
     }
-
-    // --- NEW: handlers used by the sticky-note header UI in XAML ---
-
-    // Drag the window when the header (“tape”) is grabbed
-    private void Header_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-      if(e.LeftButton == MouseButtonState.Pressed)
-        DragMove();
-    }
-
-    // Close button on the header
-    private void Close_OnClick(object sender, RoutedEventArgs e) => Close();
-
-    // “Pin on top” toggle
-    private void TopmostToggle_OnChecked(object sender, RoutedEventArgs e) => Topmost = true;
-    private void TopmostToggle_OnUnchecked(object sender, RoutedEventArgs e) => Topmost = false;
   }
 }

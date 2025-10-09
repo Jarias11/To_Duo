@@ -5,224 +5,517 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{DynamicResource WindowBackgroundBrush}"
-        MinWidth="480"
-        MinHeight="340"
-        MaxWidth="500">
+        AllowsTransparency="True"
+        WindowStyle="None"
+        Background="Transparent"
+        MinWidth="520"
+        MinHeight="380"
+        MaxWidth="560">
 
         <Window.Resources>
                 <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-                <!-- Card -->
-                <Style x:Key="Card"
-                       TargetType="Border">
-                        <Setter Property="Background"
-                                Value="{DynamicResource CardBackgroundBrush}"/>
+
+                <!-- ====== Window chrome (accent border by assignee) ====== -->
+                <Style x:Key="DialogChrome"
+                                TargetType="Border">
                         <Setter Property="CornerRadius"
-                                Value="10"/>
+                                        Value="14"/>
                         <Setter Property="Padding"
-                                Value="16"/>
-                        <Setter Property="Margin"
-                                Value="0,0,0,12"/>
-                        <Setter Property="BorderBrush"
-                                Value="{DynamicResource CardBorderBrush}"/>
+                                        Value="0"/>
                         <Setter Property="BorderThickness"
-                                Value="1"/>
+                                        Value="2"/>
+                        <Setter Property="BorderBrush"
+                                        Value="{DynamicResource MeTaskTextBrush}"/>
+                        <Setter Property="SnapsToDevicePixels"
+                                        Value="True"/>
                         <Setter Property="Effect">
                                 <Setter.Value>
-                                        <DropShadowEffect BlurRadius="10"
-                                                          ShadowDepth="2"
-                                                          Opacity="0.12"/>
+                                        <DropShadowEffect BlurRadius="22"
+                                                        ShadowDepth="0"
+                                                        Opacity="0.45"/>
+                                </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                                <DataTrigger Binding="{Binding Item.AssignedTo}"
+                                                Value="Partner">
+                                        <Setter Property="BorderBrush"
+                                                        Value="{DynamicResource PartnerTaskTextBrush}"/>
+                                </DataTrigger>
+                        </Style.Triggers>
+                </Style>
+
+                <!-- ====== Glass section: dashed box with subtle fill ====== -->
+                <Style x:Key="GlassSection"
+                                TargetType="ContentControl">
+                        <Setter Property="Padding"
+                                        Value="10"/>
+                        <Setter Property="Template">
+                                <Setter.Value>
+                                        <ControlTemplate TargetType="ContentControl">
+                                                <Grid>
+                                                        <!-- slightly stronger for dark theme readability -->
+                                                        <Rectangle Fill="{DynamicResource ControlBackgroundBrush}"
+                                                                   Opacity="0.16"
+                                                                   RadiusX="8"
+                                                                        RadiusY="8"/>
+                                                        <Rectangle Stroke="{DynamicResource PrimaryTextBrush}"
+                                                                   StrokeThickness="1"
+                                                                   StrokeDashArray="2,2"
+                                                                   Opacity="0.40"
+                                                                   RadiusX="8"
+                                                                        RadiusY="8"/>
+                                                        <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                                                </Grid>
+                                        </ControlTemplate>
                                 </Setter.Value>
                         </Setter>
                 </Style>
 
-                <!-- Small gray label -->
+                <!-- ====== Small info label ====== -->
                 <Style x:Key="InfoLabel"
-                       TargetType="TextBlock">
+                                TargetType="TextBlock">
                         <Setter Property="FontSize"
-                                Value="12"/>
+                                        Value="12"/>
                         <Setter Property="Opacity"
-                                Value="0.8"/>
+                                        Value="0.9"/>
                 </Style>
 
-                <!-- Assignee pill -->
-                <Style x:Key="Pill"
-                       TargetType="Border">
+                <!-- ====== Assignee chip (theme-safe) ====== -->
+                <!-- Chip bg from theme for contrast; text/border use Me/Partner accent -->
+                <Style x:Key="AssigneeChip"
+                                TargetType="Border">
                         <Setter Property="Padding"
-                                Value="6,2"/>
+                                        Value="8,3"/>
                         <Setter Property="CornerRadius"
-                                Value="6"/>
+                                        Value="8"/>
                         <Setter Property="Background"
-                                Value="#EEE"/>
+                                        Value="{DynamicResource TopBarChipBackgroundBrush}"/>
                         <Setter Property="BorderBrush"
-                                Value="#DDD"/>
+                                        Value="{DynamicResource TopBarChipBorderBrush}"/>
                         <Setter Property="BorderThickness"
-                                Value="1"/>
+                                        Value="1"/>
+                        <Setter Property="SnapsToDevicePixels"
+                                        Value="True"/>
+                        <Setter Property="TextElement.FontWeight"
+                                        Value="SemiBold"/>
+                        <Setter Property="TextElement.Foreground"
+                                        Value="{DynamicResource PrimaryTextBrush}"/>
                         <Style.Triggers>
                                 <DataTrigger Binding="{Binding Item.AssignedTo}"
-                                             Value="Me">
-                                        <Setter Property="Background"
-                                                Value="#E8F5E9"/>
+                                                Value="Me">
                                         <Setter Property="BorderBrush"
-                                                Value="#C8E6C9"/>
+                                                        Value="{DynamicResource MeTaskTextBrush}"/>
+                                        <Setter Property="TextElement.Foreground"
+                                                        Value="{DynamicResource MeTaskTextBrush}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Item.AssignedTo}"
-                                             Value="Partner">
-                                        <Setter Property="Background"
-                                                Value="#FCE4EC"/>
+                                                Value="Partner">
                                         <Setter Property="BorderBrush"
-                                                Value="#F8BBD0"/>
+                                                        Value="{DynamicResource PartnerTaskTextBrush}"/>
+                                        <Setter Property="TextElement.Foreground"
+                                                        Value="{DynamicResource PartnerTaskTextBrush}"/>
                                 </DataTrigger>
                         </Style.Triggers>
                 </Style>
+
+                <!-- ====== Round header close button ====== -->
+                <Style x:Key="RoundCloseButton"
+                                TargetType="Button">
+                        <Setter Property="Width"
+                                        Value="28"/>
+                        <Setter Property="Height"
+                                        Value="28"/>
+                        <Setter Property="Padding"
+                                        Value="0"/>
+                        <Setter Property="Foreground"
+                                        Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                        Value="{DynamicResource TopBarChipBackgroundBrush}"/>
+                        <Setter Property="BorderBrush"
+                                        Value="{DynamicResource TopBarChipBorderBrush}"/>
+                        <Setter Property="BorderThickness"
+                                        Value="1"/>
+                        <Setter Property="ToolTip"
+                                        Value="Close"/>
+                        <Setter Property="Template">
+                                <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd"
+                                                        CornerRadius="14"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                                        Value="True">
+                                                                <Setter TargetName="Bd"
+                                                                                Property="Background"
+                                                                                Value="{DynamicResource HoverBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed"
+                                                                        Value="True">
+                                                                <Setter TargetName="Bd"
+                                                                                Property="Background"
+                                                                                Value="{DynamicResource PressedBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsEnabled"
+                                                                        Value="False">
+                                                                <Setter TargetName="Bd"
+                                                                                Property="Opacity"
+                                                                                Value="0.6"/>
+                                                        </Trigger>
+                                                </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                </Setter.Value>
+                        </Setter>
+                </Style>
+
+                <!-- ====== Neutral (secondary) button for Close ====== -->
+                <Style x:Key="SecondaryButton"
+                                TargetType="Button">
+                        <Setter Property="Foreground"
+                                        Value="{DynamicResource PrimaryTextBrush}"/>
+                        <Setter Property="Background"
+                                        Value="{DynamicResource TopBarChipBackgroundBrush}"/>
+                        <Setter Property="BorderBrush"
+                                        Value="{DynamicResource TopBarChipBorderBrush}"/>
+                        <Setter Property="BorderThickness"
+                                        Value="1"/>
+                        <Setter Property="Padding"
+                                        Value="12,6"/>
+                        <Setter Property="MinWidth"
+                                        Value="90"/>
+                        <Setter Property="Height"
+                                        Value="32"/>
+                        <Setter Property="Cursor"
+                                        Value="Hand"/>
+                        <Setter Property="FontFamily"
+                                        Value="{DynamicResource HandScriptFont}"/>
+                        <Setter Property="Template">
+                                <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd"
+                                                        CornerRadius="10"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                                        Value="True">
+                                                                <Setter TargetName="Bd"
+                                                                                Property="Background"
+                                                                                Value="{DynamicResource HoverBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed"
+                                                                        Value="True">
+                                                                <Setter TargetName="Bd"
+                                                                                Property="Background"
+                                                                                Value="{DynamicResource PressedBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsEnabled"
+                                                                        Value="False">
+                                                                <Setter TargetName="Bd"
+                                                                                Property="Opacity"
+                                                                                Value="0.6"/>
+                                                        </Trigger>
+                                                </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                </Setter.Value>
+                        </Setter>
+                </Style>
+                <!-- SuccessButton & DeclinePillButton come from SharedStyles -->
         </Window.Resources>
 
-        <Border Style="{StaticResource Card}">
-                <StackPanel>
+        <!-- ====== GLASS BACKDROP + TINT + CONTENT ====== -->
+        <Border Style="{StaticResource DialogChrome}">
+                <Grid>
+                        <!-- Base glass plate -->
+                        <Rectangle Fill="{DynamicResource OverlayPanelBrush}"
+                                   Opacity="0.92"
+                                   RadiusX="12"
+                                        RadiusY="12"/>
 
-                        <!-- Title -->
-                        <TextBlock Text="{Binding Item.Title}"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,10"
-                                   TextWrapping="Wrap"/>
+                        <!-- Assignee tint -->
+                        <Rectangle Opacity="0.22"
+                                        RadiusX="12"
+                                        RadiusY="12">
+                                <Rectangle.Style>
+                                        <Style TargetType="Rectangle">
+                                                <Setter Property="Fill"
+                                                                Value="{DynamicResource MeTaskTextBrush}"/>
+                                                <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Item.AssignedTo}"
+                                                                        Value="Partner">
+                                                                <Setter Property="Fill"
+                                                                                Value="{DynamicResource PartnerTaskTextBrush}"/>
+                                                        </DataTrigger>
+                                                </Style.Triggers>
+                                        </Style>
+                                </Rectangle.Style>
+                        </Rectangle>
 
-                        <!-- Facts -->
-                        <Grid Margin="0,0,0,8">
-                                <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                        <!-- CONTENT -->
+                        <Grid Margin="16">
                                 <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
+                                        <!-- header -->
                                         <RowDefinition Height="Auto"/>
+                                        <!-- underline -->
                                         <RowDefinition Height="Auto"/>
+                                        <!-- details -->
                                         <RowDefinition Height="Auto"/>
+                                        <!-- notes -->
                                         <RowDefinition Height="Auto"/>
+                                        <!-- footer -->
                                 </Grid.RowDefinitions>
 
-                                <!-- Assigned To -->
-                                <TextBlock Grid.Row="0"
-                                           Grid.Column="0"
-                                           Text="Assigned To:"
-                                           Style="{StaticResource InfoLabel}"/>
-                                <Border Grid.Row="0"
-                                        Grid.Column="1"
-                                        Style="{StaticResource Pill}">
-                                        <TextBlock Text="{Binding Item.AssignedTo}"/>
+                                <!-- HEADER -->
+                                <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <TextBlock Text="📝"
+                                                                FontSize="18"
+                                                                VerticalAlignment="Center"
+                                                                Opacity="0.95"/>
+                                                <TextBlock Text="{Binding Item.Title}"
+                                                           Margin="8,0,0,0"
+                                                           FontFamily="{DynamicResource HandTitleFont}"
+                                                           FontSize="28"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap"
+                                                           VerticalAlignment="Center">
+                                                        <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground"
+                                                                                        Value="{DynamicResource MeTaskTextBrush}"/>
+                                                                        <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Item.AssignedTo}"
+                                                                                                Value="Partner">
+                                                                                        <Setter Property="Foreground"
+                                                                                                        Value="{DynamicResource PartnerTaskTextBrush}"/>
+                                                                                </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                </Style>
+                                                        </TextBlock.Style>
+                                                </TextBlock>
+                                        </StackPanel>
+
+                                        <!-- Round close button -->
+                                        <Button Grid.Column="1"
+                                                Content="✕"
+                                                Style="{StaticResource RoundCloseButton}"
+                                                IsCancel="True"/>
+                                </Grid>
+
+                                <!-- underline -->
+                                <Border Grid.Row="1"
+                                                Height="2"
+                                                Margin="4,6,4,12"
+                                                CornerRadius="1">
+                                        <Border.Background>
+                                                <SolidColorBrush Color="White"
+                                                                Opacity="0.12"/>
+                                        </Border.Background>
                                 </Border>
 
-                                <!-- Category -->
-                                <TextBlock Grid.Row="1"
-                                           Grid.Column="0"
-                                           Text="Category:"
-                                           Style="{StaticResource InfoLabel}"
-                                           Margin="0,6,0,0"/>
-                                <TextBlock Grid.Row="1"
-                                           Grid.Column="1"
-                                           Text="{Binding Item.Category, TargetNullValue=—}"
-                                           Margin="0,6,0,0"/>
+                                <!-- DETAILS -->
+                                <ContentControl Grid.Row="2"
+                                                Style="{StaticResource GlassSection}"
+                                                Margin="0,0,0,10">
+                                        <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
 
-                                <!-- Due -->
-                                <TextBlock Grid.Row="2"
-                                           Grid.Column="0"
-                                           Text="Due:"
-                                           Style="{StaticResource InfoLabel}"
-                                           Margin="0,6,0,0"/>
-                                <TextBlock Grid.Row="2"
-                                           Grid.Column="1"
-                                           Text="{Binding Item.DueDate, StringFormat={}{0:dddd, MMM d, yyyy}, TargetNullValue=—}"
-                                           Margin="0,6,0,0"/>
+                                                <!-- Assigned To -->
+                                                <TextBlock Grid.Row="0"
+                                                                Grid.Column="0"
+                                                                Text="Assigned To:"
+                                                                Style="{StaticResource InfoLabel}"/>
+                                                <Border Grid.Row="0"
+                                                                Grid.Column="1"
+                                                                Style="{StaticResource AssigneeChip}">
+                                                        <TextBlock Text="{Binding Item.AssignedTo}"/>
+                                                </Border>
 
-                                <!-- Status -->
-                                <TextBlock Grid.Row="3"
-                                           Grid.Column="0"
-                                           Text="Status:"
-                                           Style="{StaticResource InfoLabel}"
-                                           Margin="0,6,0,0"/>
-                                <TextBlock Grid.Row="3"
-                                           Grid.Column="1"
-                                           Margin="0,6,0,0">
-                                        <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                        <Setter Property="Text"
-                                                                Value="Open"/>
-                                                        <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Item.IsCompleted}"
-                                                                             Value="True">
+                                                <!-- Category -->
+                                                <TextBlock Grid.Row="1"
+                                                                Grid.Column="0"
+                                                                Text="Category:"
+                                                                Style="{StaticResource InfoLabel}"
+                                                                Margin="0,6,0,0"/>
+                                                <TextBlock Grid.Row="1"
+                                                                Grid.Column="1"
+                                                                Text="{Binding Item.Category, TargetNullValue=—}"
+                                                                Margin="0,6,0,0"/>
+
+                                                <!-- Due -->
+                                                <TextBlock Grid.Row="2"
+                                                                Grid.Column="0"
+                                                                Text="Due:"
+                                                                Style="{StaticResource InfoLabel}"
+                                                                Margin="0,6,0,0"/>
+                                                <TextBlock Grid.Row="2"
+                                                                Grid.Column="1"
+                                                                Text="{Binding Item.DueDate, StringFormat={}{0:dddd, MMM d, yyyy}, TargetNullValue=—}"
+                                                                Margin="0,6,0,0"/>
+
+                                                <!-- Status -->
+                                                <TextBlock Grid.Row="3"
+                                                                Grid.Column="0"
+                                                                Text="Status:"
+                                                                Style="{StaticResource InfoLabel}"
+                                                                Margin="0,6,0,0"/>
+                                                <TextBlock Grid.Row="3"
+                                                                Grid.Column="1"
+                                                                Margin="0,6,0,0">
+                                                        <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
                                                                         <Setter Property="Text"
-                                                                                Value="Completed"/>
-                                                                </DataTrigger>
-                                                        </Style.Triggers>
-                                                </Style>
-                                        </TextBlock.Style>
-                                </TextBlock>
+                                                                                        Value="Open"/>
+                                                                        <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Item.IsCompleted}"
+                                                                                                Value="True">
+                                                                                        <Setter Property="Text"
+                                                                                                        Value="Completed"/>
+                                                                                </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                </Style>
+                                                        </TextBlock.Style>
+                                                </TextBlock>
 
-                                <TextBlock Grid.Row="4"
-                                                Grid.Column="0"
-                                           Text="Completed:"
-                                                Margin="0,6,0,0"
-                                           Style="{StaticResource InfoLabel}"
-                                           Visibility="{Binding Item.IsCompleted,
-                                Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                <!-- Completed At -->
+                                                <TextBlock Grid.Row="4"
+                                                                Grid.Column="0"
+                                                           Text="Completed:"
+                                                                Margin="0,6,0,0"
+                                                           Style="{StaticResource InfoLabel}"
+                                                           Visibility="{Binding Item.IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                <TextBlock Grid.Row="4"
+                                                                Grid.Column="1"
+                                                           Margin="0,6,0,0"
+                                                           Text="{Binding Item.CompletedAt, StringFormat={}{0:dddd, MMM d, yyyy h:mm tt}}"
+                                                           Visibility="{Binding Item.IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        </Grid>
+                                </ContentControl>
 
-                                <TextBlock Grid.Row="4"
-                                                Grid.Column="1"
-                                           Margin="0,6,0,0"
-                                           Text="{Binding Item.CompletedAt,
-                          StringFormat={}{0:dddd, MMM d, yyyy h:mm tt}}"
-                                           Visibility="{Binding Item.IsCompleted,
-                                Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <!-- NOTES -->
+                                <ContentControl Grid.Row="3"
+                                                Style="{StaticResource GlassSection}">
+                                        <Grid>
+                                                <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+
+                                                <StackPanel Orientation="Horizontal"
+                                                                Grid.Row="0"
+                                                                Margin="2,0,0,6"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock Text="📄"
+                                                                        Margin="0,0,6,0"/>
+                                                        <TextBlock Text="Notes:"
+                                                                        FontWeight="SemiBold"/>
+                                                </StackPanel>
+
+                                                <ScrollViewer Grid.Row="1"
+                                                                Height="160"
+                                                                VerticalScrollBarVisibility="Auto"
+                                                                HorizontalScrollBarVisibility="Disabled">
+                                                        <TextBlock Text="{Binding Item.Description, TargetNullValue=No description}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="4,2,4,2"/>
+                                                </ScrollViewer>
+                                        </Grid>
+                                </ContentControl>
+
+                                <!-- FOOTER -->
+                                <StackPanel Grid.Row="4"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Right"
+                                                Margin="0,12,0,0">
+                                        <Button Content="Accept"
+                                                Width="90"
+                                                        Margin="0,0,8,0"
+                                                Command="{Binding AcceptCommand}"
+                                                Visibility="{Binding CanAccept, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                        <Button Content="Decline"
+                                                Width="90"
+                                                        Margin="0,0,16,0"
+                                                Command="{Binding DeclineCommand}"
+                                                Visibility="{Binding CanDecline, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Style="{StaticResource DeclinePillButton}"/>
+
+                                        <!-- Complete is hidden when viewing Partner's task -->
+                                        <Button Content="Complete"
+                                                Width="120"
+                                                        Margin="0,0,8,0"
+                                                Command="{Binding CompleteCommand}">
+                                                <Button.Style>
+                                                        <Style TargetType="Button"
+                                                                        BasedOn="{StaticResource SuccessButton}">
+                                                                <Setter Property="IsEnabled"
+                                                                                Value="{Binding CanComplete}"/>
+                                                                <Setter Property="Visibility"
+                                                                        Value="{Binding CanComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Item.AssignedTo}"
+                                                                                        Value="Partner">
+                                                                                <Setter Property="Visibility"
+                                                                                                Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                </Style.Triggers>
+                                                        </Style>
+                                                </Button.Style>
+                                        </Button>
+
+                                        <!-- Delete is hidden when viewing Partner's task -->
+                                        <Button Content="Delete"
+                                                Width="90"
+                                                        Margin="0,0,16,0"
+                                                Command="{Binding DeleteCommand}">
+                                                <Button.Style>
+                                                        <Style TargetType="Button"
+                                                                        BasedOn="{StaticResource DeclinePillButton}">
+                                                                <Setter Property="Visibility"
+                                                                        Value="{Binding CanDelete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Item.AssignedTo}"
+                                                                                        Value="Partner">
+                                                                                <Setter Property="Visibility"
+                                                                                                Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                </Style.Triggers>
+                                                        </Style>
+                                                </Button.Style>
+                                        </Button>
+
+                                        <Button Content="Close"
+                                                Width="90"
+                                                IsCancel="True"
+                                                Style="{StaticResource SecondaryButton}"/>
+                                </StackPanel>
                         </Grid>
-
-                        <!-- Description -->
-                        <GroupBox Header="Description"
-                                  Margin="0,6,0,0">
-                                <ScrollViewer Height="150"
-                                              VerticalScrollBarVisibility="Auto"
-                                              HorizontalScrollBarVisibility="Disabled">
-                                        <TextBlock Text="{Binding Item.Description, TargetNullValue=No description}"
-                                                   TextWrapping="Wrap"
-                                                   Margin="6"/>
-                                </ScrollViewer>
-                        </GroupBox>
-
-                        <!-- Footer actions -->
-                        <StackPanel Orientation="Horizontal"
-                                    HorizontalAlignment="Right"
-                                    Margin="0,12,0,0">
-                                <!-- Accept/Decline only when CanDecide -->
-                                <Button Content="Accept"
-                                        Width="90"
-                                        Margin="0,0,8,0"
-                                        Command="{Binding AcceptCommand}"
-                                        Visibility="{Binding CanAccept, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                <Button Content="Decline"
-                                        Width="90"
-                                        Margin="0,0,16,0"
-                                        Command="{Binding DeclineCommand}"
-                                        Visibility="{Binding CanDecline, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-
-                                <!-- Complete shows when not pending and not completed -->
-                                <Button Content="Complete"
-                                        Width="100"
-                                        Margin="0,0,8,0"
-                                        Command="{Binding CompleteCommand}"
-                                        IsEnabled="{Binding CanComplete}"
-                                        Visibility="{Binding CanComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-
-                                <!-- Delete shows when not pending decision -->
-                                <Button Content="Delete"
-                                        Width="90"
-                                        Margin="0,0,16,0"
-                                        Command="{Binding DeleteCommand}"
-                                        Visibility="{Binding CanDelete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-
-                                <Button Content="Close"
-                                        Width="90"
-                                        IsCancel="True"/>
-                        </StackPanel>
-
-                </StackPanel>
+                </Grid>
         </Border>
 </Window>

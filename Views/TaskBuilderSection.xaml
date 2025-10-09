@@ -21,8 +21,8 @@
 
 				<!-- Handwritten header + underline -->
 				<TextBlock Text="Create New Task"
-						   Style="{StaticResource NotebookTitle}"
-						   FontSize="28"
+						   Style="{StaticResource NotebookTitle.Sub}"
+						   
 						   Margin="12,4,12,2"/>
 				<Border Height="2"
 						Margin="12,0,12,12"

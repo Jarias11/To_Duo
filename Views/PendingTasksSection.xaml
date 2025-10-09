@@ -44,7 +44,7 @@
 			<Setter Property="Height"
 					Value="32"/>
 			<Setter Property="Padding"
-					Value="10,0"/>
+					Value="0"/>
 			<Setter Property="Margin"
 					Value="6,0,0,0"/>
 			<Setter Property="FontFamily"
@@ -192,17 +192,17 @@
 		</Style>
 	</UserControl.Resources>
 
-	<StackPanel Margin="0,6,0,0"
+	<StackPanel Margin="0,0,0,0"
 				MaxWidth="1000">
 
 		<!-- ===== Tasks Sent to You (incoming / you must decide) ===== -->
 		<StackPanel>
 			<StackPanel Orientation="Horizontal"
-						Margin="2,8,0,4">
+						Margin="0,0,0,0">
 				<Ellipse Style="{StaticResource BulletDot}"
 						 Fill="{DynamicResource PartnerTaskTextBrush}"/>
 				<TextBlock Text="Tasks Sent to You"
-						   Style="{StaticResource BulletTitle}"/>
+						   Style="{StaticResource NotebookTitle.Sub}"/>
 			</StackPanel>
 
 			<!-- Empty state -->
@@ -301,7 +301,7 @@
 				<Ellipse Style="{StaticResource BulletDot}"
 						 Fill="{DynamicResource MeTaskTextBrush}"/>
 				<TextBlock Text="Tasks You Sent"
-						   Style="{StaticResource BulletTitle}"/>
+						   Style="{StaticResource NotebookTitle.Sub}"/>
 			</StackPanel>
 
 			<!-- NOTE: This list binds to SentPendingTasks (see tiny backend tweak below) -->

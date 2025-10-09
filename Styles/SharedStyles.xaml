@@ -45,7 +45,7 @@
 		<Setter Property="FontFamily"
 				Value="{DynamicResource HandTitleFont}"/>
 		<Setter Property="FontSize"
-				Value="44"/>
+				Value="60"/>
 		<Setter Property="FontWeight"
 				Value="SemiBold"/>
 		<Setter Property="Foreground"
@@ -65,6 +65,20 @@
 		</Setter>
 		<Setter Property="Margin"
 				Value="0,2,0,2"/>
+	</Style>
+	<!-- A slightly smaller variant of NotebookTitle for section headings -->
+	<Style x:Key="NotebookTitle.Sub"
+		   TargetType="TextBlock"
+		   BasedOn="{StaticResource NotebookTitle}">
+
+		<Setter Property="FontSize"
+				Value="40"/>
+		<Setter Property="FontWeight"
+				Value="Normal"/>
+		<!-- was 60 -->
+		<Setter Property="Margin"
+				Value="0,0,0,4"/>
+		<!-- a hair tighter -->
 	</Style>
 
 	<Style x:Key="NotebookSubtitle"
@@ -231,6 +245,20 @@
 				Value="{DynamicResource PillTabInactiveTextBrush}"/>
 		<Setter Property="FocusVisualStyle"
 				Value="{x:Null}"/>
+		<Setter Property="HeaderTemplate">
+			<Setter.Value>
+				<DataTemplate>
+					<TextBlock
+						Text="{Binding}"
+						Foreground="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Foreground}"
+						FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontFamily}"
+						FontStyle="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontStyle}"
+						FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontSize}"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center"/>
+				</DataTemplate>
+			</Setter.Value>
+		</Setter>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="TabItem">
@@ -274,6 +302,7 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
+
 	</Style>
 
 
@@ -947,7 +976,7 @@
 				Value="1"/>
 		<Setter Property="Effect">
 			<Setter.Value>
-				<DropShadowEffect BlurRadius="6"
+				<DropShadowEffect BlurRadius="1"
 								  ShadowDepth="1"
 								  Opacity="0.12"/>
 			</Setter.Value>

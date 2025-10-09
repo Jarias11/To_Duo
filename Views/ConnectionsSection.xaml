@@ -8,6 +8,10 @@
 	<StackPanel MaxWidth="1000">
 		<StackPanel Orientation="Horizontal"
 					Margin="0,0,0,2">
+			<!-- NEW: Section subtitle -->
+			<TextBlock Text="Connections"
+					   Style="{StaticResource NotebookTitle.Sub}"
+					   Margin="0,0,0,8"/>
 
 
 		</StackPanel>
