@@ -23,6 +23,8 @@ internal static class Program {
         "TaskMate", "notifier-state.json");
 
     private static async Task<int> Main(string[] args) {
+        if(TaskMate.Services.AppServices.Settings?.NotificationsEnabled != true)
+            return 0;
         try {
             Directory.CreateDirectory(Path.GetDirectoryName(StatePath)!);
 

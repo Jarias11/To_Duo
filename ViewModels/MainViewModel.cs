@@ -25,6 +25,8 @@ namespace TaskMate.ViewModels {
         public string? PartnerId => _partner.PartnerId;
         public string? DisplayName => _settings.DisplayName;
         public string ConnectionSummary => IsPartnerVerified ? $"Connected to: {PartnerId}" : "No partner connected yet";
+        public bool AnimationsEnabled => _anim.Enabled;
+        public string AnimButtonText => _anim.Enabled ? "Disable Animations" : "Enable Animations";
         private string? _newActivityMessage;
         private static int _openPopouts;
 
@@ -35,6 +37,40 @@ namespace TaskMate.ViewModels {
         new KeyValuePair<TaskSortMode,string>(TaskSortMode.Oldest,  "Oldest"),
         new KeyValuePair<TaskSortMode,string>(TaskSortMode.Category,"Category"),
     };
+
+        private bool _isSettingsOpen;
+        public bool IsSettingsOpen {
+            get => _isSettingsOpen;
+            set { if(_isSettingsOpen == value) return; _isSettingsOpen = value; OnPropertyChanged(); }
+        }
+
+        public bool NotificationsEnabled {
+            get => _settings.NotificationsEnabled;
+            set {
+                if(_settings.NotificationsEnabled == value) return;
+                _settings.NotificationsEnabled = value;
+                _settings.Save();
+
+                if(!value) {
+                    // Turn OFF path
+                    AppServices.Notifications.DisableAllToasts();          // 1) unschedule everything
+
+                    // 2) disable/delete the OS task
+                    // If you know your published notifier path, pass it when enabling (below).
+                    TaskMate.Services.Notifications.TaskSchedulerUtil.DisableNotifierTask();
+
+                    // 3) stop any in-app timers that specifically exist to trigger toasts
+                    // e.g., if you have a due-reminders DispatcherTimer: _dueTimer.Stop();
+                }
+                else {
+                    // Turn ON path (optional now — you can also only enable on a separate “Set up notifications” flow)
+                    // var exe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TaskMate.Notifier", "TaskMate.Notifier.exe");
+                    // TaskMate.Services.Notifications.TaskSchedulerUtil.EnableOrCreateNotifierTask(exe);
+                }
+
+                OnPropertyChanged();
+            }
+        }
         private TaskSortMode _selectedSort = TaskSortMode.DueSoon;
         public TaskSortMode SelectedSort {
             get => _selectedSort;
@@ -79,6 +115,7 @@ namespace TaskMate.ViewModels {
         private readonly IPairingOrchestrator _pairing;
         private readonly ITaskDialogService _dialogs;
         private readonly IActivityLogService _activity;
+        private readonly IAnimationService _anim;
 
         // Backing fields + properties
         private const string CreateNewCategory = "Create New…";
@@ -130,10 +167,13 @@ namespace TaskMate.ViewModels {
         public ICommand PopOutMineCommand { get; }
         public ICommand PopOutPartnerCommand { get; }
         public ICommand ToggleSoundCommand { get; }
+        public ICommand ToggleAnimationsCommand { get; }
+        public ICommand ToggleNotificationsCommand { get; }
+        public ICommand ToggleSettingsCommand { get; }
 
 
 
-        public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs, IActivityLogService activity) {
+        public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs, IActivityLogService activity, IAnimationService anim) {
 
             // Dependency injection of services
             _activity = activity;
@@ -145,6 +185,7 @@ namespace TaskMate.ViewModels {
             _pairing = pairing;
             _dialogs = dialogs;
             _live = live;
+            _anim = anim;
             _clock.Tick += (_, __) => Now = DateTime.Now;
             _clock.Start();
 
@@ -268,7 +309,7 @@ namespace TaskMate.ViewModels {
 
             ToggleCompleteCommand = new RelayCommand<TaskItem>(async t => {
                 if(t == null) return;
-
+                var wasCompleted = t.IsCompleted;
                 // flip
                 if(t.IsCompleted)
                     t.CompletedAt ??= DateTime.UtcNow;
@@ -284,6 +325,11 @@ namespace TaskMate.ViewModels {
                 PartnerTasksView?.Refresh();
                 CompletedAllView?.Refresh();
                 _taskService.SaveAll(GroupId);
+
+                // 🎊 fire only on the transition to completed
+                if(wasCompleted) {
+                    _anim.Confetti(); // defaults to MainWindow + ~80 pieces
+                }
             });
             SendActivityMessageCommand = new RelayCommand(async _ => {
                 var text = (NewActivityMessage ?? string.Empty).Trim();
@@ -338,6 +384,16 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                 OnPropertyChanged(nameof(IsMuted));          // <— notify
                 OnPropertyChanged(nameof(SoundButtonText));  // (optional tooltip)
             });
+            ToggleAnimationsCommand = new RelayCommand(_ => {
+                _anim.Enabled = !_anim.Enabled;
+                OnPropertyChanged(nameof(AnimationsEnabled));
+                OnPropertyChanged(nameof(AnimButtonText));
+            });
+            ToggleNotificationsCommand = new RelayCommand(_ => {
+                NotificationsEnabled = !_settings.NotificationsEnabled;
+            });
+            ToggleSettingsCommand = new RelayCommand(_ => IsSettingsOpen = !IsSettingsOpen);
+
 
 
             var local = TaskMate.Data.TaskDataService.LoadTasks();

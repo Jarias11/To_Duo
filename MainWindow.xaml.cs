@@ -28,8 +28,10 @@ public partial class MainWindow : Window {
         var live = new LiveSyncCoordinator(requestSvc, partnerSvc);
 
         var taskActions = new TaskActions(requestSvc, taskSvc, Dispatcher, activity, settingsSvc);
-        var dialogs = new TaskDialogService(taskActions, partnerSvc);
+        
         var pairing = new PairingOrchestrator(partnerReqs, partnerSvc, live, Dispatcher, activity, settingsSvc);
+        var anim = new AnimationService(settingsSvc);
+        var dialogs = new TaskDialogService(taskActions, partnerSvc, anim);
 
         AppServices.Notifications = new NotificationService();
         AppServices.Tasks = taskSvc;
@@ -41,7 +43,7 @@ public partial class MainWindow : Window {
 
 
         try {
-            DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, live, taskActions, pairing, dialogs, activity);
+            DataContext = new MainViewModel(taskSvc, partnerSvc, themeSvc, settingsSvc, live, taskActions, pairing, dialogs, activity, anim);
         }
         catch(Exception ex) {
             Console.WriteLine($"Error setting DataContext: {ex.Message}");

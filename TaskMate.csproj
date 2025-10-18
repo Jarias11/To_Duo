@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <ApplicationIcon>Assets\Icons\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +39,7 @@
   <!-- embed all TTF/OTF fonts as WPF resources -->
   <Resource Include="Assets/Fonts/**/*.ttf" />
   <Resource Include="Assets/Fonts/**/*.otf" />
+  <Resource Include="Assets\Icons\app.ico" />
   <PackageReference Include="NAudio" Version="2.2.1" />
 
   </ItemGroup>

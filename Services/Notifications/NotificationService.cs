@@ -21,17 +21,20 @@ namespace TaskMate.Services.Notifications {
 		void ShowDueSoonToast(Guid taskId, string title, DateTime whenLocal);
 		void ShowDueNowToast(Guid taskId, string title);
 		void ShowPartnerRequestToast(string requestId, string fromName, string title);
+		public void DisableAllToasts();
 
 		// Scheduled (works when app is closed)
 		void ScheduleDueToasts(Guid taskId, string title, DateTime dueLocal, TimeSpan preDueOffset);
 		void CancelDueToasts(Guid taskId); // cancel both "soon" and "now"
 		void ShowTaskRequestToast(Guid requestId, string fromName, string title);
-		
+
 	}
 
 	public sealed class NotificationService : INotificationService {
 		private const string SoonKey = "soon";
 		private const string NowKey = "now";
+		private static bool IsEnabled => TaskMate.Services.AppServices.Settings?.NotificationsEnabled == true;
+
 
 		// Persist scheduled ids so we can cancel/update across app restarts
 		private readonly string _statePath = Path.Combine(
@@ -60,11 +63,13 @@ namespace TaskMate.Services.Notifications {
 		}
 
 		public void EnsureRegistered() {
+			if(!IsEnabled) return;
 			// you already have this helper in your project
 			ToastRegistration.EnsureRegistered(); // AUMID + COM server + Start menu shortcut
 		}
 
 		public void ShowDueSoonToast(Guid taskId, string title, DateTime whenLocal) {
+			if(!IsEnabled) return;
 			EnsureRegistered();
 
 			new ToastContentBuilder()
@@ -76,6 +81,7 @@ namespace TaskMate.Services.Notifications {
 		}
 
 		public void ShowDueNowToast(Guid taskId, string title) {
+			if(!IsEnabled) return;
 			EnsureRegistered();
 
 			new ToastContentBuilder()
@@ -87,6 +93,7 @@ namespace TaskMate.Services.Notifications {
 		}
 
 		public void ShowPartnerRequestToast(string requestId, string fromName, string title) {
+			if(!IsEnabled) return;
 			EnsureRegistered();
 
 			new ToastContentBuilder()
@@ -102,6 +109,7 @@ namespace TaskMate.Services.Notifications {
 		}
 
 		public void ScheduleDueToasts(Guid taskId, string title, DateTime dueLocal, TimeSpan preDueOffset) {
+			if(!IsEnabled) return;
 			EnsureRegistered();
 
 			// Build a single XML we can reuse (arguments differ by stage)
@@ -150,6 +158,7 @@ namespace TaskMate.Services.Notifications {
 		}
 
 		public void CancelDueToasts(Guid taskId) {
+			if(!IsEnabled) return;
 			var notifier = DesktopNotificationManagerCompat.CreateToastNotifier();
 			var scheduled = notifier.GetScheduledToastNotifications();
 
@@ -188,6 +197,22 @@ namespace TaskMate.Services.Notifications {
 				File.WriteAllText(_statePath, json);
 			}
 			catch { /* ignore */ }
+		}
+		public void DisableAllToasts() {
+			// Cancel everything we scheduled (best-effort).
+			try {
+				var notifier = DesktopNotificationManagerCompat.CreateToastNotifier();
+				var scheduled = notifier.GetScheduledToastNotifications();
+				foreach(var s in scheduled.ToList()) {
+					// If you only want to remove ours, gate on s.Group == "TaskDue"
+					notifier.RemoveFromSchedule(s);
+				}
+			}
+			catch { /* ignore */ }
+
+			// Clear our local index so future cancels don’t try to reference stale tags.
+			_scheduledIndex.Clear();
+			SaveIndex();
 		}
 	}
 

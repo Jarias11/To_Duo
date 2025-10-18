@@ -1,0 +1,7 @@
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Assets\Sounds\hoveringOverButton.wav
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Assets\Sounds\completedTask.wav
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Assets\Sounds\creatingTask.wav
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Assets\Sounds\pendingPartnerRequest.wav
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Assets\Sounds\partnerDisconnected.wav
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Assets\Sounds\sent.wav
+C:\Users\Jarias\Documents\To-Duo\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\TaskMate.exe

@@ -1,5 +1,1015 @@
 [
   {
+    "Timestamp": "2025-10-18T01:48:22.219211-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cefwaawwa\u201D",
+    "IsMine": true,
+    "Id": "ZoBmVlFzzT5iiH3uBNiX",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-18T01:48:16.767683-04:00",
+    "Actor": "XXX",
+    "Kind": "chat.message",
+    "Message": "gdsgsezr",
+    "IsMine": true,
+    "Id": "bvhJwhyEFeiQqrYdTog3",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-10T18:30:03.040877-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CCook dinner together\u201D",
+    "IsMine": true,
+    "Id": "JLbxO6iObgAa8Kh893lY",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-10T18:29:54.940101-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CComplete coding tutorial\u201D",
+    "IsMine": true,
+    "Id": "E29Z2nxZgklq4zP74snB",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T23:47:09.586296-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CWatch tech talk\u201D",
+    "IsMine": true,
+    "Id": "ZauNrU5QnqZR7O7O7A2Z",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T23:40:07.440706-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CRead 20 pages\u201D",
+    "IsMine": true,
+    "Id": "wF7hiDONEzEnEY1aMyMi",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:51:23.448457-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CWatch tech talk\u201D",
+    "IsMine": true,
+    "Id": "aa5Y3YZnfOTpxcluEzdD",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:51:11.31579-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CPractice Spanish\u201D",
+    "IsMine": true,
+    "Id": "ToUb4LvQsVQ0jgMMnHen",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:50:56.980172-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CRead 20 pages\u201D",
+    "IsMine": true,
+    "Id": "AcLsVwGKRCtVGw28l1MH",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:50:14.978917-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CComplete coding tutorial\u201D",
+    "IsMine": true,
+    "Id": "JOin8DlnSEO3GW3KAPze",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:31:52.000763-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cvbcnvnb\u201D",
+    "IsMine": true,
+    "Id": "N83PyuhMGoJyem1qRSq9",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:31:48.503769-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CReview shared budget\u201D",
+    "IsMine": true,
+    "Id": "cMNAUB0vh38LCsAamdOR",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:31:42.13787-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CPlan movie night\u201D",
+    "IsMine": true,
+    "Id": "k8dvenHntwBiIsJGC6jN",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:31:07.755808-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CSet up shared calendar\u201D",
+    "IsMine": true,
+    "Id": "tsnKgS2ZCRJ6UMCNhhEQ",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:30:55.922769-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CReview shared budget\u201D",
+    "IsMine": true,
+    "Id": "kWDydnS8PCg7pr6EAxrT",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:30:43.280453-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CCook dinner together\u201D",
+    "IsMine": true,
+    "Id": "pII6691gXu3kl5n7bP2I",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:30:30.530355-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CPlan movie night\u201D",
+    "IsMine": true,
+    "Id": "u6LPJlgaOiUh8qX70uww",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:27:22.967401-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Ctdfhd\u201D",
+    "IsMine": true,
+    "Id": "DiffYiSBHcmf41S7tqVz",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:26:18.546195-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cresgsegseg\u201D",
+    "IsMine": true,
+    "Id": "UeviGDaD7fv7T26hPKC4",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:26:09.508643-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Chnmfgfchnfg\u201D",
+    "IsMine": true,
+    "Id": "cVjm6xnYj2DwmRlApMRi",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:35.589675-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cfghsfgsd\u201D",
+    "IsMine": true,
+    "Id": "ewDE1ZOfA7e34X1LlYSv",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:29.391308-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cewfawfawf faf\u201D",
+    "IsMine": true,
+    "Id": "KzXNV0ykSMcLbPWa6XZx",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:16.011038-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Ccnvbhjufgkjmgjh\u201D",
+    "IsMine": true,
+    "Id": "OOhU2lsCmhKWfvyVErkp",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:12.478027-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cresgsegseg\u201D",
+    "IsMine": true,
+    "Id": "2eKfdoOTdId2YPQHIpx4",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:08.143393-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cvbcnvnb\u201D",
+    "IsMine": true,
+    "Id": "GruJCr2MYIXFYD1UFwR4",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:05.250428-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Ccnvbhjufgkjmgjh\u201D",
+    "IsMine": true,
+    "Id": "FS4NfMXDhaCvz8jNG7Y7",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:25:02.365815-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Ctdfhd\u201D",
+    "IsMine": true,
+    "Id": "X9rFD9yfrrrezBCZIWWP",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:24:59.476918-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Chnmfgfchnfg\u201D",
+    "IsMine": true,
+    "Id": "nJJss6URcGfFb7i8y2kQ",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:24:56.883594-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cfghsfgsd\u201D",
+    "IsMine": true,
+    "Id": "9UcaFR0oRXzvHXns7zdd",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:24:53.944111-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cewfawfawf faf\u201D",
+    "IsMine": true,
+    "Id": "geVvqTFVWMbzuT0cRm3S",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:21:37.87595-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CweqADQdQDQd\u201D",
+    "IsMine": true,
+    "Id": "MyO7RSCsWXSi04cyy5lO",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:21:33.205211-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CweqADQdQDQd\u201D",
+    "IsMine": true,
+    "Id": "vuY9K8OgXQahFSBy9bjL",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:20:25.058804-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cfgbcxbcbcxbcx\u201D",
+    "IsMine": true,
+    "Id": "NTPrTL2jtJKNBPHQrMwt",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:20:17.167914-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cfgbcxbcbcxbcx\u201D",
+    "IsMine": true,
+    "Id": "s9KAypCECSDfmvcLU9Fk",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:15:44.125114-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cefasfawfaef\u201D",
+    "IsMine": true,
+    "Id": "1Iqf35bEAtVzgDSaNelO",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:15:38.742556-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cefasfawfaef\u201D",
+    "IsMine": true,
+    "Id": "Mvv5KpOKouwQXeWRfGtR",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:15:32.856093-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cwedaawawwadawwd\u201D",
+    "IsMine": true,
+    "Id": "DAiMI2WMwMcl7unpOk3k",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:15:21.557032-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cwedaawawwadawwd\u201D",
+    "IsMine": true,
+    "Id": "VeC5Ij1gC1JNkqC79xTh",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:15:15.294876-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cea fwafawawsf afasf\u201D",
+    "IsMine": true,
+    "Id": "g3rmcQ4xFTKBvbCmJMFV",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T21:14:56.464863-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cea fwafawawsf afasf\u201D",
+    "IsMine": true,
+    "Id": "rSFQGAANXz8cmj9BJPja",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:52:18.479631-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cyuigigugiug\u201D",
+    "IsMine": true,
+    "Id": "hR6jbYyIF8GEgffQZN3i",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:52:14.939324-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cyuigigugiug\u201D",
+    "IsMine": true,
+    "Id": "6Ce8CLACkqwmwiEHXCeN",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:48:41.891084-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CClean the kitchen\u201D",
+    "IsMine": true,
+    "Id": "eSDFc3s8XtOIMLY0QsTD",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:48:08.710224-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CDo laundry\u201D",
+    "IsMine": true,
+    "Id": "QP2pDhWwU8uUWAuAy0z5",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:48:05.414881-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CUpdate resume\u201D",
+    "IsMine": true,
+    "Id": "FYCOtNryiMRBhRmdhu2V",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:44:44.897991-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CEmail supervisor\u201D",
+    "IsMine": true,
+    "Id": "f9M6M748uuyprswnRDFR",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:43:57.761147-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CFinish project report\u201D",
+    "IsMine": true,
+    "Id": "G309vCzDfHTiwnjxgdoL",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:41:57.422315-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CWater the plants\u201D",
+    "IsMine": true,
+    "Id": "3p5dBljLCPJVZssERdDl",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:41:34.214954-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CBackup files\u201D",
+    "IsMine": true,
+    "Id": "4d8UHyTHRGHRCsbFYuBw",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:41:29.381603-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201COrganize workspace\u201D",
+    "IsMine": true,
+    "Id": "GiEBRSVlxr46jcJjI2m8",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:40:44.145354-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CBackup files\u201D",
+    "IsMine": true,
+    "Id": "QDVYzZ8VAN8o2uiXLeep",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:40:16.496615-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CUpdate resume\u201D",
+    "IsMine": true,
+    "Id": "Cc3OEbZcqHbXrMCi9llc",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:40:06.875827-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CEmail supervisor\u201D",
+    "IsMine": true,
+    "Id": "74ORBUNrex0GdZ82FxL0",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:39:55.217063-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CFinish project report\u201D",
+    "IsMine": true,
+    "Id": "6QDF94Jkr5Bio8bbRM8s",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:39:27.566528-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201COrganize workspace\u201D",
+    "IsMine": true,
+    "Id": "L42WpFTLxm2K1LeBsInF",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:39:09.69673-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CWater the plants\u201D",
+    "IsMine": true,
+    "Id": "5oas01sblJ5Zw2S3r9Gx",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:38:52.65682-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CDo laundry\u201D",
+    "IsMine": true,
+    "Id": "QW3wDObDxMlmlfIHdByb",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:38:39.915414-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CClean the kitchen\u201D",
+    "IsMine": true,
+    "Id": "8nlRdo8JM7bTjIaP584C",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:34:02.921935-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cnvcbcvgnbtfd\u201D",
+    "IsMine": true,
+    "Id": "zZDMc5ygRPcB7GBgDYiF",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:25:40.544112-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cgfbnxftbxtfgb\u201D",
+    "IsMine": true,
+    "Id": "XQxZkYrM6DQprGiUHb1O",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:24:42.650745-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cnvbchgntyfchntrd\u201D",
+    "IsMine": true,
+    "Id": "gPmkAR1RADyXmTxnit89",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:24:39.793942-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cmbvn mbgchv\u201D",
+    "IsMine": true,
+    "Id": "9yWwUFD9X8fl2Oi6GVPe",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:25.530888-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cfbxdftbfcgxfcg\u201D",
+    "IsMine": true,
+    "Id": "OzusgXTbC7PRWxs4lIP2",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:24.153114-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Ceawfsafewsafszfsffsef\u201D",
+    "IsMine": true,
+    "Id": "6bWzavtqo1uugzCv14AG",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:20.974184-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cmbvn mbgchv\u201D",
+    "IsMine": true,
+    "Id": "2q2miL5eYS6octIy90cG",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:18.716343-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cnvcbcvgnbtfd\u201D",
+    "IsMine": true,
+    "Id": "QhtzDypTEKiTYhqzDJ6i",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:16.876173-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cgfbnxftbxtfgb\u201D",
+    "IsMine": true,
+    "Id": "4q9EwJW56FwHUJCLkZvt",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:15.299702-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cnvbchgntyfchntrd\u201D",
+    "IsMine": true,
+    "Id": "RA7DkaIqkcmqt3EIXFAt",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:13.457855-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cfbxdftbfcgxfcg\u201D",
+    "IsMine": true,
+    "Id": "xdJNJhDAthinKrRqERCa",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:11.565723-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Ceawfsafewsafszfsffsef\u201D",
+    "IsMine": true,
+    "Id": "6c2EgxuDLlYU1kzziFRW",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:17:06.925373-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CFBDXDBXDFBXDBXDF\u201D",
+    "IsMine": true,
+    "Id": "aERvzVoia7RIrB2YTbwh",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:13:31.538965-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cvdszvzsdzsv\u201D",
+    "IsMine": true,
+    "Id": "j3sz1X6DhKq3g3gEb7LL",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:13:25.090466-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Crdzfgdxfbxfdbew4ttsgrdxgxdfb\u201D",
+    "IsMine": true,
+    "Id": "nniO2RC22FVI4zHjfbXH",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:12:05.814252-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cbnvbc nbdfxzv zsrdvzd\u201D",
+    "IsMine": true,
+    "Id": "O8M8TiweACxscmExO5m2",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:12:01.710551-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cbfnggcngchjfgncv\u201D",
+    "IsMine": true,
+    "Id": "0nAVdMFf74rJT1ziEAwE",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:58.759077-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cbfnggcngchjfgncv\u201D",
+    "IsMine": true,
+    "Id": "MWEYSi4WQfUf6gnPrSiu",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:53.873684-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cbnvbc nbdfxzv zsrdvzd\u201D",
+    "IsMine": true,
+    "Id": "T1YmFQuHEejTLMSQKvYl",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:47.018723-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cvdszvzsdzsv\u201D",
+    "IsMine": true,
+    "Id": "TDvbXqwEvULqgQHF6waP",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:42.422012-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Crdzfgdxfbxfdbew4ttsgrdxgxdfb\u201D",
+    "IsMine": true,
+    "Id": "TgRGQ9OK6LcO0hKDjTVM",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:34.551836-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CFBDXDBXDFBXDBXDF\u201D",
+    "IsMine": true,
+    "Id": "DsM3d9o1jhFAHlWLzifl",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:27.704176-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201CeWAFAWSFWSFWF\u201D",
+    "IsMine": true,
+    "Id": "Xw5tq6Ie3INEKbkFj5ke",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:24.474963-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201CeWAFAWSFWSFWF\u201D",
+    "IsMine": true,
+    "Id": "a2CRNJoJCzU5E2TDZpK4",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:11:14.583413-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cfdshjabasdfasefasfsf\u201D",
+    "IsMine": true,
+    "Id": "4yPlpY7gPGg3Rk9hIi6u",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:06:40.202162-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cefawawfawfawe\u201D",
+    "IsMine": true,
+    "Id": "uCJtDk8sjgbEmdD7dHUJ",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:06:13.351414-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Ccxbfvfcgxfcgbx\u201D",
+    "IsMine": true,
+    "Id": "swuKy7CrW5aygzxNDy3G",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:00:23.253151-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Crsdghrdsgrd\u201D",
+    "IsMine": true,
+    "Id": "wid9WZS80760xzbdniMz",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:00:21.809361-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cgsdfrfdgvbsrdgd\u201D",
+    "IsMine": true,
+    "Id": "EsKFkcIXe725Pb14cMMu",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:00:18.808147-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Ccxbfvfcgxfcgbx\u201D",
+    "IsMine": true,
+    "Id": "GDTGP13yOPkryZsatMc2",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:00:14.001108-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cefawawfawfawe\u201D",
+    "IsMine": true,
+    "Id": "MPGJkmNmBJ1wKwB9BE9D",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:00:08.414309-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cgsdfrfdgvbsrdgd\u201D",
+    "IsMine": true,
+    "Id": "Uzb9rPH3u8kwPU93j0GF",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T19:00:03.086706-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Crsdghrdsgrd\u201D",
+    "IsMine": true,
+    "Id": "qQGCZ2ZpkgKvzkB5CkHp",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:59:57.894987-04:00",
+    "Actor": "XXX",
+    "Kind": "task.add",
+    "Message": "XXX Created task \u201Cfdshjabasdfasefasfsf\u201D",
+    "IsMine": true,
+    "Id": "bubqrFwwSpjLH1SYFZN3",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:59:46.140768-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cfeawfawf\u201D",
+    "IsMine": true,
+    "Id": "xqJpCknLhsdAfeVYcU6P",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:59:36.492644-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Ctfhbdxgbxd\u201D",
+    "IsMine": true,
+    "Id": "nJmUU4SSL2119WPcnLLG",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:58:37.056293-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cgnfxcdncn\u201D",
+    "IsMine": true,
+    "Id": "baHpfWns1Rb3nuX6ELNX",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:58:33.961984-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cmhvgcvm\u201D",
+    "IsMine": true,
+    "Id": "CDv2ikG9F8LWUKeJxRUX",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:54:26.30137-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cmyngfcn\u201D",
+    "IsMine": true,
+    "Id": "xqLxnKAIgEDAues0UaAw",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:54:20.488761-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Chtdxfdfr\u201D",
+    "IsMine": true,
+    "Id": "ArpPz1E23SHrR9QMJGK7",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:54:17.79508-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cgnfccn\u201D",
+    "IsMine": true,
+    "Id": "ShKMgpZUdCqaZZtM3el5",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:52:19.681127-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Chxdfrghxdrgfh\u201D",
+    "IsMine": true,
+    "Id": "Y1Y4sedOr9Wce2bGet4h",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
+    "Timestamp": "2025-10-09T18:52:13.764964-04:00",
+    "Actor": "XXX",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cghnmcn\u201D",
+    "IsMine": true,
+    "Id": "el53QTvXsdjVkyVwbclG",
+    "OwnerUserId": "H5OI0DBiQC",
+    "Reactions": {}
+  },
+  {
     "Timestamp": "2025-10-09T05:11:44.145436-04:00",
     "Actor": "XXX",
     "Kind": "task.complete",
@@ -1300,16 +2310,6 @@
     "Reactions": {}
   },
   {
-    "Timestamp": "2025-09-29T03:35:40.880943-04:00",
-    "Actor": "Jarias",
-    "Kind": "task.add",
-    "Message": "Jarias Created task \u201CDraw water\u201D",
-    "IsMine": true,
-    "Id": "jlTk5KEof9keKOu78Y68",
-    "OwnerUserId": "H3E6sEISZ6",
-    "Reactions": {}
-  },
-  {
     "Timestamp": "2025-09-29T03:34:23.715172-04:00",
     "Actor": "Kaisen",
     "Kind": "chat.message",
@@ -1320,38 +2320,6 @@
     "Reactions": {
       "H3E6sEISZ6": "happy"
     }
-  },
-  {
-    "Timestamp": "2025-09-29T03:34:14.893992-04:00",
-    "Actor": "Jarias",
-    "Kind": "chat.message",
-    "Message": "hello",
-    "IsMine": true,
-    "Id": "sCkSX1suAkHNMyJcPqqH",
-    "OwnerUserId": "H3E6sEISZ6",
-    "Reactions": {
-      "H3m9cCzSTo": "thumbsUp"
-    }
-  },
-  {
-    "Timestamp": "2025-09-29T03:33:43.254826-04:00",
-    "Actor": "Jarias",
-    "Kind": "pairing.connected",
-    "Message": "Connected to H3m9cCzSTo",
-    "IsMine": true,
-    "Id": "YX7mYNwLyePsZjt46Ujz",
-    "OwnerUserId": "H3E6sEISZ6",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-09-29T03:33:43.124998-04:00",
-    "Actor": "Jarias",
-    "Kind": "pairing.accepted",
-    "Message": "Accepted partner request from H3m9cCzSTo",
-    "IsMine": true,
-    "Id": "1ule5ig9JbvBG6Ih4fWo",
-    "OwnerUserId": "H3E6sEISZ6",
-    "Reactions": {}
   },
   {
     "Timestamp": "2025-09-29T03:33:33.651567-04:00",

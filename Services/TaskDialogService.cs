@@ -8,16 +8,19 @@ namespace TaskMate.Services {
   public sealed class TaskDialogService : ITaskDialogService {
     private readonly ITaskActions _actions;
     private readonly IPartnerService _partner;
+    private readonly IAnimationService _anim;
 
-    public TaskDialogService(ITaskActions actions, IPartnerService partner) {
+    public TaskDialogService(ITaskActions actions, IPartnerService partner, IAnimationService anim) {
       _actions = actions;
       _partner = partner;
+      _anim = anim;
     }
 
     public Task ShowTaskDetailsAsync(TaskItem item) {
       var vm = new TaskDetailsViewModel(
         item,
         _actions,
+        _anim,
         myUserId: _partner.UserId,
         groupId: _partner.GroupId
       );

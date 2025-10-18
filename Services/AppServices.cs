@@ -16,6 +16,8 @@ namespace TaskMate.Services {
 		public static IPartnerService Partner { get; set; } = default!; // if you need UserId/GroupId
 		public static ITaskActions Actions { get; set; } = default!;   // set at startup
 		public static ISettingsService Settings { get; set; } = default!; // if you have it
+		public static bool NotificationsEnabled => Settings?.NotificationsEnabled == true;
+
 
 		// Called by ToastActivator to open a task by id
 		public static async Task OpenTaskDetailsByIdAsync(Guid taskId) {

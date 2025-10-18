@@ -37,10 +37,19 @@
 						Margin="0,0,0,0">
 
 				<TextBlock Text="TaskMate"
-						   Style="{StaticResource NotebookTitle}"/>
+						   Style="{StaticResource NotebookTitle}"
+						   beh:WriteOnBehavior.Enabled="True"
+						   beh:WriteOnBehavior.ShowPenTip="False"
+						   beh:WriteOnBehavior.Duration="0:0:3.0"
+						   beh:WriteOnBehavior.Delay="0:0:0.0"
+						   beh:WriteOnBehavior.PenTipBrush="White"/>
 
 				<!-- Greeting with name -->
-				<TextBlock Text="{Binding DisplayName, StringFormat=Welcome back {0}!}">
+				<TextBlock Text="{Binding DisplayName, StringFormat=Welcome back {0}!}"
+						   beh:WriteOnBehavior.Enabled="True"
+						   beh:WriteOnBehavior.Duration="0:0:1.0"
+						   beh:WriteOnBehavior.Delay="0:0:2.5"
+						   beh:WriteOnBehavior.PenTipBrush="#222">
 					<TextBlock.Style>
 						<Style TargetType="TextBlock"
 							   BasedOn="{StaticResource NotebookSubtitle}">
@@ -124,11 +133,12 @@
 						</TextBlock.Style>
 					</TextBlock>
 				</Button>
-				<Button Style="{StaticResource IconChipButton}"
-						Content="⚙"
-						ToolTip="Settings (coming soon)"
-						IsEnabled="False"
-						beh:AudioBehavior.HoverSound="True"/>
+				<ToggleButton x:Name="SettingsBtn"
+							  Style="{StaticResource IconChipToggleButton}"
+							  Content="⚙"
+							  ToolTip="Notebook Settings"
+							  IsChecked="{Binding IsSettingsOpen, Mode=TwoWay}"
+							  beh:AudioBehavior.HoverSound="True"/>
 				<Button Style="{StaticResource IconChipButton}"
 						ToolTip="{Binding ThemeButtonText}"
 						Command="{Binding ToggleThemeCommand}"
@@ -149,6 +159,161 @@
 						</TextBlock.Style>
 					</TextBlock>
 				</Button>
+
+				<!-- SETTINGS POPUP -->
+				<Popup x:Name="SettingsPopup"
+					   IsOpen="{Binding IsSettingsOpen, Mode=TwoWay}"
+					   Placement="Custom"
+					   PlacementTarget="{Binding ElementName=SettingsBtn}"
+					   CustomPopupPlacementCallback="OnPopupPlacement"
+					   AllowsTransparency="True"
+					   StaysOpen="False"
+					   PopupAnimation="Slide">
+					<Popup.Resources>
+						<Style x:Key="SettingsSwitch"
+							   TargetType="ToggleButton">
+							<Setter Property="Width"
+									Value="48"/>
+							<Setter Property="Height"
+									Value="24"/>
+							<Setter Property="Cursor"
+									Value="Hand"/>
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="ToggleButton">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition/>
+												<ColumnDefinition/>
+											</Grid.ColumnDefinitions>
+
+											<!-- track spans both columns -->
+											<Border x:Name="Track"
+													Grid.ColumnSpan="2"
+													CornerRadius="12"
+													Background="{DynamicResource TopBarChipBorderBrush}"/>
+
+											<!-- thumb sits in a column we toggle -->
+											<Ellipse x:Name="Thumb"
+													 Grid.Column="0"
+													 Width="20"
+													 Height="20"
+													 Margin="2"
+													 Fill="{DynamicResource ControlBackgroundBrush}"
+													 Stroke="{DynamicResource ControlBorderBrush}"/>
+										</Grid>
+
+										<ControlTemplate.Triggers>
+											<Trigger Property="IsChecked"
+													 Value="True">
+												<Setter TargetName="Track"
+														Property="Background"
+														Value="{DynamicResource SuccessButtonBrush}"/>
+												<Setter TargetName="Thumb"
+														Property="Grid.Column"
+														Value="1"/>
+											</Trigger>
+											<Trigger Property="IsMouseOver"
+													 Value="True">
+												<Setter TargetName="Track"
+														Property="Opacity"
+														Value="0.95"/>
+											</Trigger>
+											<Trigger Property="IsEnabled"
+													 Value="False">
+												<Setter Property="Opacity"
+														Value="0.6"/>
+											</Trigger>
+										</ControlTemplate.Triggers>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+
+					</Popup.Resources>
+					<Border Style="{StaticResource Card}"
+							Background="{DynamicResource OverlayPanelBrush}"
+							Padding="16"
+							CornerRadius="10">
+						<StackPanel Width="320">
+
+							<!-- Title + divider -->
+							<TextBlock Text="Notebook Settings"
+									   Style="{StaticResource NotebookTitle.Sub}"
+									   FontSize="20"
+									   Margin="2,0,0,6"
+									   TextAlignment="Center"/>
+							<Border Height="1"
+									Margin="0,0,0,10"
+									Background="{DynamicResource NotebookRuleBrush}"
+									Opacity="0.7"/>
+
+							<!-- Row: Enable Animations -->
+							<Border Style="{StaticResource SubCard}"
+									Padding="4"
+									Margin="0,0,0,8">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+									<TextBlock Grid.Column="0"
+											   Text="Enable Animations"
+											   Style="{StaticResource NotebookSubtitle}"
+											   FontSize="15"
+											   FontStyle="Normal"
+											   Margin="0,2,0,0"/>
+									<ToggleButton Grid.Column="1"
+												  Style="{StaticResource SettingsSwitch}"
+												  IsChecked="{Binding AnimationsEnabled, Mode=OneWay}"
+												  Command="{Binding ToggleAnimationsCommand}"/>
+								</Grid>
+							</Border>
+
+							<!-- Row: Notifications -->
+							<Border Style="{StaticResource SubCard}"
+									Padding="4"
+									Margin="0,0,0,8">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+									<TextBlock Grid.Column="0"
+											   Text="Notifications"
+											   Style="{StaticResource NotebookSubtitle}"
+											   FontSize="15"
+											   FontStyle="Normal"
+											   Margin="0,2,0,0"/>
+									<ToggleButton Grid.Column="1"
+												  Style="{StaticResource SettingsSwitch}"
+												  IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}"/>
+								</Grid>
+							</Border>
+
+							<!-- Row: Volume -->
+							<Border Style="{StaticResource SubCard}"
+									Padding="4">
+								<StackPanel>
+									<TextBlock Text="{Binding ElementName=VolumeSlider, Path=Value,
+                                              StringFormat=Volume: {0:0}%}"
+											   Style="{StaticResource NotebookSubtitle}"
+											   FontSize="15"
+											   FontStyle="Normal"
+											   Margin="0,0,0,8"/>
+									<Slider x:Name="VolumeSlider"
+											Minimum="0"
+											Maximum="100"
+											Value="50"
+											Height="22"
+											Foreground="{DynamicResource PrimaryTextBrush}"
+											Background="{DynamicResource ControlBackgroundBrush}"/>
+								</StackPanel>
+							</Border>
+
+						</StackPanel>
+					</Border>
+				</Popup>
 			</StackPanel>
 		</Grid>
 
@@ -256,7 +421,7 @@
 							<MultiDataTrigger>
 								<MultiDataTrigger.Conditions>
 									<Condition Binding="{Binding SelectedTopTab}"
-											Value="3"/>
+											   Value="3"/>
 									<Condition Binding="{Binding ElementName=TopTabs,
                                   Path=(beh:TabCloseOnDoubleClickBehavior.IsCollapsed)}"
 											   Value="False"/>
@@ -292,7 +457,7 @@
 				</views:ConnectionsSection.Style>
 			</views:ConnectionsSection>
 
-			
+
 		</Grid>
 
 	</StackPanel>

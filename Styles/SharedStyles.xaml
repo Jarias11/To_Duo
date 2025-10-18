@@ -119,9 +119,10 @@
 				Value="Fixed"/>
 	</Style>
 
-	<!-- Small rounded "chip" buttons -->
-	<Style x:Key="IconChipButton"
-		   TargetType="Button">
+	
+
+	<Style x:Key="IconChipBase"
+		   TargetType="{x:Type ButtonBase}">
 		<Setter Property="Width"
 				Value="34"/>
 		<Setter Property="Height"
@@ -140,7 +141,7 @@
 				Value="1"/>
 		<Setter Property="Template">
 			<Setter.Value>
-				<ControlTemplate TargetType="Button">
+				<ControlTemplate TargetType="{x:Type ButtonBase}">
 					<Border x:Name="Bd"
 							CornerRadius="8"
 							Background="{TemplateBinding Background}"
@@ -174,6 +175,14 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<!-- keep a style for normal Buttons -->
+	<Style x:Key="IconChipButton"
+			TargetType="{x:Type Button}"
+		   BasedOn="{StaticResource IconChipBase}"/>
+	<!-- add a style for ToggleButtons -->
+	<Style x:Key="IconChipToggleButton"
+		   TargetType="{x:Type ToggleButton}"
+		   BasedOn="{StaticResource IconChipBase}"/>
 
 
 
@@ -836,8 +845,161 @@
 		</Style.Triggers>
 	</Style>
 
-	<Style TargetType="DatePicker"
-		   BasedOn="{StaticResource {x:Type DatePicker}}">
+
+	<!-- Calendar popup (was white) -->
+	<Style TargetType="{x:Type Calendar}">
+		<Setter Property="Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
+		<Setter Property="Background"
+				Value="{DynamicResource ControlBackgroundBrush}"/>
+	</Style>
+	<!-- Dark-safe Calendar used by DatePickers -->
+	<Style x:Key="AppCalendar"
+		   TargetType="{x:Type Calendar}"
+		   BasedOn="{StaticResource {x:Type Calendar}}">
+		<Setter Property="Foreground"
+				Value="{DynamicResource PrimaryTextBrush}"/>
+		<Setter Property="Background"
+				Value="{DynamicResource ControlBackgroundBrush}"/>
+		<Setter Property="BorderBrush"
+				Value="{DynamicResource ControlBorderBrush}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type Calendar}">
+					<Border Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="1"
+							CornerRadius="6"
+							Padding="4"
+							SnapsToDevicePixels="True">
+						<CalendarItem x:Name="PART_CalendarItem"/>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+
+		<!-- Internal parts -->
+		<Style.Resources>
+			<!-- Month header buttons -->
+			<Style TargetType="{x:Type CalendarButton}">
+				<Setter Property="Foreground"
+						Value="{DynamicResource PrimaryTextBrush}"/>
+				<Setter Property="Background"
+						Value="Transparent"/>
+				<Setter Property="BorderBrush"
+						Value="Transparent"/>
+				<Setter Property="Padding"
+						Value="6,4"/>
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type CalendarButton}">
+							<Border x:Name="Bd"
+									Background="{TemplateBinding Background}"
+									CornerRadius="4"
+									Padding="{TemplateBinding Padding}">
+								<ContentPresenter HorizontalAlignment="Center"
+												  VerticalAlignment="Center"/>
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver"
+										 Value="True">
+									<Setter TargetName="Bd"
+											Property="Background"
+											Value="{DynamicResource HoverBrush}"/>
+								</Trigger>
+								<Trigger Property="IsPressed"
+										 Value="True">
+									<Setter TargetName="Bd"
+											Property="Background"
+											Value="{DynamicResource PressedBrush}"/>
+								</Trigger>
+								<Trigger Property="IsEnabled"
+										 Value="False">
+									<Setter Property="Opacity"
+											Value="0.6"/>
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+
+			<!-- Day cells -->
+			<Style TargetType="{x:Type CalendarDayButton}">
+				<Setter Property="Foreground"
+						Value="{DynamicResource PrimaryTextBrush}"/>
+				<Setter Property="Background"
+						Value="Transparent"/>
+				<Setter Property="BorderBrush"
+						Value="Transparent"/>
+				<Setter Property="BorderThickness"
+						Value="1"/>
+				<Setter Property="Padding"
+						Value="2"/>
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type CalendarDayButton}">
+							<Border x:Name="Bd"
+									Background="{TemplateBinding Background}"
+									BorderBrush="{TemplateBinding BorderBrush}"
+									BorderThickness="{TemplateBinding BorderThickness}"
+									CornerRadius="4"
+									Padding="{TemplateBinding Padding}">
+								<ContentPresenter HorizontalAlignment="Center"
+												  VerticalAlignment="Center"/>
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver"
+										 Value="True">
+									<Setter TargetName="Bd"
+											Property="Background"
+											Value="{DynamicResource HoverBrush}"/>
+								</Trigger>
+								<Trigger Property="IsSelected"
+										 Value="True">
+									<Setter TargetName="Bd"
+											Property="Background"
+											Value="{DynamicResource SuccessButtonBrush}"/>
+									<Setter Property="Foreground"
+											Value="White"/>
+									<Setter TargetName="Bd"
+											Property="BorderBrush"
+											Value="{DynamicResource SuccessButtonBorderBrush}"/>
+								</Trigger>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="IsToday"
+												   Value="True"/>
+										<Condition Property="IsSelected"
+												   Value="False"/>
+									</MultiTrigger.Conditions>
+									<Setter TargetName="Bd"
+											Property="BorderBrush"
+											Value="{DynamicResource ControlBorderBrush}"/>
+									<Setter TargetName="Bd"
+											Property="Background"
+											Value="Transparent"/>
+								</MultiTrigger>
+								<Trigger Property="IsInactive"
+										 Value="True">
+									<Setter Property="Foreground"
+											Value="{DynamicResource MutedTextBrush}"/>
+								</Trigger>
+								<Trigger Property="IsEnabled"
+										 Value="False">
+									<Setter Property="Opacity"
+											Value="0.5"/>
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+		</Style.Resources>
+	</Style>
+
+	<!-- SINGLE default DatePicker style -->
+	<Style TargetType="{x:Type DatePicker}">
 		<Setter Property="Foreground"
 				Value="{DynamicResource PrimaryTextBrush}"/>
 		<Setter Property="Background"
@@ -850,8 +1012,11 @@
 				Value="14"/>
 		<Setter Property="Height"
 				Value="28"/>
+		<Setter Property="CalendarStyle"
+				Value="{StaticResource AppCalendar}"/>
 	</Style>
-	<!-- DatePicker text box (was white) -->
+
+	<!-- SINGLE default DatePickerTextBox style -->
 	<Style TargetType="{x:Type DatePickerTextBox}">
 		<Setter Property="Foreground"
 				Value="{DynamicResource PrimaryTextBrush}"/>
@@ -859,14 +1024,48 @@
 				Value="{DynamicResource ControlBackgroundBrush}"/>
 		<Setter Property="BorderBrush"
 				Value="{DynamicResource ControlBorderBrush}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type DatePickerTextBox}">
+					<Border Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="1"
+							CornerRadius="4"
+							Padding="3,2">
+						<Grid>
+							<ScrollViewer x:Name="PART_ContentHost"/>
+							<TextBlock x:Name="Watermark"
+									   Text="Select a date"
+									   Foreground="{DynamicResource MutedTextBrush}"
+									   Margin="2,0,28,0"
+									   IsHitTestVisible="False"
+									   Visibility="Collapsed"/>
+						</Grid>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="Text"
+								 Value="">
+							<Setter TargetName="Watermark"
+									Property="Visibility"
+									Value="Visible"/>
+						</Trigger>
+						<Trigger Property="IsKeyboardFocused"
+								 Value="True">
+							<Setter Property="BorderBrush"
+									Value="{DynamicResource PressedBrush}"/>
+						</Trigger>
+						<Trigger Property="IsEnabled"
+								 Value="False">
+							<Setter Property="Opacity"
+									Value="0.6"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
 	</Style>
-	<!-- Calendar popup (was white) -->
-	<Style TargetType="{x:Type Calendar}">
-		<Setter Property="Foreground"
-				Value="{DynamicResource PrimaryTextBrush}"/>
-		<Setter Property="Background"
-				Value="{DynamicResource ControlBackgroundBrush}"/>
-	</Style>
+
+
 
 
 

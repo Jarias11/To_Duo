@@ -14,6 +14,7 @@ namespace TaskMate.Services {
 			_model.GroupId ??= string.Empty;
 			_model.SoundsEnabled ??= true;
 			//_model.AnimationLevel ??= "Off";
+			_model.NotificationsEnabled ??= false;
 		}
 
 		public AppTheme Theme {
@@ -30,6 +31,13 @@ namespace TaskMate.Services {
             set => _model.AnimationLevel = string.IsNullOrWhiteSpace(value) ? "Off" : value;
         }
 */
+		public bool NotificationsEnabled { get => _model.NotificationsEnabled ?? true;   // default enabled
+			set => _model.NotificationsEnabled = value; }  // DEFAULT OFF
+
+		public bool AnimationsEnabled {
+			get => _model.AnimationsEnabled ?? true;   // default enabled
+			set => _model.AnimationsEnabled = value;
+		}
 		public bool NeedsProfileSetup => string.IsNullOrWhiteSpace(_model.DisplayName);
 		public string? DisplayName {
 			get => _model.DisplayName;

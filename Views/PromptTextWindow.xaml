@@ -1,53 +1,58 @@
 <Window x:Class="TaskMate.Views.PromptTextWindow"
-		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		Height="180"
-		Width="400"
-		WindowStartupLocation="CenterOwner"
-		ResizeMode="NoResize">
-	<StackPanel Margin="16">
-		<TextBlock x:Name="MessageText"
-				Margin="0,0,0,8"
-				TextWrapping="Wrap"/>
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Height="180"
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource CardBackgroundBrush}"
+        Foreground="{DynamicResource PrimaryTextBrush}">
 
-		<!-- Watermarked TextBox -->
-		<Grid Margin="0,0,0,8">
-			<TextBox x:Name="InputBox"
-					 Padding="6,4,6,4"
-					 MinWidth="260"/>
+    <StackPanel Margin="16">
+        <TextBlock x:Name="MessageText"
+                   Margin="0,0,0,8"
+                   TextWrapping="Wrap"/>
 
-			<!-- Watermark only visible when TextBox.Text == "" -->
-			<TextBlock Text="{Binding Placeholder, RelativeSource={RelativeSource AncestorType=Window}}"
-					   Margin="8,6,0,0"
-					   Foreground="#99000000"
-					   IsHitTestVisible="False">
-				<TextBlock.Style>
-					<Style TargetType="TextBlock">
-						<Setter Property="Visibility"
-								Value="Collapsed"/>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding Text, ElementName=InputBox}"
-									Value="">
-								<Setter Property="Visibility"
-										Value="Visible"/>
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</TextBlock.Style>
-			</TextBlock>
-		</Grid>
+        <!-- TextBox with watermark; uses app default TextBox style from SharedStyles -->
+        <Grid Margin="0,0,0,8">
+            <TextBox x:Name="InputBox"
+                     MinWidth="260"
+                     BorderBrush="{DynamicResource ControlBorderBrush}"
+                     Background="{DynamicResource ControlBackgroundBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-		<StackPanel Orientation="Horizontal"
-				HorizontalAlignment="Right">
-			<Button Content="OK"
-					Width="75"
-					Margin="0,0,8,0"
-					IsDefault="True"
-					Click="Ok_Click"/>
-			<Button Content="Cancel"
-					Width="75"
-					IsCancel="True"
-					Click="Cancel_Click"/>
-		</StackPanel>
-	</StackPanel>
+            <!-- Watermark matches theme via MutedTextBrush; only visible when empty -->
+            <TextBlock Margin="8,6,0,0"
+                       IsHitTestVisible="False"
+                       Text="{Binding Placeholder, RelativeSource={RelativeSource AncestorType=Window}}"
+                       Foreground="{DynamicResource MutedTextBrush}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="OK"
+                    Width="90"
+                    Margin="0,0,8,0"
+                    IsDefault="True"
+                    Click="Ok_Click"
+                    Style="{StaticResource SuccessButton}"/>
+
+            <Button Content="Cancel"
+                    Width="90"
+                    IsCancel="True"
+                    Click="Cancel_Click"
+                    Style="{StaticResource DeclinePillButton}"/>
+        </StackPanel>
+    </StackPanel>
 </Window>

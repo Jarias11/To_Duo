@@ -37,7 +37,7 @@
                               MaxWidth="1500">
                         <StackPanel>
 
-                                <views:TopDashboardSection/>
+                              <views:TopDashboardSection/> 
 
 
 
@@ -471,7 +471,11 @@
                         </Border>
                 </Grid>
 
-
+                <!-- Effects overlay (animations render here). Sits above everything, ignores clicks. -->
+                <Canvas x:Name="EffectsLayer"
+                        Grid.RowSpan="3"
+                        IsHitTestVisible="False"
+                        Panel.ZIndex="999"/>
 
         </Grid>
 </Window>

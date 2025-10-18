@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Media.Animation;
 
 namespace TaskMate.Models {
     public class UserSettings {
@@ -13,6 +14,8 @@ namespace TaskMate.Models {
         public string Theme { get; set; } = "Light"; // "Light" or "Dark"
         public DateTime? PairedSinceUtc { get; set; }
         public bool? SoundsEnabled { get; set; } = true; // NEW: default to true
+        public bool? AnimationsEnabled { get; set; } = true;
+        public bool? NotificationsEnabled { get; set; } = false;
 
         private static readonly string FileName = "user_settings.json";
         private static string GetPath() {

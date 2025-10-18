@@ -13,6 +13,10 @@
                 <ResourceDictionary Source="Styles/SharedStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="Window">
+                <Setter Property="Icon"
+                        Value="pack://application:,,,/Assets/Icons/app.ico"/>
+            </Style>
             <!-- Merge the default (Light) theme at app startup -->
             <DrawingBrush x:Key="NotebookPaperBrush"/>
 
