@@ -1,6 +1,7 @@
-using Google.Cloud.Firestore;
+// Services/Sync/FirestorePartnerRequestRepository.cs
+using System.Text.Json;
 using TaskMate.Models;
-using TaskMate.Sync;
+using TaskMate.Services;
 
 namespace TaskMate.Sync {
 	public interface IPartnerRequestRepo {
@@ -14,172 +15,172 @@ namespace TaskMate.Sync {
 		Task PurgePairAsync(string userA, string userB);
 	}
 
+	/// <summary>
+	/// REST-only partner-requests repo.
+	/// Collections:
+	///   users/{uid}/partnerRequests_in
+	///   users/{uid}/partnerRequests_out
+	/// Doc shape: { FromUserId, ToUserId, Status, FromDisplayName, UpdatedAt }
+	/// </summary>
 	public sealed class FirestorePartnerRequestRepository : IPartnerRequestRepo {
-		private static CollectionReference IncomingCol(FirestoreDb db, string uid) =>
-			db.Collection("users").Document(uid).Collection("partnerRequests_in");
-		private static CollectionReference OutgoingCol(FirestoreDb db, string uid) =>
-			db.Collection("users").Document(uid).Collection("partnerRequests_out");
+		private readonly FirestoreRestClient _rest;
 
-		public IDisposable ListenIncoming(string myUserId, Action<IList<PartnerRequest>> onSnapshot) {
-			var db = FirestoreClient.GetDb();
-			var inner = IncomingCol(db, myUserId).Listen(snap => {
-				var list = snap.Documents.Select(MapFrom).ToList();
-				onSnapshot(list);
-			});
-			return new FirestoreListenerHandle(inner);
+		public FirestorePartnerRequestRepository(FirestoreRestClient rest) {
+			_rest = rest ?? throw new ArgumentNullException(nameof(rest));
 		}
 
-		public IDisposable ListenOutgoing(string myUserId, Action<IList<PartnerRequest>> onSnapshot) {
-			var db = FirestoreClient.GetDb();
-			var inner = OutgoingCol(db, myUserId).Listen(snap => {
-				var list = snap.Documents.Select(MapFrom).ToList();
-				onSnapshot(list);
-			});
-			return new FirestoreListenerHandle(inner);
-		}
+		public IDisposable ListenIncoming(string myUserId, Action<IList<PartnerRequest>> onSnapshot)
+			=> StartPolling($"users/{myUserId}/partnerRequests_in", onSnapshot);
+
+		public IDisposable ListenOutgoing(string myUserId, Action<IList<PartnerRequest>> onSnapshot)
+			=> StartPolling($"users/{myUserId}/partnerRequests_out", onSnapshot);
 
 		public async Task SendAsync(string fromUserId, string toUserId, string fromDisplayName) {
-			var db = FirestoreClient.GetDb();
+			var now = DateTime.UtcNow;
 
-			// Incoming doc on recipient (doc id = requester uid for easy addressing)
-			var inRef = IncomingCol(db, toUserId).Document(fromUserId);
-			// Outgoing doc on sender (doc id = recipient uid)
-			var outRef = OutgoingCol(db, fromUserId).Document(toUserId);
+			// To recipient: inbound row
+			await _rest.SetDocAsync(
+				$"users/{toUserId}/partnerRequests_in/{fromUserId}",
+				new {
+					FromUserId = F.Str(fromUserId),
+					ToUserId = F.Str(toUserId),
+					FromDisplayName = F.Str(fromDisplayName ?? ""),
+					Status = F.Str("pending"),
+					UpdatedAt = F.Ts(now)
+				}
+			).ConfigureAwait(false);
 
-			var now = Timestamp.GetCurrentTimestamp();
-			var incoming = new Dictionary<string, object?> {
-				["Id"] = fromUserId,
-				["FromUserId"] = fromUserId,
-				["FromDisplayName"] = fromDisplayName,
-				["ToUserId"] = toUserId,
-				["Status"] = "pending",
-				["CreatedAt"] = now,
-				["UpdatedAt"] = now
-			};
-
-			var outgoing = new Dictionary<string, object?> {
-				["Id"] = toUserId,
-				["FromUserId"] = fromUserId,
-				["ToUserId"] = toUserId,
-				["Status"] = "pending",
-				["CreatedAt"] = now,
-				["UpdatedAt"] = now
-			};
-
-			var batch = db.StartBatch();
-			batch.Set(inRef, incoming, SetOptions.MergeAll);
-			batch.Set(outRef, outgoing, SetOptions.MergeAll);
-			await batch.CommitAsync();
+			// To sender: outbound mirror
+			await _rest.SetDocAsync(
+				$"users/{fromUserId}/partnerRequests_out/{toUserId}",
+				new {
+					FromUserId = F.Str(fromUserId),
+					ToUserId = F.Str(toUserId),
+					FromDisplayName = F.Str(fromDisplayName ?? ""),
+					Status = F.Str("pending"),
+					UpdatedAt = F.Ts(now)
+				}
+			).ConfigureAwait(false);
 		}
 
-		public async Task AcceptAsync(string myUserId, string requesterUserId) {
-			var db = FirestoreClient.GetDb();
-			var inRef = IncomingCol(db, myUserId).Document(requesterUserId);
-			var outRef = OutgoingCol(db, requesterUserId).Document(myUserId);
-			var now = Timestamp.GetCurrentTimestamp();
+		public Task AcceptAsync(string myUserId, string requesterUserId)
+			=> UpdateStatusBoth(myUserId, requesterUserId, "accepted");
 
-			var batch = db.StartBatch();
-			batch.Update(inRef, new Dictionary<string, object?> { ["Status"] = "accepted", ["UpdatedAt"] = now });
-			batch.Update(outRef, new Dictionary<string, object?> { ["Status"] = "accepted", ["UpdatedAt"] = now });
-			await batch.CommitAsync();
+		public Task DeclineAsync(string myUserId, string requesterUserId)
+			=> UpdateStatusBoth(myUserId, requesterUserId, "declined");
+
+		public Task CancelAsync(string myUserId, string targetUserId)
+			=> UpdateStatusBoth(myUserId, targetUserId, "canceled");
+
+		public Task DisconnectAsync(string myUserId, string partnerUserId)
+			=> UpdateStatusBoth(myUserId, partnerUserId, "disconnected");
+
+		public async Task PurgePairAsync(string userA, string userB) {
+			foreach(var path in new[]
+			{
+				$"users/{userA}/partnerRequests_in/{userB}",
+				$"users/{userA}/partnerRequests_out/{userB}",
+				$"users/{userB}/partnerRequests_in/{userA}",
+				$"users/{userB}/partnerRequests_out/{userA}",
+			}) {
+				try { await _rest.DeleteDocAsync(path).ConfigureAwait(false); } catch { }
+			}
 		}
 
-		public async Task DeclineAsync(string myUserId, string requesterUserId) {
-			var db = FirestoreClient.GetDb();
-			var inRef = IncomingCol(db, myUserId).Document(requesterUserId);
-			var outRef = OutgoingCol(db, requesterUserId).Document(myUserId);
-			var now = Timestamp.GetCurrentTimestamp();
+		// --- Internals --------------------------------------------------------
 
-			var batch = db.StartBatch();
-			batch.Update(inRef, new Dictionary<string, object?> { ["Status"] = "declined", ["UpdatedAt"] = now });
-			batch.Update(outRef, new Dictionary<string, object?> { ["Status"] = "declined", ["UpdatedAt"] = now });
-			await batch.CommitAsync();
+		private async Task UpdateStatusBoth(string me, string other, string status) {
+			var now = DateTime.UtcNow;
+
+			await _rest.SetDocAsync(
+		$"users/{me}/partnerRequests_in/{other}",
+		new {
+			FromUserId = F.Str(other),
+			ToUserId = F.Str(me),
+			Status = F.Str(status),
+			UpdatedAt = F.Ts(now)
+		}
+	).ConfigureAwait(false);
+
+			// other's OUTBOUND mirror (sender=other, recipient=me)
+			await _rest.SetDocAsync(
+				$"users/{other}/partnerRequests_out/{me}",
+				new {
+					FromUserId = F.Str(other),
+					ToUserId = F.Str(me),
+					Status = F.Str(status),
+					UpdatedAt = F.Ts(now)
+				}
+			).ConfigureAwait(false);
 		}
 
-		public async Task CancelAsync(string myUserId, string targetUserId) {
-			var db = FirestoreClient.GetDb();
-			var inRef = IncomingCol(db, targetUserId).Document(myUserId);
-			var outRef = OutgoingCol(db, myUserId).Document(targetUserId);
-			await Task.WhenAll(inRef.DeleteAsync(), outRef.DeleteAsync());
+		private IDisposable StartPolling(string collectionPath, Action<IList<PartnerRequest>> onSnapshot) {
+			var cts = new CancellationTokenSource();
+			_ = Task.Run(async () => {
+				var last = new Dictionary<string, DateTimeOffset>();
+				while(!cts.IsCancellationRequested) {
+					try {
+						var list = await QueryCollectionAsync(collectionPath).ConfigureAwait(false);
+
+						bool changed = list.Count != last.Count ||
+									   list.Any(r => {
+										   var key = r.Id ?? (r.FromUserId + "_" + r.ToUserId);
+										   var ts = new DateTimeOffset(r.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero);
+										   return !last.TryGetValue(key, out var prev) || prev != ts;
+									   });
+
+						if(changed) {
+							last = list.ToDictionary(
+								r => r.Id ?? (r.FromUserId + "_" + r.ToUserId),
+								r => new DateTimeOffset(r.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero)
+							);
+							onSnapshot(list);
+						}
+					}
+					catch { /* keep polling */ }
+
+					try { await Task.Delay(1500, cts.Token).ConfigureAwait(false); } catch { }
+				}
+			}, cts.Token);
+
+			return new FirestoreListenerHandle(() => cts.Cancel());
 		}
 
-		private static PartnerRequest MapFrom(DocumentSnapshot d) {
-			var dict = d.ToDictionary();
-			string S(string key) => dict.TryGetValue(key, out var v) ? v?.ToString() ?? "" : "";
-			DateTime? T(string key) => dict.TryGetValue(key, out var v) && v is Timestamp ts ? ts.ToDateTime() : null;
+		private async Task<IList<PartnerRequest>> QueryCollectionAsync(string collectionPath) {
+			// Use precise path + orderBy, same as Personal repo
+			var docs = await _rest.ListDocsAsync(
+				collectionPath: collectionPath,
+				orderBy: "UpdatedAt desc",
+				pageSize: 50
+			).ConfigureAwait(false);
 
-			var idField = S("Id");
-			var effectiveId = string.IsNullOrWhiteSpace(idField) ? d.Id : idField;
+			var result = new List<PartnerRequest>(docs.Count);
+			foreach(var doc in docs)
+				result.Add(MapFromDoc(doc));
+			return result;
+		}
+
+		private static PartnerRequest MapFromDoc(JsonElement doc) {
+			// doc.name = ".../documents/{collection}/{id}"
+			string id = doc.GetProperty("name").GetString()!.Split('/').Last();
+			var f = doc.GetProperty("fields");
 
 			return new PartnerRequest {
-				Id = effectiveId,
-				FromUserId = S("FromUserId"),
-				FromDisplayName = S("FromDisplayName"),
-				ToUserId = S("ToUserId"),
-				Status = S("Status"),
-				CreatedAt = T("CreatedAt") ?? DateTime.MinValue,
-				UpdatedAt = T("UpdatedAt")
+				Id = id,
+				FromUserId = ReadString(f, "FromUserId") ?? "",
+				ToUserId = ReadString(f, "ToUserId") ?? "",
+				FromDisplayName = ReadString(f, "FromDisplayName"),
+				Status = ReadString(f, "Status") ?? "pending",
+				UpdatedAt = TryReadTs(f, "UpdatedAt")
 			};
 		}
-		public async Task DisconnectAsync(string myUserId, string partnerUserId) {
-			var db = FirestoreClient.GetDb();
-			var now = Timestamp.GetCurrentTimestamp();
 
-			var myIn = IncomingCol(db, myUserId).Document(partnerUserId);
-			var myOut = OutgoingCol(db, myUserId).Document(partnerUserId);
-			var theirIn = IncomingCol(db, partnerUserId).Document(myUserId);
-			var theirOut = OutgoingCol(db, partnerUserId).Document(myUserId);
+		private static string? ReadString(JsonElement fields, string name)
+			=> fields.TryGetProperty(name, out var v) && v.TryGetProperty("stringValue", out var s) ? s.GetString() : null;
 
-			var payload_myIn = new Dictionary<string, object?> {
-				["Id"] = partnerUserId,
-				["FromUserId"] = partnerUserId,
-				["ToUserId"] = myUserId,
-				["Status"] = "disconnected",
-				["UpdatedAt"] = now
-			};
-			var payload_myOut = new Dictionary<string, object?> {
-				["Id"] = partnerUserId,
-				["FromUserId"] = myUserId,
-				["ToUserId"] = partnerUserId,
-				["Status"] = "disconnected",
-				["UpdatedAt"] = now
-			};
-			var payload_theirIn = new Dictionary<string, object?> {
-				["Id"] = myUserId,
-				["FromUserId"] = myUserId,
-				["ToUserId"] = partnerUserId,
-				["Status"] = "disconnected",
-				["UpdatedAt"] = now
-			};
-			var payload_theirOut = new Dictionary<string, object?> {
-				["Id"] = myUserId,
-				["FromUserId"] = partnerUserId,
-				["ToUserId"] = myUserId,
-				["Status"] = "disconnected",
-				["UpdatedAt"] = now
-			};
-
-			var batch = db.StartBatch();
-			batch.Set(myIn, payload_myIn, SetOptions.MergeAll);
-			batch.Set(myOut, payload_myOut, SetOptions.MergeAll);
-			batch.Set(theirIn, payload_theirIn, SetOptions.MergeAll);
-			batch.Set(theirOut, payload_theirOut, SetOptions.MergeAll);
-			await batch.CommitAsync();
-		}
-		public async Task PurgePairAsync(string userA, string userB) {
-			var db = FirestoreClient.GetDb();
-
-			var a_in = IncomingCol(db, userA).Document(userB);
-			var a_out = OutgoingCol(db, userA).Document(userB);
-			var b_in = IncomingCol(db, userB).Document(userA);
-			var b_out = OutgoingCol(db, userB).Document(userA);
-
-			var batch = db.StartBatch();
-			batch.Delete(a_in);
-			batch.Delete(a_out);
-			batch.Delete(b_in);
-			batch.Delete(b_out);
-			await batch.CommitAsync();
-		}
+		private static DateTime? TryReadTs(JsonElement fields, string name)
+			=> fields.TryGetProperty(name, out var v) && v.TryGetProperty("timestampValue", out var t)
+				? DateTime.Parse(t.GetString()!, null, System.Globalization.DateTimeStyles.RoundtripKind)
+				: (DateTime?)null;
 	}
 }

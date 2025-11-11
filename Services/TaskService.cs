@@ -2,10 +2,7 @@ namespace TaskMate.Services {
 	using System.Collections.ObjectModel;
 	using TaskMate.Models;
 	using TaskMate.Data;
-	using TaskMate.Data.Repositories;   // if you have FirestoreTaskRepository here
-	using TaskMate.Sync;                // if your repo types live here
 	using System.Linq;
-	using System;
 	using TaskMate.Models.Enums;
 
 	public class TaskService : ITaskService {
@@ -34,10 +31,6 @@ namespace TaskMate.Services {
 					Tasks.Add(t);
 			}
 			return Task.CompletedTask;
-
-
-
-
 
 
 

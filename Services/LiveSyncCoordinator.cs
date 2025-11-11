@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using TaskMate.Models;
-using TaskMate.Sync;
 using TaskMate.Data;
 using TaskMate.Models.Enums;
 
@@ -29,18 +28,23 @@ namespace TaskMate.Services {
 
 		private IDisposable? _myHandle, _partnerHandle, _groupHandle;
 
-
 		public LiveSyncCoordinator(IRequestService requests, IPartnerService partner) {
 			_requests = requests;
 			_partner = partner;
 		}
+
 		static LiveSyncCoordinator() {
 			var logDir = PathEx.GetAppDataDir("TaskMate");
 			var logPath = PathEx.CombineSafe(logDir, "app.log");
 
+			// ✅ make sure the folder is there
+			try { System.IO.Directory.CreateDirectory(logDir); } catch { }
+
 			System.Diagnostics.Trace.Listeners.Clear();
 			System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(logPath));
 			System.Diagnostics.Trace.AutoFlush = true;
+
+			System.Diagnostics.Trace.WriteLine($"[Trace] LiveSync static ctor – log: {logPath}");
 		}
 
 		public event Action? PartnerDisconnected;
@@ -59,58 +63,67 @@ namespace TaskMate.Services {
 		}
 
 		public async Task StartAsync() {
-			await FirestoreClient.InitializeAsync();
+			// REST path: no FirestoreClient.InitializeAsync() needed.
 
-			var myId = FirestoreClient.CurrentUserId;
+			// Prefer the authenticated UID; fall back to Settings.
+			var myId = AppServices.Auth?.Uid ?? AppServices.Settings?.UserId ?? string.Empty;
+			System.Diagnostics.Trace.WriteLine($"[LiveSync] StartAsync myId='{myId}', partner='{_partner.PartnerId}', group='{_partner.GroupId}'");
+			if(string.IsNullOrWhiteSpace(myId)) {
+				System.Diagnostics.Trace.WriteLine("[LiveSync] myId is empty; skipping listeners.");
+				_startedTcs.TrySetResult(true);
+				return;
+			}
+
 			var partnerId = _partner.PartnerId;
 			var groupId = _partner.GroupId;
 
 			// Personal list
+			_myHandle?.Dispose();
 			_myHandle = _requests.ListenPersonal(myId, cloud => {
-				List<TaskItem>? snapshot = null;
-
+				System.Diagnostics.Trace.WriteLine($"[LiveSync] personal snapshot received: {cloud.Count} tasks");
 				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_tasks is null) return;
+
 					// BEFORE: capture current IDs
 					var before = new HashSet<Guid>(_tasks.Select(t => t.Id));
-					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Me, ownerUserId: myId,
+
+					TaskCollectionHelpers.UpsertInto(
+						_tasks, cloud,
+						assignedTo: Assignee.Me,
+						ownerUserId: myId,
 						onReplaced: (oldItem, newItem) => {
-							// fire only after initial priming to avoid startup spam
 							if(_myPersonalPrimed) SoundService.PlayTaskCompleted();
 						});
+
 					var added = _tasks.Where(t => !before.Contains(t.Id)).ToList();
-					// Play only after the first snapshot is primed
 					if(_myPersonalPrimed && added.Count > 0)
 						SoundService.PlayTaskCreated();
+
 					_myPersonalPrimed = true;
-					snapshot = _tasks.ToList();            // take a copy on UI thread
+
+					// ✨ Save snapshot AFTER UI list is updated (guaranteed non-null)
+					var snapshot = _tasks.ToList();
+					_ = Task.Run(() => TaskDataService.SaveTasks(snapshot));
+
 					_myView?.Refresh();
 					_partnerView?.Refresh();
 				});
-
-				if(snapshot != null)
-					_ = Task.Run(() => TaskDataService.SaveTasks(snapshot));  // non-blocking
 			});
-
-			// Partner request listeners (incoming/outgoing)
-
 
 			// Partner/group (only when verified)
 			if(!string.IsNullOrWhiteSpace(partnerId)) {
 				AttachPartnerAndGroup(partnerId, groupId);
-				_attachedPartnerId = partnerId;   // << crucial: record what we attached
+				_attachedPartnerId = partnerId;
 				_attachedGroupId = groupId;
-
 			}
+
 			_startedTcs.TrySetResult(true);
 		}
 
 		public async Task ReloadForPartnerAsync() {
-
 			await _startedTcs.Task; // ensure StartAsync ran at least once
 			await _reloadGate.WaitAsync();
 			try {
-				// read current desired ids
 				var partnerId = _partner.PartnerId;
 				var groupId = _partner.GroupId;
 				var expectGroup = !string.IsNullOrWhiteSpace(groupId);
@@ -121,9 +134,10 @@ namespace TaskMate.Services {
 					_partnerHandle is not null &&
 					string.Equals(_attachedPartnerId, partnerId, StringComparison.OrdinalIgnoreCase) &&
 					((expectGroup && haveGroup && string.Equals(_attachedGroupId, groupId, StringComparison.OrdinalIgnoreCase)) ||
-					(!expectGroup && !haveGroup))) {
+					 (!expectGroup && !haveGroup))) {
 					return; // nothing to change; don’t clear!
 				}
+
 				bool partnerChanged = !string.Equals(_attachedPartnerId, partnerId, StringComparison.OrdinalIgnoreCase);
 				bool groupChanged = !string.Equals(_attachedGroupId, groupId, StringComparison.OrdinalIgnoreCase);
 
@@ -135,6 +149,7 @@ namespace TaskMate.Services {
 				// clear partner-sourced UI ONLY if we are detaching or switching partners
 				Application.Current.Dispatcher.Invoke(() => {
 					if(_tasks is null || _pending is null) return;
+
 					if(partnerChanged || string.IsNullOrWhiteSpace(partnerId)) {
 						// Switching partner or detaching → remove partner rows
 						var keepMine = _tasks.Where(t => t.AssignedTo == Assignee.Me).ToList();
@@ -171,11 +186,17 @@ namespace TaskMate.Services {
 			_partnerHandle = _requests.ListenPersonal(partnerId, cloud => {
 				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_tasks is null) return;
+
 					var before = new HashSet<Guid>(_tasks.Select(t => t.Id));
-					TaskCollectionHelpers.UpsertInto(_tasks, cloud, assignedTo: Assignee.Partner, ownerUserId: partnerId,
+
+					TaskCollectionHelpers.UpsertInto(
+						_tasks, cloud,
+						assignedTo: Assignee.Partner,
+						ownerUserId: partnerId,
 						onReplaced: (oldItem, newItem) => {
 							if(_partnerPersonalPrimed) SoundService.PlayTaskCompleted();
 						});
+
 					var added = _tasks.Where(t => !before.Contains(t.Id)).ToList();
 					if(_partnerPersonalPrimed && added.Count > 0)
 						SoundService.PlayTaskCreated();
@@ -185,6 +206,7 @@ namespace TaskMate.Services {
 					_partnerView?.Refresh();
 				});
 			});
+
 			if(string.IsNullOrWhiteSpace(groupId))
 				return; // nothing to attach until GroupId is set
 
@@ -192,36 +214,32 @@ namespace TaskMate.Services {
 				Application.Current.Dispatcher.BeginInvoke(() => {
 					if(_pending is null) return;
 
-					var myId = TaskMate.Sync.FirestoreClient.CurrentUserId;
-					var partnerId = _partner.PartnerId;
+					var myId = AppServices.Settings?.UserId ?? AppServices.Auth?.Uid ?? string.Empty;
+					var partnerIdLocal = _partner.PartnerId;
 
 					bool IsMineToDecide(TaskItem t) {
 						if(!string.IsNullOrWhiteSpace(t.AssignedToUserId))
 							return string.Equals(t.AssignedToUserId, myId, StringComparison.OrdinalIgnoreCase);
 
 						// Fallback when AssignedToUserId isn't set
-						if(t.AssignedTo == TaskMate.Models.Enums.Assignee.Me)
-							return string.Equals(t.CreatedBy, partnerId, StringComparison.OrdinalIgnoreCase);
+						if(t.AssignedTo == Assignee.Me)
+							return string.Equals(t.CreatedBy, partnerIdLocal, StringComparison.OrdinalIgnoreCase);
 
-						if(t.AssignedTo == TaskMate.Models.Enums.Assignee.Partner)
-							return string.Equals(t.CreatedBy, myId, StringComparison.OrdinalIgnoreCase) == false;
+						if(t.AssignedTo == Assignee.Partner)
+							return !string.Equals(t.CreatedBy, myId, StringComparison.OrdinalIgnoreCase);
 
 						return false;
 					}
 
-					var mine = cloud.Where(IsMineToDecide).ToList(); //  actually use the helper
+					var mine = cloud.Where(IsMineToDecide).ToList();
 					var sent = cloud.Where(t => !IsMineToDecide(t)).ToList();
 
-					//  Toast only brand-new "mine" requests (dedup with a HashSet<Guid>)
+					// Toast only brand-new "mine" requests (dedupe)
 					foreach(var t in mine) {
 						if(_lastPendingMine.Add(t.Id)) {
-							// We don't have display names; show a friendly label from CreatedBy
-							// If the partner created it -> "Partner", else "You"
-							var mineId = TaskMate.Sync.FirestoreClient.CurrentUserId;
-							var fromLabel = string.Equals(t.CreatedBy, mineId, StringComparison.OrdinalIgnoreCase)
-											? "You"
-											: "Partner";
-
+							var fromLabel = string.Equals(t.CreatedBy, myId, StringComparison.OrdinalIgnoreCase)
+								? "You"
+								: "Partner";
 							var title = string.IsNullOrWhiteSpace(t.Title) ? "New task" : t.Title;
 							AppServices.Notifications.ShowTaskRequestToast(t.Id, fromLabel, title);
 						}
@@ -229,15 +247,14 @@ namespace TaskMate.Services {
 
 					TaskCollectionHelpers.ReplaceAll(_pending, mine, assignedTo: Assignee.Partner, requestMode: true);
 					if(_pendingSent != null)
-						TaskCollectionHelpers.ReplaceAll(_pendingSent, sent, assignedTo: Assignee.Partner, requestMode: true); //
+						TaskCollectionHelpers.ReplaceAll(_pendingSent, sent, assignedTo: Assignee.Partner, requestMode: true);
+
 					foreach(var t in _pending)
 						t.CanDecide = true;
-					// keep dedupe set tight (drop ids no longer pending)
+
 					_lastPendingMine.IntersectWith(mine.Select(x => x.Id));
 				});
-
 			});
-
 		}
 
 		public void Dispose() {

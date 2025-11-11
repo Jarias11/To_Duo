@@ -1,11 +1,14 @@
 using TaskMate.Sync;
 using TaskMate.Models;
+
 namespace TaskMate.Services {
-
-
 	public sealed class PartnerRequestService : IPartnerRequestService {
 		private readonly IPartnerRequestRepo _repo;
-		public PartnerRequestService() : this(new FirestorePartnerRequestRepository()) { }
+
+		// default ctor: use the app-wide REST client
+		public PartnerRequestService()
+			: this(new FirestorePartnerRequestRepository(AppServices.FirestoreRest)) { }
+
 		public PartnerRequestService(IPartnerRequestRepo repo) => _repo = repo;
 
 		public IDisposable ListenIncoming(string myUserId, Action<IList<PartnerRequest>> onSnapshot)

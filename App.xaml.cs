@@ -1,5 +1,8 @@
-﻿using System.Windows;
-using TaskMate.Services.Notifications;
+﻿// App.xaml.cs
+using System.Windows;
+using TaskMate.Services;
+using TaskMate.Services.Auth;   
+using TaskMate.Sync;
 
 namespace TaskMate {
     public partial class App : Application {
@@ -8,12 +11,16 @@ namespace TaskMate {
                 System.Diagnostics.Debug.WriteLine(args.Exception.ToString());
                 MessageBox.Show(args.Exception.ToString(), "Startup error");
             };
-            base.OnStartup(e);
-            TaskMate.Services.SoundService.Initialize();
+            //initialize global Auth + Firestore REST early ===
+            const string ProjectId = "taskmate-4777f";
+            const string WebApiKey = "AIzaSyD0umHa8ERVEYSV7TdUc54FQ4-665lyDnw";
 
-            ToastRegistration.EnsureRegistered();
-            ToastRegistration.ShowSimple("TaskMate", "Notifications ready");
+            var auth = new AuthService();
+            AppServices.Auth = auth;
+            AppServices.FirestoreRest = new FirestoreRestClient(ProjectId, WebApiKey, auth);
 
+            SoundService.Initialize();
+            base.OnStartup(e); // your StartupUri opens MainWindow
         }
     }
 }

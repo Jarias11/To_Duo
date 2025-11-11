@@ -1,23 +1,26 @@
-// ActivityLogService.cs
+// ActivityLogService.cs (REST-only, no Google.Cloud.Firestore)
+// Requires: AppServices.FirestoreRest (TaskMate.Sync), SettingsService for DisplayName
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using Google.Cloud.Firestore;
 using TaskMate.Models;
 using TaskMate.Sync;
-using System.IO;
-using System.Text.Json;
-
 
 namespace TaskMate.Services {
-	public sealed class ActivityLogService : IActivityLogService {
+	public sealed class ActivityLogService : IActivityLogService, IDisposable {
 		private readonly Dispatcher _ui;
 		private readonly ISettingsService _settings;
-		private IDisposable? _mineHandle;
-		private IDisposable? _partnerHandle;
+		private readonly FirestoreRestClient _rest;
+
+		private CancellationTokenSource? _mineCts;
+		private CancellationTokenSource? _partnerCts;
+
 		private const string LocalFeedPath = "activity_feed.json";
 
 		public ObservableCollection<ActivityEntry> Feed { get; } = new();
@@ -25,40 +28,36 @@ namespace TaskMate.Services {
 		public ActivityLogService(Dispatcher ui, ISettingsService settings) {
 			_ui = ui ?? throw new ArgumentNullException(nameof(ui));
 			_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+			_rest = AppServices.FirestoreRest
+				?? throw new InvalidOperationException("FirestoreRest is not initialized.");
 			LoadLocal();
 		}
 
-		// Collection: users/{userId}/activity
-		private static CollectionReference Col(FirestoreDb db, string userId) =>
-			db.Collection("users").Document(userId).Collection("activity");
-
-		// ---- Public API ------------------------------------------------------
-
+		// ---------------------------------------------------------------------
+		// Write (REST add with auto-id)
+		// ---------------------------------------------------------------------
 		public async Task LogAsync(ActivityEntry e, string myUserId) {
 			if(e is null || string.IsNullOrWhiteSpace(myUserId)) return;
 
-			// Normalize to UTC for storage
 			var utc = DateTime.SpecifyKind(e.Timestamp, DateTimeKind.Utc);
-
-			var db = FirestoreClient.GetDb();
-			var doc = Col(db, myUserId).Document(); // auto-id
-
-			// IMPORTANT: write *display name* for Actor (fallback to "Me")
 			var myActor = _settings.DisplayName ?? "Me";
 
-			var payload = new Dictionary<string, object?> {
-				["Timestamp"] = Timestamp.FromDateTime(utc),
-				["Actor"] = myActor,
-				["Kind"] = e.Kind ?? "",
-				["Message"] = e.Message ?? "",
-				["Reactions"] = new Dictionary<string, object?>()
-			};
+			// Add to users/{uid}/activity (auto-id). NOTE: top-level fields, no F.Map wrapper.
+			await _rest.AddAsync(
+				$"users/{myUserId}/activity",
+				new {
+					Timestamp = F.Ts(utc),
+					Actor = F.Str(myActor),
+					Kind = F.Str(e.Kind ?? ""),
+					Message = F.Str(e.Message ?? ""),
+					Reactions = new { mapValue = new { fields = new { } } }
+				});
 
-			await doc.SetAsync(payload, SetOptions.MergeAll);
+			// Optimistic echo (local time so it matches your header clock)
 			try {
-				var localTs = utc.ToLocalTime(); // MapFrom uses local time for UI
+				var localTs = utc.ToLocalTime();
 				var echo = new ActivityEntry {
-					Id = doc.Id,                     // NEW
+					Id = null, // auto-id will be picked up by poller
 					OwnerUserId = myUserId,
 					Timestamp = localTs,
 					Actor = myActor,
@@ -72,126 +71,223 @@ namespace TaskMate.Services {
 			catch { /* non-fatal */ }
 		}
 
+		// ---------------------------------------------------------------------
+		// “Listeners” via light polling (no Google SDK)
+		// ---------------------------------------------------------------------
 		public Task StartMineAsync(string myUserId) {
-			_mineHandle?.Dispose();
-			if(string.IsNullOrWhiteSpace(myUserId)) return Task.CompletedTask;
+			_mineCts?.Cancel();
+			_mineCts = string.IsNullOrWhiteSpace(myUserId) ? null : new CancellationTokenSource();
+			if(_mineCts is null) return Task.CompletedTask;
 
-			var db = FirestoreClient.GetDb();
-			var inner = Col(db, myUserId)
-				.OrderByDescending("Timestamp")
-				.Limit(200)
-				.Listen(snap => {
-					var myDisplay = _settings.DisplayName ?? "Me";
-
-					var mine = snap.Documents
-						.Select(d => MapFrom(d, myUserId))
-						// Ensure our rows show with *our* current display name for consistency
-						.Select(e => new ActivityEntry {
-							Id = e.Id,
-							OwnerUserId = myUserId,
-							Timestamp = e.Timestamp,
-							Kind = e.Kind,
-							Message = e.Message,
-							Actor = string.IsNullOrWhiteSpace(e.Actor) ? myDisplay : e.Actor,
-							IsMine = true,
-							Reactions = e.Reactions
-						})
-						.ToList();
-
-					_ui.BeginInvoke(() => ReplaceMine(mine, myDisplay));
-				});
-
-			_mineHandle = new FirestoreListenerHandle(inner);
+			var ct = _mineCts.Token;
+			_ = Task.Run(() => PollUserActivityAsync(myUserId, isMine: true, ct), ct);
 			return Task.CompletedTask;
 		}
 
-		// keep only partner items, then append sorted “mine”
+		public Task StartPartnerSinceAsync(string partnerUserId, DateTime sinceUtc) {
+			_partnerCts?.Cancel();
+			_partnerCts = string.IsNullOrWhiteSpace(partnerUserId) ? null : new CancellationTokenSource();
+			if(_partnerCts is null) return Task.CompletedTask;
+
+			var ct = _partnerCts.Token;
+			// small skew so we don’t miss writes just before connect
+			_ = Task.Run(() => PollUserActivityAsync(partnerUserId, isMine: false, ct, sinceUtc.AddSeconds(-10)), ct);
+			return Task.CompletedTask;
+		}
+
+		public Task StopPartnerAsync() {
+			_partnerCts?.Cancel();
+			_partnerCts = null;
+			return Task.CompletedTask;
+		}
+
+		public void Dispose() {
+			_mineCts?.Cancel();
+			_partnerCts?.Cancel();
+			_mineCts = _partnerCts = null;
+		}
+
+		// ---------------------------------------------------------------------
+		// Reactions (read-modify-write using REST)
+		// ---------------------------------------------------------------------
+		public async Task ReactAsync(string ownerUserId, string entryId, string reactorUserId, string emoji) {
+			if(string.IsNullOrWhiteSpace(ownerUserId) ||
+				string.IsNullOrWhiteSpace(entryId) ||
+				string.IsNullOrWhiteSpace(reactorUserId)) return;
+
+			var docPath = $"users/{ownerUserId}/activity/{entryId}";
+
+			// 1) Read existing doc
+			string json;
+			try { json = await _rest.GetDocRawAsync(docPath).ConfigureAwait(false); }
+			catch { return; } // not found or unauthorized
+
+			// 2) Parse fields, update Reactions map in-memory
+			var root = JsonDocument.Parse(json).RootElement;
+			if(!root.TryGetProperty("fields", out var fields)) return;
+
+			// Build mutable dictionary from fields for easier patch
+			var fieldDict = new Dictionary<string, object>();
+			foreach(var prop in fields.EnumerateObject())
+				fieldDict[prop.Name] = prop.Value;
+
+			// Ensure a map for Reactions exists, then set reactorUserId = emoji
+			var reactionsFields = new Dictionary<string, object>();
+			if(fields.TryGetProperty("Reactions", out var reactNode) &&
+				reactNode.TryGetProperty("mapValue", out var mv) &&
+				mv.TryGetProperty("fields", out var rfields)) {
+				foreach(var r in rfields.EnumerateObject())
+					reactionsFields[r.Name] = r.Value;
+			}
+			reactionsFields[reactorUserId] = F.Str(emoji);
+
+			fieldDict["Reactions"] = new { mapValue = new { fields = reactionsFields } };
+
+			// 3) Write the full fields object back (no merge mask needed)
+			await _rest.SetDocAsync(docPath, fieldDict).ConfigureAwait(false);
+
+			// 4) Optimistic local update
+			_ui.BeginInvoke(() => {
+				var row = Feed.FirstOrDefault(a => a.Id == entryId && a.OwnerUserId == ownerUserId);
+				if(row != null) {
+					row.Reactions[reactorUserId] = emoji;
+					var idx = Feed.IndexOf(row);
+					if(idx >= 0) Feed[idx] = row;
+					SaveLocal();
+				}
+			});
+		}
+
+		public Task PostMessageAsync(string text, string myUserId)
+			=> LogAsync(new ActivityEntry {
+				Kind = "chat.message",
+				Message = text,
+				Timestamp = DateTime.UtcNow
+			}, myUserId);
+
+		// ---------------------------------------------------------------------
+		// Polling workers
+		// ---------------------------------------------------------------------
+		private async Task PollUserActivityAsync(string userId, bool isMine, CancellationToken ct, DateTime? sinceUtc = null) {
+			string? lastSig = null;
+
+			while(!ct.IsCancellationRequested) {
+				try {
+					var myDisplay = _settings.DisplayName ?? "Me";
+					var items = await QueryUserActivityAsync(
+						userId,
+						isMine,
+						isMine ? myDisplay : null,
+						sinceUtc).ConfigureAwait(false);
+
+					// Lightweight change detection: signature of ids + timestamps
+					var sig = string.Join("|", items.Select(e => $"{e.Id ?? ""}#{e.Timestamp:O}"));
+					if(!string.Equals(sig, lastSig, StringComparison.Ordinal)) {
+						lastSig = sig;
+						if(isMine)
+							_ui.BeginInvoke(() => ReplaceMine(items, myDisplay));
+						else
+							_ui.BeginInvoke(() => UpsertIntoFeed(items));
+					}
+				}
+				catch {
+					// keep polling even if a cycle fails
+				}
+
+				try { await Task.Delay(1500, ct).ConfigureAwait(false); } catch { }
+			}
+		}
+
+		private async Task<IList<ActivityEntry>> QueryUserActivityAsync(
+			string userId,
+			bool isMine,
+			string? myDisplayForMine,
+			DateTime? cutoffUtc) {
+
+			var rows = await _rest.RunQueryAsync(new {
+				from = new[] { new { collectionId = "activity" } },
+				orderBy = new[] { new { field = new { fieldPath = "Timestamp" }, direction = "DESCENDING" } },
+				limit = 200
+			}).ConfigureAwait(false);
+
+			var list = new List<ActivityEntry>();
+			foreach(var line in rows) {
+				if(!line.TryGetProperty("document", out var doc)) continue;
+				if(!doc.TryGetProperty("name", out var nameEl)) continue;
+				var name = nameEl.GetString() ?? "";
+				if(!name.Contains($"/users/{userId}/")) continue;
+
+				list.Add(MapFromDoc(doc, userId, isMine, myDisplayForMine));
+			}
+
+			if(cutoffUtc.HasValue)
+				list = list.Where(e => e.Timestamp.ToUniversalTime() >= cutoffUtc.Value).ToList();
+
+			return list;
+		}
+
+		// ---------------------------------------------------------------------
+		// Mapping helpers (REST doc -> ActivityEntry)
+		// ---------------------------------------------------------------------
+		private static ActivityEntry MapFromDoc(
+			JsonElement doc,
+			string ownerUserId,
+			bool isMine,
+			string? myDisplayForMine) {
+
+			var id = doc.GetProperty("name").GetString()!.Split('/').Last();
+			var f = doc.GetProperty("fields");
+
+			static string? S(JsonElement f, string k)
+				=> f.TryGetProperty(k, out var v) && v.TryGetProperty("stringValue", out var s) ? s.GetString() : null;
+
+			static DateTime? T(JsonElement f, string k)
+				=> f.TryGetProperty(k, out var v) && v.TryGetProperty("timestampValue", out var t)
+					? DateTime.Parse(t.GetString()!, null, System.Globalization.DateTimeStyles.RoundtripKind)
+					: (DateTime?)null;
+
+			var reactions = new Dictionary<string, string>();
+			if(f.TryGetProperty("Reactions", out var react) &&
+				react.TryGetProperty("mapValue", out var mv) &&
+				mv.TryGetProperty("fields", out var rf)) {
+				foreach(var kv in rf.EnumerateObject())
+					if(kv.Value.TryGetProperty("stringValue", out var sv))
+						reactions[kv.Name] = sv.GetString() ?? "";
+			}
+
+			var tsUtc = T(f, "Timestamp") ?? DateTime.UtcNow;
+			var actor = S(f, "Actor") ?? "";
+			if(isMine && string.IsNullOrWhiteSpace(actor))
+				actor = myDisplayForMine ?? "Me";
+
+			return new ActivityEntry {
+				Id = id,
+				OwnerUserId = ownerUserId,
+				Timestamp = tsUtc.ToLocalTime(),
+				Actor = actor,                     // set in initializer (init-only safe)
+				Kind = S(f, "Kind") ?? "",
+				Message = S(f, "Message") ?? "",
+				Reactions = reactions,
+				IsMine = isMine                    // set in initializer (init-only safe)
+			};
+		}
+
+		// ---------------------------------------------------------------------
+		// Local feed merge & persistence
+		// ---------------------------------------------------------------------
 		private void ReplaceMine(IList<ActivityEntry> mine, string myDisplay) {
-			// Remove current rows whose Actor matches *my* display name (case-insensitive)
 			for(int i = Feed.Count - 1; i >= 0; i--) {
 				var a = Feed[i].Actor;
 				if(string.Equals(a, myDisplay, StringComparison.OrdinalIgnoreCase)
-					|| string.Equals(a, "Me", StringComparison.OrdinalIgnoreCase)) // <— add this
-				{
+				 || string.Equals(a, "Me", StringComparison.OrdinalIgnoreCase)) {
 					Feed.RemoveAt(i);
 				}
 			}
-
-			// Add the refreshed "mine" rows
 			foreach(var e in mine.OrderByDescending(x => x.Timestamp))
 				Feed.Add(e);
 
 			ResortFeedNewestFirst();
 			SaveLocal();
-		}
-
-		public Task StartPartnerSinceAsync(string partnerUserId, DateTime sinceUtc) {
-			_partnerHandle?.Dispose();
-			if(string.IsNullOrWhiteSpace(partnerUserId)) return Task.CompletedTask;
-
-			var db = FirestoreClient.GetDb();
-
-			// Allow 10s skew so we don't miss “just before connect” writes
-			var cutoffUtc = DateTime.SpecifyKind(sinceUtc, DateTimeKind.Utc).AddSeconds(-10);
-
-			var inner = Col(db, partnerUserId)
-				.OrderByDescending("Timestamp")
-				.Limit(200)
-				.Listen(snap => {
-					var entries = snap.Documents
-						.Select(d => MapFrom(d, partnerUserId)) // uses the Actor stored by the partner (their display name)
-						.Where(e => e.Timestamp.ToUniversalTime() >= cutoffUtc)
-						.Select(e => { e.IsMine = false; return e; })
-						.ToList();
-
-					_ui.BeginInvoke(() => UpsertIntoFeed(entries));  // merge; do not replace
-				});
-
-			_partnerHandle = new FirestoreListenerHandle(inner);
-			return Task.CompletedTask;
-		}
-
-		public Task StopPartnerAsync() {
-			_partnerHandle?.Dispose();
-			_partnerHandle = null;
-			return Task.CompletedTask;
-		}
-
-		public void Dispose() {
-			_mineHandle?.Dispose();
-			_partnerHandle?.Dispose();
-			_mineHandle = _partnerHandle = null;
-		}
-
-		// ---- Mapping & merge helpers ----------------------------------------
-
-		private static ActivityEntry MapFrom(DocumentSnapshot d, string ownerUserId) {
-			var dict = d.ToDictionary();
-			return MapFrom(dict, ownerUserId, d.Id);
-		}
-
-		private static ActivityEntry MapFrom(IDictionary<string, object?> dict, string ownerUserId, string id) {
-			DateTime ts = DateTime.UtcNow;
-			if(dict.TryGetValue("Timestamp", out var v) && v is Timestamp t) {
-				// Firestore Timestamp -> DateTime, then normalize to local so UI matches header clock
-				ts = DateTime.SpecifyKind(t.ToDateTime(), DateTimeKind.Utc).ToLocalTime();
-			}
-			static string S(IDictionary<string, object?> d, string k)
-				=> d.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
-
-			var reactions = new Dictionary<string, string>();
-			if(dict.TryGetValue("Reactions", out var r) && r is IDictionary<string, object?> map) {
-				foreach(var kv in map) reactions[kv.Key] = kv.Value?.ToString() ?? "";
-			}
-			return new ActivityEntry {
-				Id = id,
-				OwnerUserId = ownerUserId,
-				Timestamp = ts,
-				Actor = S(dict, "Actor"),
-				Kind = S(dict, "Kind"),
-				Message = S(dict, "Message"),
-				Reactions = reactions
-			};
 		}
 
 		private void UpsertIntoFeed(IEnumerable<ActivityEntry> incoming) {
@@ -202,7 +298,7 @@ namespace TaskMate.Services {
 					existing = Feed.FirstOrDefault(x => x.Id == e.Id && x.OwnerUserId == e.OwnerUserId);
 				}
 				if(existing is null) {
-					// fallback to coarse signature for legacy rows
+					// legacy coarse signature
 					existing = Feed.FirstOrDefault(x =>
 						x.Timestamp == e.Timestamp &&
 						string.Equals(x.Kind, e.Kind, StringComparison.Ordinal) &&
@@ -228,37 +324,6 @@ namespace TaskMate.Services {
 			}
 		}
 
-		// Kept for completeness; not used now but harmless to keep
-		private void ReplaceAll(IList<ActivityEntry> entries) {
-			Feed.Clear();
-			foreach(var e in entries.OrderByDescending(x => x.Timestamp))
-				Feed.Add(e);
-		}
-		public async Task ReactAsync(string ownerUserId, string entryId, string reactorUserId, string emoji) {
-			if(string.IsNullOrWhiteSpace(ownerUserId) || string.IsNullOrWhiteSpace(entryId) || string.IsNullOrWhiteSpace(reactorUserId))
-				return;
-
-			var db = FirestoreClient.GetDb();
-			var doc = Col(db, ownerUserId).Document(entryId);
-
-			// write to Reactions.{reactorUserId} = emoji (merge)
-			await doc.SetAsync(new Dictionary<string, object?> {
-				["Reactions"] = new Dictionary<string, object?> { [reactorUserId] = emoji }
-			}, SetOptions.MergeAll);
-
-			// optimistic local update
-			_ui.BeginInvoke(() => {
-				var row = Feed.FirstOrDefault(a => a.Id == entryId && a.OwnerUserId == ownerUserId);
-				if(row != null) {
-					row.Reactions[reactorUserId] = emoji;
-					// replace to trigger bindings if needed
-					var idx = Feed.IndexOf(row);
-					if(idx >= 0) Feed[idx] = row;
-					SaveLocal();
-				}
-			});
-		}
-
 		private void LoadLocal() {
 			try {
 				if(!File.Exists(LocalFeedPath)) return;
@@ -268,7 +333,6 @@ namespace TaskMate.Services {
 				var myDisplay = _settings.DisplayName ?? "Me";
 
 				foreach(var s in saved.OrderByDescending(x => x.Timestamp)) {
-					// normalize Actor fallback only; keep the rest intact
 					var actor = string.IsNullOrWhiteSpace(s.Actor) ? myDisplay : s.Actor;
 
 					Feed.Add(new ActivityEntry {
@@ -285,16 +349,9 @@ namespace TaskMate.Services {
 			}
 			catch { /* ignore */ }
 		}
-		public Task PostMessageAsync(string text, string myUserId)
-	=> LogAsync(new ActivityEntry {
-		Kind = "chat.message",
-		Message = text,
-		Timestamp = DateTime.UtcNow
-	}, myUserId);
 
 		private void SaveLocal() {
 			try {
-				// Newest-first for nicer diffs
 				var snapshot = Feed.OrderByDescending(x => x.Timestamp).ToList();
 				var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
 				File.WriteAllText(LocalFeedPath, json);

@@ -4,7 +4,7 @@ using TaskMate.ViewModels;
 using TaskMate.Services;
 using TaskMate.Orchestration;
 using TaskMate.Services.Notifications;
-
+using TaskMate.Sync;
 
 namespace TaskMate;
 
@@ -20,15 +20,22 @@ public partial class MainWindow : Window {
         var partnerSvc = new PartnerService(settingsSvc);
         var themeSvc = new ThemeService();
 
-        var requestSvc = new RequestService();
-        var partnerReqs = new PartnerRequestService();
+        var rest = AppServices.FirestoreRest;
+
+        var personalRepo = new FirestorePersonalTaskRepository(rest);
+        var requestRepo = new FirestoreRequestRepository(rest, personalRepo);
+        var requestSvc = new RequestService(personalRepo, requestRepo);
+
+        var partnerReqs = new PartnerRequestService(
+            new FirestorePartnerRequestRepository(rest)
+        );
         var taskSvc = new TaskService();
 
         var activity = new ActivityLogService(Dispatcher, settingsSvc);
         var live = new LiveSyncCoordinator(requestSvc, partnerSvc);
 
         var taskActions = new TaskActions(requestSvc, taskSvc, Dispatcher, activity, settingsSvc);
-        
+
         var pairing = new PairingOrchestrator(partnerReqs, partnerSvc, live, Dispatcher, activity, settingsSvc);
         var anim = new AnimationService(settingsSvc);
         var dialogs = new TaskDialogService(taskActions, partnerSvc, anim);
