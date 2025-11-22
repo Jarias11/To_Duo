@@ -1,30 +1,33 @@
-// AppServices.cs
+// Services/AppServices.cs
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TaskMate.Models;
 using TaskMate.Orchestration;
 using TaskMate.Services.Notifications;
+using TaskMate.Services.Auth;   // NEW
+using TaskMate.Sync;        // NEW
 
 namespace TaskMate.Services {
 	public static class AppServices {
-		// Wire these once in App.xaml.cs after you build DI:
+		// === NEW: Auth + Firestore REST singletons (set in App.xaml.cs on startup) ===
+		public static IAuthService Auth { get; set; } = default!;
+		public static FirestoreRestClient FirestoreRest { get; set; } = default!;
+
+		// Existing singletons you already use around the app:
 		public static INotificationService Notifications { get; set; } = new NotificationService();
 		public static IPairingOrchestrator Pairing { get; set; } = default!;
 		public static ITaskDialogService TaskDialogs { get; set; } = default!;
 		public static ITaskService Tasks { get; set; } = default!;
-		public static IPartnerService Partner { get; set; } = default!; // if you need UserId/GroupId
-		public static ITaskActions Actions { get; set; } = default!;   // set at startup
-		public static ISettingsService Settings { get; set; } = default!; // if you have it
+		public static IPartnerService Partner { get; set; } = default!;   // for UserId/GroupId
+		public static ITaskActions Actions { get; set; } = default!;
+		public static ISettingsService Settings { get; set; } = default!;
 		public static bool NotificationsEnabled => Settings?.NotificationsEnabled == true;
-
 
 		// Called by ToastActivator to open a task by id
 		public static async Task OpenTaskDetailsByIdAsync(Guid taskId) {
-			// Try pending first, then any other list you maintain:
 			if(Tasks is null || TaskDialogs is null) return;
 
-			// Search both live lists
 			var item =
 				Tasks.Tasks.FirstOrDefault(t => t.Id == taskId) ??
 				Tasks.PendingTasks.FirstOrDefault(t => t.Id == taskId);
@@ -49,14 +52,14 @@ namespace TaskMate.Services {
 					await Pairing.DeclineAsync(me, r);
 				}
 			}
+
 			public static async Task TryAcceptPendingByIdAsync(Guid id) {
 				var item = Tasks?.PendingTasks?.FirstOrDefault(t => t.Id == id);
 				if(item == null) return;
-				var me = Partner.UserId;                   // your service exposes this
-				var group = Partner.GroupId;               // current pair’s group
-				await Actions.AcceptAsync(item, me, group); // moves to personal & logs
+				var me = Partner.UserId;
+				var group = Partner.GroupId;
+				await Actions.AcceptAsync(item, me, group);
 			}
-
 
 			public static async Task TryDeclinePendingByIdAsync(Guid id) {
 				var item = Tasks?.PendingTasks?.FirstOrDefault(t => t.Id == id);
@@ -65,6 +68,7 @@ namespace TaskMate.Services {
 				await Actions.DeclineAsync(item, group);
 			}
 		}
+
 		public static class TaskRequestHelpers {
 			public static async Task TryAcceptPendingByIdAsync(Guid id) {
 				var item = Tasks?.PendingTasks?.FirstOrDefault(t => t.Id == id);
@@ -79,5 +83,4 @@ namespace TaskMate.Services {
 			}
 		}
 	}
-
 }

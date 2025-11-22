@@ -119,7 +119,7 @@
 				Value="Fixed"/>
 	</Style>
 
-	
+
 
 	<Style x:Key="IconChipBase"
 		   TargetType="{x:Type ButtonBase}">
@@ -177,7 +177,7 @@
 	</Style>
 	<!-- keep a style for normal Buttons -->
 	<Style x:Key="IconChipButton"
-			TargetType="{x:Type Button}"
+		   TargetType="{x:Type Button}"
 		   BasedOn="{StaticResource IconChipBase}"/>
 	<!-- add a style for ToggleButtons -->
 	<Style x:Key="IconChipToggleButton"
@@ -257,14 +257,30 @@
 		<Setter Property="HeaderTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<TextBlock
-						Text="{Binding}"
-						Foreground="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Foreground}"
-						FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontFamily}"
-						FontStyle="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontStyle}"
-						FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontSize}"
-						HorizontalAlignment="Center"
-						VerticalAlignment="Center"/>
+					<StackPanel Orientation="Horizontal"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center">
+
+						<!-- Little notification dot -->
+						<Ellipse Width="8"
+								 Height="8"
+								 Margin="6,0,0,0"
+								 VerticalAlignment="Center"
+								 Fill="Red"
+								 Visibility="{Binding RelativeSource={RelativeSource AncestorType=TabItem},
+                                                  Path=Tag,
+                                                  Converter={StaticResource BoolToVisibility}}"/>
+
+						<!-- Tab text -->
+						<TextBlock Text="{Binding}"
+								   Foreground="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Foreground}"
+								   FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontFamily}"
+								   FontStyle="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontStyle}"
+								   FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=FontSize}"
+								   VerticalAlignment="Center"/>
+
+
+					</StackPanel>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
@@ -1315,7 +1331,8 @@
 							BorderThickness="{TemplateBinding BorderThickness}"
 							CornerRadius="10"
 							Padding="{TemplateBinding Padding}">
-						<ContentPresenter ContentSource="Header"
+						<ContentPresenter ContentTemplate="{StaticResource HeaderWithBadgeTemplate}"
+										  Content="{TemplateBinding Header}"
 										  VerticalAlignment="Center"
 										  HorizontalAlignment="Left"/>
 					</Border>
@@ -1388,166 +1405,7 @@
 
 
 
-	<!-- Tabs in header + chevron to collapse -->
-	<Style x:Key="TabbedCardExpander"
-		   TargetType="Expander">
-		<Setter Property="IsExpanded"
-				Value="False"/>
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="Expander">
-					<Border Style="{StaticResource Card}"
-							Padding="0">
-						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="Auto"/>
-								<!-- header -->
-								<RowDefinition Height="Auto"/>
-								<!-- body -->
-							</Grid.RowDefinitions>
 
-							<!-- HEADER: title | tabs | spacer | chevron -->
-							<Grid Grid.Row="0"
-								  Margin="12,6,12,6">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto"/>
-									<!-- Title -->
-									<ColumnDefinition Width="Auto"/>
-									<!-- Tabs -->
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="Auto"/>
-									<!-- Chevron (click to toggle) -->
-								</Grid.ColumnDefinitions>
-
-								<!-- Title -->
-								<TextBlock Grid.Column="0"
-										   Text="Quick Tools"
-										   Style="{StaticResource SectionHeader}"
-										   VerticalAlignment="Center"
-										   Margin="0,0,10,0"/>
-
-								<!-- Tabs (do NOT toggle) -->
-								<TabControl
-									x:Name="Tabs"
-									Grid.Column="1"
-									Panel.ZIndex="2"
-									Style="{StaticResource HeaderTabs}"
-									ItemContainerStyle="{StaticResource HeaderTabItem}"
-									HorizontalAlignment="Left"
-									SelectedIndex="{Binding SelectedTopTab, Mode=TwoWay}">
-									<TabItem Header="Connections"/>
-									<TabItem Header="Activity Center"/>
-									<TabItem Header="Task Builder"/>
-								</TabControl>
-								<!--   Spacer (pushes chevron to right)  -->
-								<ToggleButton Grid.Column="2"
-											  Panel.ZIndex="0"
-											  Background="Transparent"
-											  BorderThickness="0"
-											  Cursor="Hand"
-											  Focusable="False"
-											  IsChecked="{Binding IsExpanded, Mode=TwoWay,
-                                   RelativeSource={RelativeSource TemplatedParent}}">
-									<ToggleButton.Template>
-										<ControlTemplate TargetType="ToggleButton">
-											<Border Background="Transparent"/>
-											<!-- invisible hit-area -->
-										</ControlTemplate>
-									</ToggleButton.Template>
-								</ToggleButton>
-
-
-								<!-- Chevron (clickable) -->
-								<ToggleButton Grid.Column="3"
-											  MinWidth="16"
-											  HorizontalAlignment="Stretch"
-											  Background="Transparent"
-											  BorderThickness="0"
-											  Cursor="Hand"
-											  Focusable="False"
-											  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-									<ToggleButton.Template>
-										<ControlTemplate TargetType="ToggleButton">
-											<Grid>
-												<Path x:Name="Glyph"
-													  Data="M 0 0 L 6 6 L 12 0 Z"
-													  Width="12"
-													  Height="6"
-													  HorizontalAlignment="Center"
-													  VerticalAlignment="Center"
-													  Fill="{DynamicResource PrimaryTextBrush}"/>
-											</Grid>
-											<ControlTemplate.Triggers>
-												<Trigger Property="IsChecked"
-														 Value="True">
-													<Setter TargetName="Glyph"
-															Property="RenderTransform">
-														<Setter.Value>
-															<RotateTransform Angle="180"
-																			 CenterX="6"
-																			 CenterY="3"/>
-														</Setter.Value>
-													</Setter>
-												</Trigger>
-											</ControlTemplate.Triggers>
-										</ControlTemplate>
-									</ToggleButton.Template>
-								</ToggleButton>
-
-								<!-- Title overlay (clickable, no visuals) -->
-								<ToggleButton Grid.Column="0"
-											  Panel.ZIndex="10"
-											  Focusable="False"
-											  Cursor="Hand"
-											  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-									<ToggleButton.Template>
-										<ControlTemplate TargetType="ToggleButton">
-											<Border Background="Transparent"/>
-											<!-- no hover/pressed visuals -->
-										</ControlTemplate>
-									</ToggleButton.Template>
-								</ToggleButton>
-							</Grid>
-
-							<!-- BODY -->
-							<ContentPresenter x:Name="Body"
-											  Grid.Row="1"
-											  Margin="12,0,12,12"
-											  Visibility="Collapsed"/>
-						</Grid>
-					</Border>
-
-					<!-- ⬇️ Triggers belong here, as children of ControlTemplate -->
-					<ControlTemplate.Triggers>
-						<Trigger Property="IsExpanded"
-								 Value="True">
-							<Setter TargetName="Body"
-									Property="Visibility"
-									Value="Visible"/>
-						</Trigger>
-						<Trigger SourceName="Tabs"
-								 Property="SelectedIndex"
-								 Value="0">
-							<Setter Property="IsExpanded"
-									Value="True"/>
-						</Trigger>
-						<Trigger SourceName="Tabs"
-								 Property="SelectedIndex"
-								 Value="1">
-							<Setter Property="IsExpanded"
-									Value="True"/>
-						</Trigger>
-						<Trigger SourceName="Tabs"
-								 Property="SelectedIndex"
-								 Value="2">
-							<Setter Property="IsExpanded"
-									Value="True"/>
-						</Trigger>
-					</ControlTemplate.Triggers>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
 	<!-- Display chip -->
 	<Style x:Key="ReactionPill"
 		   TargetType="TextBlock"
@@ -2008,6 +1866,38 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+
+	<Style x:Key="TabHeaderBadgeEllipse"
+		   TargetType="Ellipse">
+		<Setter Property="Width"
+				Value="10"/>
+		<Setter Property="Height"
+				Value="10"/>
+		<Setter Property="Fill"
+				Value="Red"/>
+		<Setter Property="Margin"
+				Value="4,0,0,0"/>
+		<Setter Property="VerticalAlignment"
+				Value="Center"/>
+		<Setter Property="Visibility"
+				Value="Collapsed"/>
+	</Style>
+
+	<!-- Header with text + badge -->
+	<DataTemplate x:Key="HeaderWithBadgeTemplate">
+		<StackPanel Orientation="Horizontal"
+					VerticalAlignment="Center">
+			<TextBlock Text="{Binding}"
+					   VerticalAlignment="Center"
+					   Margin="0,0,4,0"/>
+
+			<!-- The badge’s visibility bound through Tag on TabItem -->
+			<Ellipse Style="{StaticResource TabHeaderBadgeEllipse}"
+					 Visibility="{Binding RelativeSource={RelativeSource AncestorType=TabItem},
+                                      Path=Tag,
+                                      Converter={StaticResource BoolToVisibility}}"/>
+		</StackPanel>
+	</DataTemplate>
 
 
 

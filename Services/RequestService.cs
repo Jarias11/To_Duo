@@ -9,13 +9,12 @@ namespace TaskMate.Services {
 	public sealed class RequestService : IRequestService {
 		private readonly IPersonalTaskRepo _personalRepo;
 		private readonly IRequestRepo _requestRepo;
+		
 
-		public RequestService()
-			: this(new FirestorePersonalTaskRepository(), new FirestoreRequestRepository()) { }
 
 		public RequestService(IPersonalTaskRepo personalRepo, IRequestRepo requestRepo) {
-			_personalRepo = personalRepo;
-			_requestRepo = requestRepo;
+			_personalRepo = personalRepo ?? throw new ArgumentNullException(nameof(personalRepo));
+			_requestRepo = requestRepo ?? throw new ArgumentNullException(nameof(requestRepo));
 		}
 
 		public IDisposable ListenPersonal(string userId, Action<IList<TaskItem>> onChange)

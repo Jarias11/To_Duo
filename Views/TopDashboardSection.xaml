@@ -334,11 +334,15 @@
 						 SelectedIndex="{Binding SelectedTopTab, Mode=TwoWay}"
 						 beh:TabCloseOnDoubleClickBehavior.Enabled="True"
 						 HorizontalAlignment="Stretch">
-				<TabItem Header="Activity Center"/>
+				<TabItem Header="Activity Center"
+						 Tag="{Binding HasNewActivity}"/>
 				<TabItem Header="Task Builder"/>
-				<TabItem Header="Pending Tasks"/>
-				<TabItem Header="Completed"/>
-				<TabItem Header="Connections"/>
+				<TabItem Header="Pending Tasks"
+					Tag="{Binding HasNewPending}"/>
+				<TabItem Header="Completed"
+						 Tag="{Binding HasNewCompleted}"/>
+				<TabItem Header="Connections"
+						 Tag="{Binding HasNewConnections}"/>
 			</TabControl>
 
 			<!-- CONTENT PANELS (toggle by SelectedTopTab) -->

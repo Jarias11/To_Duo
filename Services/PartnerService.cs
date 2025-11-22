@@ -18,11 +18,12 @@ namespace TaskMate.Services {
 					_settings.GroupId = gid;
 					_settings.Save();
 				}
+				EnsureGroupDocExists(_settings.GroupId, UserId, _settings.PartnerId);
 			}
 
 		}
 
-		public string UserId => _settings.UserId;
+		public string UserId => AppServices.Auth?.Uid ?? _settings.UserId;
 
 		public string? PartnerId {
 			get => _settings.PartnerId;
@@ -40,6 +41,8 @@ namespace TaskMate.Services {
 
 				_settings.Save();           // <<< persist immediately
 				PartnerChanged?.Invoke();   // notify VM / LiveSync
+				if(!string.IsNullOrWhiteSpace(_settings.GroupId) && !string.IsNullOrWhiteSpace(incoming))
+					EnsureGroupDocExists(_settings.GroupId, UserId, incoming);
 			}
 		}
 
@@ -58,6 +61,24 @@ namespace TaskMate.Services {
 			return string.Compare(a, b, StringComparison.OrdinalIgnoreCase) < 0
 				? $"{a}_{b}"
 				: $"{b}_{a}";
+		}
+		private static void EnsureGroupDocExists(string groupId, string a, string b) {
+			try {
+				if(string.IsNullOrWhiteSpace(groupId)) return;
+				var rest = AppServices.FirestoreRest;
+				var uid = AppServices.Auth?.Uid;
+				if(rest is null || string.IsNullOrWhiteSpace(uid)) return;
+
+				_ = rest.SetDocAsync(
+					$"groups/{groupId}",
+					new {
+						a = F.Str(a),
+						b = F.Str(b),
+						updatedAt = F.Ts(DateTime.UtcNow)  // server timestamp not available via REST helper; use UTC
+					}
+				);
+			}
+			catch { /* non-fatal */ }
 		}
 	}
 }

@@ -3,46 +3,60 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.Notifications;
 using TaskMate.Services;
 using TaskMate.Services.Notifications;
-using TaskMate.Sync;
+using TaskMate.Sync;     // FirestoreRestClient
 using TaskMate.Models;
-
+using TaskMate.Services.Auth;
 
 internal static class Program {
     private sealed class NotifierState {
         public DateTime LastSeenUtc { get; set; }
     }
 
+    // TODO: if you move these to a shared config, read them from there.
+    private const string ProjectId = "taskmate-4777f";
+    private const string WebApiKey = "AIzaSyD0umHa8ERVEYSV7TdUc54FQ4-665lyDnw";
+
     private static readonly string StatePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "TaskMate", "notifier-state.json");
 
     private static async Task<int> Main(string[] args) {
-        if(TaskMate.Services.AppServices.Settings?.NotificationsEnabled != true)
-            return 0;
         try {
             Directory.CreateDirectory(Path.GetDirectoryName(StatePath)!);
 
-            // 1) Register toast compat (AUMID/COM) so we can fire toasts
+            // Load settings (don’t rely on AppServices from the WPF app)
+            var settings = new SettingsService();
+            if(!settings.NotificationsEnabled)
+                return 0;
+
+            // Register toast compat (AUMID/COM) so we can fire toasts
             var notify = new NotificationService();
             notify.EnsureRegistered();
 
-            // 2) Init Firestore and identify ourselves
-            await FirestoreClient.InitializeAsync();
-            var myUserId = FirestoreClient.CurrentUserId;
-            if(string.IsNullOrWhiteSpace(myUserId)) return 0;
+            // Silent sign-in via saved tokens; if not signed in, exit quietly
+            var auth = new AuthService();
+            var haveSession = await auth.TrySilentSignInAsync();
+            if(!haveSession || string.IsNullOrWhiteSpace(auth.Uid))
+                return 0;
 
-            // 3) Load last-seen marker
+            // Expose the minimal globals some services expect
+            AppServices.Settings = settings;
+            AppServices.Auth = auth;
+            AppServices.FirestoreRest = new FirestoreRestClient(ProjectId, WebApiKey, auth);
+
+            var myUserId = auth.Uid;
+
+            // Load last-seen marker
             var state = LoadState();
 
-            // 4) Take a one-shot snapshot of incoming partner requests
+            // One-shot snapshot of incoming partner requests
             var svc = new PartnerRequestService();
-            var tcs = new TaskCompletionSource<System.Collections.Generic.IList<TaskMate.Models.PartnerRequest>>();
+            var tcs = new TaskCompletionSource<IList<PartnerRequest>>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             IDisposable? sub = null;
             sub = svc.ListenIncoming(myUserId, list => {
@@ -51,26 +65,27 @@ internal static class Program {
                 finally { sub?.Dispose(); }
             });
 
-            var list = await Task.WhenAny(tcs.Task, Task.Delay(4000)) == tcs.Task ? tcs.Task.Result
-                      : Array.Empty<TaskMate.Models.PartnerRequest>();
+            var list = await Task.WhenAny(tcs.Task, Task.Delay(4000)) == tcs.Task
+                ? tcs.Task.Result
+                : Array.Empty<PartnerRequest>();
 
-            // 5) Filter > last seen & still pending
+            // New & still pending since last seen
             var fresh = list
                 .Where(r => string.Equals(r.Status, "pending", StringComparison.OrdinalIgnoreCase))
                 .Where(r => (r.UpdatedAt ?? DateTime.MinValue) > state.LastSeenUtc)
                 .ToList();
 
-            // 6) Toast each new one
+            // Toast each new one
             foreach(var r in fresh) {
                 var caption = "New partner task";
                 var fromName = string.IsNullOrWhiteSpace(r.FromDisplayName) ? r.FromUserId : r.FromDisplayName;
-
-                // r.Id is a string; derive a stable Guid for toast actions
                 notify.ShowPartnerRequestToast(r.Id, fromName ?? r.FromUserId, caption);
             }
 
-            // 7) Advance last-seen (to newest UpdatedAt we saw)
-            var newest = list.Select(r => r.UpdatedAt ?? DateTime.MinValue).DefaultIfEmpty(state.LastSeenUtc).Max();
+            // Advance last-seen to newest UpdatedAt we saw (or keep previous)
+            var newest = list.Select(r => r.UpdatedAt ?? DateTime.MinValue)
+                             .DefaultIfEmpty(state.LastSeenUtc)
+                             .Max();
             if(newest > state.LastSeenUtc) {
                 state.LastSeenUtc = newest;
                 SaveState(state);
@@ -91,6 +106,7 @@ internal static class Program {
         catch { }
         return new NotifierState { LastSeenUtc = DateTime.MinValue };
     }
+
     private static void SaveState(NotifierState s) {
         try {
             File.WriteAllText(StatePath, JsonSerializer.Serialize(s));
@@ -98,11 +114,10 @@ internal static class Program {
         catch { }
     }
 
-    // RFC4122 namespace-based guid helper (if you need to derive a stable Guid from string ids)
+    // RFC4122 namespace-based guid helper (unchanged)
     private static class GuidUtility {
         public static readonly Guid UrlNamespace = new Guid("6ba7b811-9dad-11d1-80b4-00c04fd430c8");
         public static Guid Create(Guid namespaceId, string name) {
-            // SHA1 name-based GUID
             var ns = namespaceId.ToByteArray();
             SwapByteOrder(ns);
             var nameBytes = System.Text.Encoding.UTF8.GetBytes(name);

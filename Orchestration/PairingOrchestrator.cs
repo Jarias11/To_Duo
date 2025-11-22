@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using TaskMate.Models;
 using TaskMate.Services;
-using System.Linq;
+using TaskMate.Sync;
 
 namespace TaskMate.Orchestration {
 	public interface IPairingOrchestrator : IDisposable {
@@ -172,8 +172,20 @@ namespace TaskMate.Orchestration {
 			var other = r.FromUserId;
 			_settings.PairedSinceUtc = DateTime.UtcNow;
 			_settings.Save();
-			_ui.Invoke(() => {       // persist this (setter should save)
-			});
+			try {
+				var gid = _settings.GroupId;
+				if(!string.IsNullOrWhiteSpace(gid) && AppServices.FirestoreRest is not null) {
+					await AppServices.FirestoreRest.SetDocAsync(
+						$"groups/{gid}",
+						new {
+							a = F.Str(myUserId),
+							b = F.Str(other),
+							updatedAt = F.Ts(DateTime.UtcNow)
+						}
+					);
+				}
+			}
+			catch { /* non-fatal; pairing proceeds, listeners will still attach */ }
 
 			await _activity.LogAsync(new ActivityEntry {
 				Kind = "pairing.accepted",

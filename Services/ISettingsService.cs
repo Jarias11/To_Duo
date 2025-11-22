@@ -15,6 +15,13 @@ namespace TaskMate.Services {
 		public DateTime? PairedSinceUtc { get; set; }
 		bool NeedsProfileSetup { get; }
 		bool AnimationsEnabled { get; set; }
+
+		public bool UnreadActivity { get; set; }
+		public bool UnreadPending { get; set; }
+		public bool UnreadCompleted { get; set; }
+		public bool UnreadConnections { get; set; }
+
+		void EnsureUserId(string uid);
 		void Save();
 	}
 }

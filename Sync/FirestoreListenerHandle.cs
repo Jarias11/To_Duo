@@ -1,30 +1,22 @@
+// Services/Sync/FirestoreListenerHandle.cs  (same name, REST-friendly)
+// Minimal IDisposable used by repositories to stop polling loops.
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Google.Cloud.Firestore;
 
 namespace TaskMate.Sync {
     /// <summary>
-    /// Wraps FirestoreChangeListener with an IDisposable so callers can dispose safely.
+    /// Lightweight handle that calls a provided stop action on Dispose.
+    /// Used as a drop-in replacement for the SDK change listener handle.
     /// </summary>
     public sealed class FirestoreListenerHandle : IDisposable {
-        private readonly FirestoreChangeListener _inner;
-        public FirestoreListenerHandle(FirestoreChangeListener inner) => _inner = inner;
+        private readonly Action? _stop;
+        private bool _disposed;
+
+        public FirestoreListenerHandle(Action stop) => _stop = stop;
 
         public void Dispose() {
-            try {
-                var stop = _inner.StopAsync(CancellationToken.None);
-                // If we’re on the UI thread, don’t block it—let it finish in the background.
-                if(System.Windows.Application.Current?.Dispatcher?.CheckAccess() == true) {
-                    _ = stop; // fire-and-forget
-                }
-                else {
-                    stop.GetAwaiter().GetResult();
-                }
-            }
-            catch {
-                // swallow on shutdown; nothing else to do
-            }
+            if(_disposed) return;
+            _disposed = true;
+            try { _stop?.Invoke(); } catch { /* swallow on shutdown */ }
         }
     }
 }

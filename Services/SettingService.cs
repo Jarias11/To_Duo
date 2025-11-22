@@ -5,6 +5,26 @@ namespace TaskMate.Services {
 	public sealed class SettingsService : ISettingsService {
 		private readonly UserSettings _model;
 
+		public bool UnreadActivity {
+			get => _model.UnreadActivity ?? false;
+			set => _model.UnreadActivity = value;
+		}
+
+		public bool UnreadPending {
+			get => _model.UnreadPending ?? false;
+			set => _model.UnreadPending = value;
+		}
+
+		public bool UnreadCompleted {
+			get => _model.UnreadCompleted ?? false;
+			set => _model.UnreadCompleted = value;
+		}
+
+		public bool UnreadConnections {
+			get => _model.UnreadConnections ?? false;
+			set => _model.UnreadConnections = value;
+		}
+
 
 		public SettingsService() {
 			_model = UserSettings.Load();
@@ -12,6 +32,11 @@ namespace TaskMate.Services {
 			_model.DisplayName ??= string.Empty;
 			_model.PartnerId ??= string.Empty;
 			_model.GroupId ??= string.Empty;
+			_model.UnreadActivity ??= false;
+			_model.UnreadPending ??= false;
+			_model.UnreadCompleted ??= false;
+			_model.UnreadConnections ??= false;
+
 			_model.SoundsEnabled ??= true;
 			//_model.AnimationLevel ??= "Off";
 			_model.NotificationsEnabled ??= false;
@@ -31,8 +56,10 @@ namespace TaskMate.Services {
             set => _model.AnimationLevel = string.IsNullOrWhiteSpace(value) ? "Off" : value;
         }
 */
-		public bool NotificationsEnabled { get => _model.NotificationsEnabled ?? true;   // default enabled
-			set => _model.NotificationsEnabled = value; }  // DEFAULT OFF
+		public bool NotificationsEnabled {
+			get => _model.NotificationsEnabled ?? true;   // default enabled
+			set => _model.NotificationsEnabled = value;
+		}  // DEFAULT OFF
 
 		public bool AnimationsEnabled {
 			get => _model.AnimationsEnabled ?? true;   // default enabled
@@ -64,6 +91,13 @@ namespace TaskMate.Services {
 		public bool SoundsEnabled {
 			get => _model.SoundsEnabled ?? true;   // default true
 			set => _model.SoundsEnabled = value;
+		}
+		public void EnsureUserId(string uid) {
+			if(string.IsNullOrWhiteSpace(uid)) return;
+			if(!string.Equals(_model.UserId, uid, StringComparison.Ordinal)) {
+				_model.UserId = uid;
+				Save();
+			}
 		}
 
 		public void Save() => UserSettings.Save(_model);

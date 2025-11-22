@@ -16,6 +16,10 @@ namespace TaskMate.Models {
         public bool? SoundsEnabled { get; set; } = true; // NEW: default to true
         public bool? AnimationsEnabled { get; set; } = true;
         public bool? NotificationsEnabled { get; set; } = false;
+        public bool? UnreadActivity { get; set; }
+        public bool? UnreadPending { get; set; }
+        public bool? UnreadCompleted { get; set; }
+        public bool? UnreadConnections { get; set; }
 
         private static readonly string FileName = "user_settings.json";
         private static string GetPath() {

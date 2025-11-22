@@ -4,15 +4,10 @@ using System.Threading.Tasks;
 using TaskMate.Models;
 using TaskMate.Models.Enums;
 using TaskMate.Data;                // for TaskCollectionHelpers
-using TaskMate.Services;
-using System.Windows.Threading;            // for IRequestService, ITaskService
+using System.Windows.Threading;
 
 namespace TaskMate.Services {
 	public interface ITaskActions {
-		/// <summary>
-		/// Add a new task. For Partner-assigned tasks, writes as a request (group path);
-		/// for Me-assigned tasks, writes to personal. Also performs optimistic UI updates.
-		/// </summary>
 		Task AddAsync(
 			string title,
 			string? description,
@@ -24,28 +19,12 @@ namespace TaskMate.Services {
 			string groupId
 		);
 
-		/// <summary>
-		/// Delete a task from the correct store (request vs. personal) and remove from UI lists.
-		/// </summary>
 		Task DeleteAsync(TaskItem item, string myUserId, string groupId);
-
-		/// <summary>
-		/// Accept a pending partner task request (moves from requests into the live list on the backend).
-		/// Optimistically removes from Pending UI.
-		/// </summary>
 		Task AcceptAsync(TaskItem item, string myUserId, string groupId);
-
-		/// <summary>
-		/// Decline a pending partner task request (delete request) and remove from Pending UI.
-		/// </summary>
 		Task DeclineAsync(TaskItem item, string groupId);
 		Task UpdateAsync(TaskItem item, string myUserId, string groupId);
 	}
 
-	/// <summary>
-	/// Orchestrates "what to write where" and does optimistic UI updates against the collections
-	/// owned by ITaskService. Keeps Firestore boundary decisions out of the ViewModel.
-	/// </summary>
 	public sealed class TaskActions : ITaskActions {
 		private readonly IRequestService _requests;
 		private readonly ITaskService _taskService;
@@ -53,8 +32,6 @@ namespace TaskMate.Services {
 		private readonly IActivityLogService _activity;
 		private readonly ISettingsService _settings;
 
-		// We purposefully use the collections exposed by the task service
-		// so that VM filters (CollectionViewSource) see the updates immediately.
 		private ObservableCollection<TaskItem> Tasks => _taskService.Tasks;
 		private ObservableCollection<TaskItem> Pending => _taskService.PendingTasks;
 
@@ -100,9 +77,11 @@ namespace TaskMate.Services {
 
 			if(assignee == Assignee.Partner && !string.IsNullOrWhiteSpace(partnerId)) {
 				await _requests.UpsertRequestAsync(newTask, groupId);
+
 				var pendingUi = TaskCollectionHelpers.CloneForUi(newTask, Assignee.Partner, requestMode: true);
 				pendingUi.CanDecide = false;
 				_ui.Invoke(() => Pending.Add(pendingUi));
+
 				await _activity.LogAsync(new ActivityEntry {
 					Kind = "task.request",
 					Actor = "Me",
@@ -112,18 +91,21 @@ namespace TaskMate.Services {
 			}
 			else {
 				await _requests.UpsertPersonalAsync(newTask, myUserId);
+
 				var ownUi = TaskCollectionHelpers.CloneForUi(newTask, Assignee.Me, requestMode: false);
 				_ui.Invoke(() => Tasks.Add(ownUi));
 				SoundService.PlayTaskCreated();
+
 				await _activity.LogAsync(new ActivityEntry {
 					Kind = "task.add",
-					Actor = "Me",   // Use your own DisplayName
+					Actor = "Me",
 					Message = $"{_settings.DisplayName} Created task “{newTask.Title}”",
 					Timestamp = DateTime.UtcNow
 				}, myUserId);
 			}
+
 			if(due.HasValue) {
-				var dueLocal = due.Value; // your DueDate seems to be local-time already
+				var dueLocal = due.Value;
 				AppServices.Notifications.ScheduleDueToasts(newTask.Id, newTask.Title, dueLocal, TimeSpan.FromMinutes(15));
 			}
 		}
@@ -134,6 +116,7 @@ namespace TaskMate.Services {
 			if(item.AssignedTo == Assignee.Partner) {
 				await _requests.DeleteRequestAsync(item.Id, groupId);
 				_ui.Invoke(() => Pending.Remove(item));
+
 				await _activity.LogAsync(new ActivityEntry {
 					Kind = "task.delete",
 					Actor = "Me",
@@ -144,6 +127,7 @@ namespace TaskMate.Services {
 			else {
 				await _requests.DeletePersonalAsync(item.Id, myUserId);
 				_ui.Invoke(() => Tasks.Remove(item));
+
 				await _activity.LogAsync(new ActivityEntry {
 					Kind = "task.delete",
 					Actor = "Me",
@@ -155,8 +139,10 @@ namespace TaskMate.Services {
 
 		public async Task AcceptAsync(TaskItem item, string myUserId, string groupId) {
 			if(item is null) return;
+
 			await _requests.AcceptRequestAsync(item, groupId, myUserId);
 			_ui.Invoke(() => Pending.Remove(item));
+
 			await _activity.LogAsync(new ActivityEntry {
 				Kind = "task.accept",
 				Actor = "Me",
@@ -167,48 +153,50 @@ namespace TaskMate.Services {
 
 		public async Task DeclineAsync(TaskItem item, string groupId) {
 			if(item is null) return;
+
 			await _requests.DeleteRequestAsync(item.Id, groupId);
 			_ui.Invoke(() => Pending.Remove(item));
+
+			// Use current signed-in id from settings/auth instead of FirestoreClient
+			var myUserId = AppServices.Settings?.UserId ?? AppServices.Auth?.Uid ?? string.Empty;
 			await _activity.LogAsync(new ActivityEntry {
 				Kind = "task.decline",
 				Actor = "Me",
 				Message = $"Declined task “{item.Title}”",
 				Timestamp = DateTime.UtcNow
-			}, TaskMate.Sync.FirestoreClient.CurrentUserId);
+			}, myUserId);
 		}
+
 		public async Task UpdateAsync(TaskItem item, string myUserId, string groupId) {
 			if(item is null) return;
 
 			item.UpdatedAt = DateTime.UtcNow;
 
-			// If it's a partner-request (not accepted yet), it lives under "requests"
 			if(item.AssignedTo == Assignee.Partner && item.Accepted == false) {
 				await _requests.UpsertRequestAsync(item, groupId);
+
 				await _activity.LogAsync(new ActivityEntry {
 					Kind = "task.request.update",
 					Actor = "Me",
 					Message = $"Updated pending request “{item.Title}”",
 					Timestamp = DateTime.UtcNow
 				}, myUserId);
-				// Pending collection already holds a reference — no extra UI work needed
 			}
 			else {
-				// Personal list (mine or accepted tasks)
 				await _requests.UpsertPersonalAsync(item, myUserId);
 
-				// Replace in Tasks by Id so CollectionViews refresh seamlessly
 				_ui.Invoke(() => {
 					var idx = Tasks.ToList().FindIndex(t => t.Id == item.Id);
 					if(idx >= 0) {
-						var wasCompleted = Tasks[idx].IsCompleted;              // NEW
+						var wasCompleted = Tasks[idx].IsCompleted;
 						var updatedUi = TaskCollectionHelpers.CloneForUi(item, item.AssignedTo, requestMode: false);
 						Tasks[idx] = updatedUi;
 
-						if(!wasCompleted && item.IsCompleted)                   // NEW
+						if(!wasCompleted && item.IsCompleted)
 							SoundService.PlayTaskCompleted();
 					}
 				});
-				// LOG: completion vs. normal edit
+
 				if(item.IsCompleted) {
 					await _activity.LogAsync(new ActivityEntry {
 						Kind = "task.complete",
@@ -226,6 +214,8 @@ namespace TaskMate.Services {
 					}, myUserId);
 				}
 			}
+
+			// keep the existing second write (preserves original behavior)
 			await _requests.UpsertPersonalAsync(item, myUserId);
 
 			// (re)apply scheduling

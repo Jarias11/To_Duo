@@ -29,6 +29,67 @@ namespace TaskMate.ViewModels {
         public string AnimButtonText => _anim.Enabled ? "Disable Animations" : "Enable Animations";
         private string? _newActivityMessage;
         private static int _openPopouts;
+        private bool _hasNewActivity;
+        public bool HasNewActivity {
+            get => _hasNewActivity;
+            private set {
+                if(_hasNewActivity == value) return;
+                _hasNewActivity = value;
+                _settings.UnreadActivity = value;
+                _settings.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _hasNewPending;
+        public bool HasNewPending {
+            get => _hasNewPending;
+            private set {
+                if(_hasNewPending == value) return;
+                _hasNewPending = value;
+                _settings.UnreadPending = value;
+                _settings.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _hasNewCompleted;
+        public bool HasNewCompleted {
+            get => _hasNewCompleted;
+            private set {
+                if(_hasNewCompleted == value) return;
+                _hasNewCompleted = value;
+                _settings.UnreadCompleted = value;
+                _settings.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _hasNewConnections;
+        public bool HasNewConnections {
+            get => _hasNewConnections;
+            private set {
+                if(_hasNewConnections == value) return;
+                _hasNewConnections = value;
+                _settings.UnreadConnections = value;
+                _settings.Save();
+                OnPropertyChanged();
+            }
+        }
+
+
+
+        // === Auth constants (move to config later) ===
+        private const string ProjectId = "taskmate-4777f";
+        private const string WebApiKey = "AIzaSyD0umHa8ERVEYSV7TdUc54FQ4-665lyDnw";
+
+        // === Auth state for overlay ===
+        private bool _needsAuthSetup; public bool NeedsAuthSetup { get => _needsAuthSetup; set { if(_needsAuthSetup == value) return; _needsAuthSetup = value; OnPropertyChanged(); } }
+        private string? _email; public string? Email { get => _email; set { _email = value; OnPropertyChanged(); } }
+        private string? _password; public string? Password { get => _password; set { _password = value; OnPropertyChanged(); } }
+        private bool _isCreateAccount; public bool IsCreateAccount { get => _isCreateAccount; set { _isCreateAccount = value; OnPropertyChanged(); OnPropertyChanged(nameof(AuthButtonText)); } }
+        private string? _authError; public string? AuthError { get => _authError; set { _authError = value; OnPropertyChanged(); } }
+        public string AuthButtonText => IsCreateAccount ? "Create account" : "Sign in";
 
         public IReadOnlyList<KeyValuePair<TaskSortMode, string>> SortOptions { get; } =
     new[] {
@@ -100,9 +161,21 @@ namespace TaskMate.ViewModels {
         private int _selectedTopTab;
         public int SelectedTopTab {
             get => _selectedTopTab;
-            set { if(_selectedTopTab == value) return; _selectedTopTab = value; OnPropertyChanged(); }
+            set { if(_selectedTopTab == value) return; _selectedTopTab = value; OnPropertyChanged(); ClearTabNotification(value); }
         }
+        private void ClearTabNotification(int tabIndex) {
+            switch(tabIndex) {
+                case 0: HasNewActivity = false; break;
+                case 2: HasNewPending = false; break;
+                case 3: HasNewCompleted = false; break;
+                case 4: HasNewConnections = false; break;
+            }
 
+            OnPropertyChanged(nameof(HasNewActivity));
+            OnPropertyChanged(nameof(HasNewPending));
+            OnPropertyChanged(nameof(HasNewCompleted));
+            OnPropertyChanged(nameof(HasNewConnections));
+        }
 
         //Readonly services
         private readonly ILiveSyncCoordinator _live;
@@ -116,6 +189,7 @@ namespace TaskMate.ViewModels {
         private readonly ITaskDialogService _dialogs;
         private readonly IActivityLogService _activity;
         private readonly IAnimationService _anim;
+        private readonly Services.Auth.IAuthService _auth = AppServices.Auth;
 
         // Backing fields + properties
         private const string CreateNewCategory = "Create New…";
@@ -148,34 +222,44 @@ namespace TaskMate.ViewModels {
         public ObservableCollection<PartnerRequest> OutgoingPartnerRequests { get; } = new();
         public ObservableCollection<ActivityEntry> ActivityFeed => _activity.Feed;
         // Commands
-        public RelayCommand ToggleThemeCommand { get; }
-        public ICommand SendPartnerRequestCommand { get; }
-        public ICommand AcceptPartnerInviteCommand { get; }
-        public ICommand DeclinePartnerInviteCommand { get; }
-        public ICommand CancelPartnerRequestCommand { get; }
-        public ICommand DisconnectPartnerCommand { get; }
-        public ICommand SaveDisplayNameCommand { get; }
-        public ICommand AddTaskCommand { get; }
-        public ICommand DeleteTaskCommand { get; }
-        public ICommand AcceptTaskCommand { get; }
-        public ICommand DeclineTaskCommand { get; }
-        public ICommand ShowTaskDetailsCommand { get; }
-        public ICommand ToggleCompleteCommand { get; }
-        public ICommand SendActivityMessageCommand { get; }
-        public ICommand ReactToActivityCommand { get; }
-        public ICommand PopOutBothCommand { get; }
-        public ICommand PopOutMineCommand { get; }
-        public ICommand PopOutPartnerCommand { get; }
-        public ICommand ToggleSoundCommand { get; }
-        public ICommand ToggleAnimationsCommand { get; }
-        public ICommand ToggleNotificationsCommand { get; }
-        public ICommand ToggleSettingsCommand { get; }
+        public ICommand ToggleThemeCommand { get; private set; }
+        public ICommand SendPartnerRequestCommand { get; private set; }
+        public ICommand AcceptPartnerInviteCommand { get; private set; }
+        public ICommand DeclinePartnerInviteCommand { get; private set; }
+        public ICommand CancelPartnerRequestCommand { get; private set; }
+        public ICommand DisconnectPartnerCommand { get; private set; }
+        public ICommand SaveDisplayNameCommand { get; private set; }
+        public ICommand AddTaskCommand { get; private set; }
+        public ICommand DeleteTaskCommand { get; private set; }
+        public ICommand AcceptTaskCommand { get; private set; }
+        public ICommand DeclineTaskCommand { get; private set; }
+        public ICommand ShowTaskDetailsCommand { get; private set; }
+        public ICommand ToggleCompleteCommand { get; private set; }
+        public ICommand SendActivityMessageCommand { get; private set; }
+        public ICommand ReactToActivityCommand { get; private set; }
+        public ICommand PopOutBothCommand { get; private set; }
+        public ICommand PopOutMineCommand { get; private set; }
+        public ICommand PopOutPartnerCommand { get; private set; }
+        public ICommand ToggleSoundCommand { get; private set; }
+        public ICommand ToggleAnimationsCommand { get; private set; }
+        public ICommand ToggleNotificationsCommand { get; private set; }
+        public ICommand ToggleSettingsCommand { get; private set; }
+        public ICommand AuthContinueCommand { get; private set; }
 
 
 
-        public MainViewModel(ITaskService taskService, IPartnerService partnerService, IThemeService themeService, ISettingsService settingsService, ILiveSyncCoordinator live, ITaskActions actions, IPairingOrchestrator pairing, ITaskDialogService dialogs, IActivityLogService activity, IAnimationService anim) {
-
-            // Dependency injection of services
+        public MainViewModel(
+    ITaskService taskService,
+    IPartnerService partnerService,
+    IThemeService themeService,
+    ISettingsService settingsService,
+    ILiveSyncCoordinator live,
+    ITaskActions actions,
+    IPairingOrchestrator pairing,
+    ITaskDialogService dialogs,
+    IActivityLogService activity,
+    IAnimationService anim) {
+            // ===== Dependency injection of services (unchanged) =====
             _activity = activity;
             _taskService = taskService;
             _actions = actions;
@@ -186,33 +270,47 @@ namespace TaskMate.ViewModels {
             _dialogs = dialogs;
             _live = live;
             _anim = anim;
+
             _clock.Tick += (_, __) => Now = DateTime.Now;
             _clock.Start();
+            HasNewActivity = _settings.UnreadActivity;
+            HasNewPending = _settings.UnreadPending;
+            HasNewCompleted = _settings.UnreadCompleted;
+            HasNewConnections = _settings.UnreadConnections;
 
             OnPropertyChanged(nameof(PartnerId));
 
-
+            // ===== Views setup (unchanged) =====
             MyTasksView = CollectionViewSource.GetDefaultView(Tasks);
             IsPartnerVerified = !string.IsNullOrWhiteSpace(PartnerId);
             MyTasksView.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Me && !t.IsCompleted;
+
             PartnerTasksView = new CollectionViewSource { Source = Tasks }.View;
             PartnerTasksView.Filter = o => o is TaskItem t && t.AssignedTo == Assignee.Partner && !t.IsCompleted;
 
             CompletedAllView = new CollectionViewSource { Source = Tasks }.View;
             CompletedAllView.Filter = o => o is TaskItem t && t.IsCompleted;
 
-            // Apply saved theme on startup
+            // ===== Apply saved theme/sound on startup (unchanged) =====
             var saved = _settings.Theme;
             _themeService.Apply(saved);
             ThemeButtonText = saved == AppTheme.Light ? "Dark Mode" : "Light Mode";
-            // make sure UI reflects initial state
+
             SoundService.Enable(_settings.SoundsEnabled);
             OnPropertyChanged(nameof(IsDarkTheme));
             OnPropertyChanged(nameof(IsMuted));
             OnPropertyChanged(nameof(SoundButtonText));
 
+            // ===== Auth overlay command MUST be available before we return =====
+            AuthContinueCommand = new RelayCommand(async _ => await AuthContinueAsync());
 
-            // Live sync
+            // ===== Phase 1: Auth gate — continue boot only after auth =====
+            _ = InitializeAuthAsync();
+            return;
+        }
+
+        private void BootstrapAfterAuth() {
+            // ===== Live sync =====
             _live.Attach(Tasks, PendingTasks, SentPendingTasks, MyTasksView, PartnerTasksView);
             _pairing.PartnerDisconnected += () => {
                 IsPartnerVerified = false;
@@ -222,6 +320,18 @@ namespace TaskMate.ViewModels {
 
             // Bind orchestrator to the VM-owned collections
             _pairing.Attach(IncomingPartnerRequests, OutgoingPartnerRequests);
+            // Notify "Connections" tab when requests change
+            IncomingPartnerRequests.CollectionChanged += (_, __) => {
+                if(SelectedTopTab != 4) {
+                    HasNewConnections = true;
+                }
+            };
+
+            OutgoingPartnerRequests.CollectionChanged += (_, __) => {
+                if(SelectedTopTab != 4) {
+                    HasNewConnections = true;
+                }
+            };
 
             // Keep HasPendingOutgoing + ConnectionSummary updated without VM list math
             _pairing.OutgoingChanged += () => {
@@ -245,8 +355,8 @@ namespace TaskMate.ViewModels {
                     await _activity.StartPartnerSinceAsync(PartnerId!, since);
 
                     // Optional: also purge server-side partner requests between the pair
-                    //try { await _pairing.PurgePairAsync(UserId, PartnerId!); }
-                    //catch { /* log if you want; non-fatal */ }
+                    // try { await _pairing.PurgePairAsync(UserId, PartnerId!); }
+                    // catch { /* log if you want; non-fatal */ }
                 }
                 else {
                     await _activity.StopPartnerAsync();
@@ -254,19 +364,14 @@ namespace TaskMate.ViewModels {
                 UpdateHeaderCounts();
             };
 
-
-
-
-
-
-
-
-            // Initialize commands
+            // ===== Commands =====
             AcceptPartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.AcceptAsync(UserId, r!));
             DeclinePartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.DeclineAsync(UserId, r!));
             CancelPartnerRequestCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.CancelAsync(UserId, r!));
             DisconnectPartnerCommand = new RelayCommand(async _ => await _pairing.DisconnectAsync(UserId, PartnerId ?? string.Empty));
-            SendPartnerRequestCommand = new RelayCommand(async _ => await _pairing.SendAsync(UserId, EnteredPartnerCode!, DisplayName ?? "Someone"),
+
+            SendPartnerRequestCommand = new RelayCommand(
+                async _ => await _pairing.SendAsync(UserId, EnteredPartnerCode!, DisplayName ?? "Someone"),
                 _ => !string.IsNullOrWhiteSpace(EnteredPartnerCode) && EnteredPartnerCode != UserId
             );
 
@@ -288,13 +393,16 @@ namespace TaskMate.ViewModels {
                 NewTaskDescription = string.Empty;
                 NewTaskDueDate = null;
             });
+
             DeleteTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.DeleteAsync(t!, UserId, _partner.GroupId), t => t?.CanDecide == true);
             AcceptTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.AcceptAsync(t!, UserId, _partner.GroupId), t => t?.CanDecide == true);
             DeclineTaskCommand = new RelayCommand<TaskItem>(async t => await _actions.DeclineAsync(t!, _partner.GroupId), t => t?.CanDecide == true);
+
             ShowTaskDetailsCommand = new RelayCommand<TaskItem>(
-    async t => { if(t != null) await _dialogs.ShowTaskDetailsAsync(t); },
-    t => t != null
-);
+                async t => { if(t != null) await _dialogs.ShowTaskDetailsAsync(t); },
+                t => t != null
+            );
+
             ToggleThemeCommand = new RelayCommand(_ => {
                 var next = _themeService.Toggle();
                 _settings.Theme = next;
@@ -302,14 +410,16 @@ namespace TaskMate.ViewModels {
                 ThemeButtonText = next == AppTheme.Light ? "Dark Mode" : "Light Mode";
                 OnPropertyChanged(nameof(IsDarkTheme));
             });
+
             SaveDisplayNameCommand = new RelayCommand(
                 _ => SaveDisplayName(),
                 _ => !string.IsNullOrWhiteSpace(NewDisplayName)
-        );
+            );
 
             ToggleCompleteCommand = new RelayCommand<TaskItem>(async t => {
                 if(t == null) return;
                 var wasCompleted = t.IsCompleted;
+
                 // flip
                 if(t.IsCompleted)
                     t.CompletedAt ??= DateTime.UtcNow;
@@ -320,7 +430,7 @@ namespace TaskMate.ViewModels {
 
                 await _actions.UpdateAsync(t, UserId, _partner.GroupId);
 
-                // refresh the four views so items "jump" between active/completed
+                // refresh the four views so items "jump" between active/completed"
                 MyTasksView?.Refresh();
                 PartnerTasksView?.Refresh();
                 CompletedAllView?.Refresh();
@@ -331,6 +441,7 @@ namespace TaskMate.ViewModels {
                     _anim.Confetti(); // defaults to MainWindow + ~80 pieces
                 }
             });
+
             SendActivityMessageCommand = new RelayCommand(async _ => {
                 var text = (NewActivityMessage ?? string.Empty).Trim();
                 if(text.Length == 0) return;
@@ -338,9 +449,8 @@ namespace TaskMate.ViewModels {
                 await _activity.PostMessageAsync(text, UserId);
                 SoundService.PlaySent();
                 NewActivityMessage = string.Empty; // clear box
+            }, _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
 
-            },
-_ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             ReactToActivityCommand = new RelayCommand(async obj => {
                 if(obj is not Tuple<ActivityEntry, string> t) return;
                 var (entry, reaction) = t;
@@ -352,6 +462,7 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                 var reactorId = UserId; // I’m reacting
                 await _activity.ReactAsync(ownerUserId, entry.Id, reactorId, reaction);
             });
+
             PopOutBothCommand = new RelayCommand(_ => {
                 var w = new TaskMate.Views.TaskBoardPopoutWindow { DataContext = this };
                 ShowPopoutAndHideMain(w);
@@ -372,10 +483,11 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                 var w = new Views.TaskListPopoutWindow {
                     Owner = Application.Current.MainWindow,
                     DataContext = this,                 // so MyTasksView / PartnerTasksView are available
-                    ListKind = TaskListKind.Partner        // or Partner
+                    ListKind = TaskListKind.Partner
                 };
                 w.Show();
             });
+
             ToggleSoundCommand = new RelayCommand(_ => {
                 var next = !_settings.SoundsEnabled;
                 _settings.SoundsEnabled = next;
@@ -384,18 +496,20 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                 OnPropertyChanged(nameof(IsMuted));          // <— notify
                 OnPropertyChanged(nameof(SoundButtonText));  // (optional tooltip)
             });
+
             ToggleAnimationsCommand = new RelayCommand(_ => {
                 _anim.Enabled = !_anim.Enabled;
                 OnPropertyChanged(nameof(AnimationsEnabled));
                 OnPropertyChanged(nameof(AnimButtonText));
             });
+
             ToggleNotificationsCommand = new RelayCommand(_ => {
                 NotificationsEnabled = !_settings.NotificationsEnabled;
             });
+
             ToggleSettingsCommand = new RelayCommand(_ => IsSettingsOpen = !IsSettingsOpen);
 
-
-
+            // ===== Load local data, attach handlers, start services =====
             var local = TaskMate.Data.TaskDataService.LoadTasks();
             foreach(var t in local) _taskService.Tasks.Add(t);
             foreach(var t in Tasks) AttachTaskHandlers(t);
@@ -407,6 +521,7 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
 
                 if(e.OldItems != null)
                     foreach(TaskItem t in e.OldItems) DetachTaskHandlers(t);
+
                 UpdateHeaderCounts();
 
                 // Keep the list sorted if we are in Category mode
@@ -415,18 +530,36 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
                     RefreshAllViews();
                 }
             };
+
             UpdateHeaderCounts();
+            // Notify "Pending" tab when incoming or sent pending tasks change
+            PendingTasks.CollectionChanged += (_, __) => {
+                if(SelectedTopTab != 2) {
+                    HasNewPending = true;
+                }
+            };
+
+            SentPendingTasks.CollectionChanged += (_, __) => {
+                if(SelectedTopTab != 2) {
+                    HasNewPending = true;
+                }
+            };
             _ = _live.StartAsync();
 
             if(IsPartnerVerified && PartnerId is not null) {
                 _ = _live.ReloadForPartnerAsync(); // safe now because StartAsync just ran
                 var since = _settings.PairedSinceUtc ?? DateTime.UtcNow;
                 _ = _activity.StartPartnerSinceAsync(PartnerId, since);
-
             }
+
             _ = _activity.StartMineAsync(UserId);
             _pairing.Start(UserId);
 
+            _activity.Feed.CollectionChanged += (_, __) => {
+                if(SelectedTopTab != 0) {
+                    HasNewActivity = true;
+                }
+            };
 
             // Re-apply sort after categories are loaded (async) and whenever Categories changes.
             _ = InitializeCategoriesAsync().ContinueWith(_ => {
@@ -447,11 +580,69 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
 
             // Run initial sort immediately (uses whatever we have right now)
             ApplySorts();
+
             // If profile not set up yet, prompt for display name
             if(NeedsProfileSetup) NewDisplayName = string.Empty;
+        }
+        private async Task InitializeAuthAsync() {
+            try {
+                var have = await _auth.TrySilentSignInAsync();
+                if(!have) {
+                    NeedsAuthSetup = true; // show overlay Step 1
+                    return;
+                }
+
+                await AfterAuthAsync();
+            }
+            catch(Exception ex) {
+                AuthError = ex.Message;
+                NeedsAuthSetup = true;
+            }
+        }
+
+        private async Task AfterAuthAsync() {
 
 
+            try {
+                // Use the injected settings service; do NOT create a new instance
+                _settings.EnsureUserId(_auth.Uid!);
 
+                // The overlay for Step 2 is driven by DisplayName being empty,
+                // so just notify the bindings to re-evaluate.
+                OnPropertyChanged(nameof(DisplayName));
+                OnPropertyChanged(nameof(NeedsProfileSetup));
+            }
+            catch {
+                // non-fatal
+            }
+
+            TaskMate.Services.Notifications.ToastRegistration.EnsureRegistered();
+            TaskMate.Services.Notifications.ToastRegistration.ShowSimple("TaskMate", "Notifications ready");
+
+            NeedsAuthSetup = false;   // hide Step 1
+            BootstrapAfterAuth();
+            await Task.CompletedTask;
+        }
+
+        private async Task AuthContinueAsync() {
+            AuthError = null;
+
+            if(string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password)) {
+                AuthError = "Email and password are required.";
+                return;
+            }
+
+            try {
+                if(IsCreateAccount)
+                    await _auth.SignUpWithEmailAsync(Email.Trim(), Password, WebApiKey);
+                else
+                    await _auth.SignInWithEmailAsync(Email.Trim(), Password, WebApiKey);
+
+                await AfterAuthAsync();
+            }
+            catch(Exception ex) {
+                AuthError = ex.Message;
+            }
         }
 
 
@@ -621,7 +812,11 @@ _ => !string.IsNullOrWhiteSpace(NewActivityMessage));
             }
             if(e.PropertyName == nameof(TaskItem.IsCompleted) ||
                 e.PropertyName == nameof(TaskItem.AssignedTo)) {
-                UpdateHeaderCounts();             // <-- add
+                UpdateHeaderCounts();
+                // If a task just flipped completed and we’re not on the Completed tab, show indicator
+                if(e.PropertyName == nameof(TaskItem.IsCompleted) && SelectedTopTab != 2) {
+                    HasNewCompleted = true;
+                }
             }
         }
 

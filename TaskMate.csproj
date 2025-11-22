@@ -12,9 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Cloud.Firestore" Version="3.10.0" />
+    
     <!-- REMOVE: <PackageReference Include="Microsoft.WindowsAppSDK" ... /> -->
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+
+    
     <!-- Include sound as Content and copy to bin folder -->
   <Content Include="Assets\Sounds\hoveringOverButton.wav">
     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -36,6 +38,7 @@
   </Content>
   <!-- stop SDK default globs from claiming the files as <None> -->
   <None Remove="Assets/Fonts/**" />
+  <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
   <!-- embed all TTF/OTF fonts as WPF resources -->
   <Resource Include="Assets/Fonts/**/*.ttf" />
   <Resource Include="Assets/Fonts/**/*.otf" />
