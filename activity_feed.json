@@ -1,5 +1,15 @@
 [
   {
+    "Timestamp": "2025-11-21T21:41:40.5452028-05:00",
+    "Actor": "Jeremy",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Chdfhdrft\u201D",
+    "IsMine": true,
+    "Id": null,
+    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "Reactions": {}
+  },
+  {
     "Timestamp": "2025-11-21T20:59:23.033842-05:00",
     "Actor": "Jeremy",
     "Kind": "task.complete",

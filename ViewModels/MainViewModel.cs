@@ -91,13 +91,16 @@ namespace TaskMate.ViewModels {
         private string? _authError; public string? AuthError { get => _authError; set { _authError = value; OnPropertyChanged(); } }
         public string AuthButtonText => IsCreateAccount ? "Create account" : "Sign in";
 
+
+       
+
         public IReadOnlyList<KeyValuePair<TaskSortMode, string>> SortOptions { get; } =
-    new[] {
+        new[] {
         new KeyValuePair<TaskSortMode,string>(TaskSortMode.DueSoon, "Due soon"),
         new KeyValuePair<TaskSortMode,string>(TaskSortMode.Newest,  "Newest"),
         new KeyValuePair<TaskSortMode,string>(TaskSortMode.Oldest,  "Oldest"),
         new KeyValuePair<TaskSortMode,string>(TaskSortMode.Category,"Category"),
-    };
+        };
 
         private bool _isSettingsOpen;
         public bool IsSettingsOpen {
@@ -249,16 +252,16 @@ namespace TaskMate.ViewModels {
 
 
         public MainViewModel(
-    ITaskService taskService,
-    IPartnerService partnerService,
-    IThemeService themeService,
-    ISettingsService settingsService,
-    ILiveSyncCoordinator live,
-    ITaskActions actions,
-    IPairingOrchestrator pairing,
-    ITaskDialogService dialogs,
-    IActivityLogService activity,
-    IAnimationService anim) {
+            ITaskService taskService,
+            IPartnerService partnerService,
+            IThemeService themeService,
+            ISettingsService settingsService,
+            ILiveSyncCoordinator live,
+            ITaskActions actions,
+            IPairingOrchestrator pairing,
+            ITaskDialogService dialogs,
+            IActivityLogService activity,
+            IAnimationService anim) {
             // ===== Dependency injection of services (unchanged) =====
             _activity = activity;
             _taskService = taskService;
@@ -588,61 +591,35 @@ namespace TaskMate.ViewModels {
             try {
                 var have = await _auth.TrySilentSignInAsync();
                 if(!have) {
-                    NeedsAuthSetup = true; // show overlay Step 1
+                    NeedsAuthSetup = true; // show overlay Step 1 
+
                     return;
                 }
-
                 await AfterAuthAsync();
             }
-            catch(Exception ex) {
-                AuthError = ex.Message;
-                NeedsAuthSetup = true;
-            }
+            catch(Exception ex) { AuthError = ex.Message; NeedsAuthSetup = true; }
         }
 
         private async Task AfterAuthAsync() {
-
-
-            try {
-                // Use the injected settings service; do NOT create a new instance
-                _settings.EnsureUserId(_auth.Uid!);
-
-                // The overlay for Step 2 is driven by DisplayName being empty,
-                // so just notify the bindings to re-evaluate.
-                OnPropertyChanged(nameof(DisplayName));
-                OnPropertyChanged(nameof(NeedsProfileSetup));
+            try { // Use the injected settings service; do NOT create a new instance _settings.EnsureUserId(_auth.Uid!); 
+                  // // The overlay for Step 2 is driven by DisplayName being empty, // so just notify the bindings to re-evaluate. 
+                OnPropertyChanged(nameof(DisplayName)); OnPropertyChanged(nameof(NeedsProfileSetup));
             }
-            catch {
-                // non-fatal
+            catch { // non-fatal 
             }
-
-            TaskMate.Services.Notifications.ToastRegistration.EnsureRegistered();
-            TaskMate.Services.Notifications.ToastRegistration.ShowSimple("TaskMate", "Notifications ready");
-
-            NeedsAuthSetup = false;   // hide Step 1
-            BootstrapAfterAuth();
-            await Task.CompletedTask;
+            TaskMate.Services.Notifications.ToastRegistration.EnsureRegistered(); TaskMate.Services.Notifications.ToastRegistration.ShowSimple("TaskMate", "Notifications ready"); NeedsAuthSetup = false; // hide Step 1 
+            BootstrapAfterAuth(); await Task.CompletedTask;
         }
-
         private async Task AuthContinueAsync() {
             AuthError = null;
-
-            if(string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password)) {
-                AuthError = "Email and password are required.";
-                return;
-            }
-
+            if(string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password)) { AuthError = "Email and password are required."; return; }
             try {
                 if(IsCreateAccount)
                     await _auth.SignUpWithEmailAsync(Email.Trim(), Password, WebApiKey);
                 else
-                    await _auth.SignInWithEmailAsync(Email.Trim(), Password, WebApiKey);
-
-                await AfterAuthAsync();
+                    await _auth.SignInWithEmailAsync(Email.Trim(), Password, WebApiKey); await AfterAuthAsync();
             }
-            catch(Exception ex) {
-                AuthError = ex.Message;
-            }
+            catch(Exception ex) { AuthError = ex.Message; }
         }
 
 
@@ -698,8 +675,7 @@ namespace TaskMate.ViewModels {
                 CategoryDataService.Save(
         UserId,
         Categories.Where(c => !string.Equals(c, CreateNewCategory, StringComparison.Ordinal))
-                  .ToList()
-    );
+                  .ToList());
             }
 
             // select the new/existing category
