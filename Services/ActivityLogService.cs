@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Microsoft.VisualBasic;
 using TaskMate.Models;
 using TaskMate.Sync;
 
@@ -43,7 +44,7 @@ namespace TaskMate.Services {
 			var myActor = _settings.DisplayName ?? "Me";
 
 			// Add to users/{uid}/activity (auto-id). NOTE: top-level fields, no F.Map wrapper.
-			await _rest.AddAsync(
+			var docName = await _rest.AddAsync(
 				$"users/{myUserId}/activity",
 				new {
 					Timestamp = F.Ts(utc),
@@ -52,12 +53,13 @@ namespace TaskMate.Services {
 					Message = F.Str(e.Message ?? ""),
 					Reactions = new { mapValue = new { fields = new { } } }
 				});
+			var id = docName.Split('/').Last();
 
 			// Optimistic echo (local time so it matches your header clock)
 			try {
 				var localTs = utc.ToLocalTime();
 				var echo = new ActivityEntry {
-					Id = null, // auto-id will be picked up by poller
+					Id = id, // auto-id will be picked up by poller
 					OwnerUserId = myUserId,
 					Timestamp = localTs,
 					Actor = myActor,
@@ -147,15 +149,32 @@ namespace TaskMate.Services {
 			await _rest.SetDocAsync(docPath, fieldDict).ConfigureAwait(false);
 
 			// 4) Optimistic local update
-			_ui.BeginInvoke(() => {
-				var row = Feed.FirstOrDefault(a => a.Id == entryId && a.OwnerUserId == ownerUserId);
-				if(row != null) {
-					row.Reactions[reactorUserId] = emoji;
-					var idx = Feed.IndexOf(row);
-					if(idx >= 0) Feed[idx] = row;
-					SaveLocal();
-				}
-			});
+			_ = _ui.BeginInvoke(() => {
+	var old = Feed.FirstOrDefault(a => a.Id == entryId && a.OwnerUserId == ownerUserId);
+	if(old == null) return;
+
+	// clone reactions and apply this user’s emoji
+	var newReactions = new Dictionary<string, string>(old.Reactions ?? new());
+	newReactions[reactorUserId] = emoji;
+
+	// NEW: create a fresh ActivityEntry so DataContext actually changes
+	var updated = new ActivityEntry {
+		Id          = old.Id,
+		OwnerUserId = old.OwnerUserId,
+		Timestamp   = old.Timestamp,
+		Actor       = old.Actor,
+		Kind        = old.Kind,
+		Message     = old.Message,
+		IsMine      = old.IsMine,
+		Reactions   = newReactions
+	};
+
+	var idx = Feed.IndexOf(old);
+	if(idx >= 0)
+		Feed[idx] = updated;   // CollectionChanged(Replace with new instance)
+
+	SaveLocal();
+});
 		}
 
 		public Task PostMessageAsync(string text, string myUserId)
@@ -168,20 +187,53 @@ namespace TaskMate.Services {
 		// ---------------------------------------------------------------------
 		// Polling workers
 		// ---------------------------------------------------------------------
-		private async Task PollUserActivityAsync(string userId, bool isMine, CancellationToken ct, DateTime? sinceUtc = null) {
+		private async Task PollUserActivityAsync(
+			string userId,
+			bool isMine,
+			CancellationToken ct,
+			DateTime? sinceUtc = null) {
 			string? lastSig = null;
+			DateTime? lastSeenUtc = sinceUtc;   // only used for partner
 
 			while(!ct.IsCancellationRequested) {
 				try {
 					var myDisplay = _settings.DisplayName ?? "Me";
+
+					// 👉 For my own activity, always fetch the full latest page (no cutoff)
+					// 👉 For partner, use lastSeenUtc as a cutoff for “only new since…”
+					var effectiveCutoff = isMine ? (DateTime?)null : lastSeenUtc;
+
 					var items = await QueryUserActivityAsync(
 						userId,
 						isMine,
 						isMine ? myDisplay : null,
-						sinceUtc).ConfigureAwait(false);
+						effectiveCutoff).ConfigureAwait(false);
 
-					// Lightweight change detection: signature of ids + timestamps
-					var sig = string.Join("|", items.Select(e => $"{e.Id ?? ""}#{e.Timestamp:O}"));
+					// Only advance lastSeenUtc for partner
+					if(!isMine && items.Count > 0) {
+						var newestLocal = items.Max(e => e.Timestamp);
+						lastSeenUtc = newestLocal.ToUniversalTime();
+					}
+
+					// ⚠️ For my own feed: if nothing came back, don't blow away what I already have
+					if(isMine && items.Count == 0) {
+						goto DelayOnly;
+					}
+
+					// Signature still used to avoid unnecessary UI updates
+					// Signature used to avoid unnecessary UI updates
+					string MakeSig(ActivityEntry e) {
+						// Deterministic representation of reaction map
+						var reactionsPart = string.Join(",",
+							(e.Reactions ?? new Dictionary<string, string>())
+								.OrderBy(kv => kv.Key)
+								.Select(kv => $"{kv.Key}={kv.Value}"));
+
+						return $"{e.Id ?? ""}#{e.Timestamp:O}#{reactionsPart}";
+					}
+
+					var sig = string.Join("|", items.Select(MakeSig));
+
 					if(!string.Equals(sig, lastSig, StringComparison.Ordinal)) {
 						lastSig = sig;
 						if(isMine)
@@ -194,37 +246,49 @@ namespace TaskMate.Services {
 					// keep polling even if a cycle fails
 				}
 
+			DelayOnly:
 				try { await Task.Delay(8000, ct).ConfigureAwait(false); } catch { }
 			}
 		}
 
 		private async Task<IList<ActivityEntry>> QueryUserActivityAsync(
-	string userId,
-	bool isMine,
-	string? myDisplayForMine,
-	DateTime? cutoffUtc) {
-
-			var rows = await _rest.RunQueryAsync(
-				parentPath: $"users/{userId}",
-				structuredQuery: new {
-					from = new[] { new { collectionId = "activity" } },
-					orderBy = new[] {
-				new { field = new { fieldPath = "Timestamp" }, direction = "DESCENDING" }
-					},
-					limit = 200
-				}).ConfigureAwait(false);
-
+			string userId,
+			bool isMine,
+			string? myDisplayForMine,
+			DateTime? cutoffUtc) {
 			var list = new List<ActivityEntry>();
-			foreach(var line in rows) {
-				if(!line.TryGetProperty("document", out var doc)) continue;
-				list.Add(MapFromDoc(doc, userId, isMine, myDisplayForMine));
+
+			// Use the same pattern as personal tasks: ListDocs on the subcollection
+			var docs = await _rest.ListDocsAsync(
+				collectionPath: $"users/{userId}/activity",
+				orderBy: "Timestamp desc",
+				pageSize: 200
+			).ConfigureAwait(false);
+
+			foreach(var doc in docs) {
+				// Map every doc
+				var entry = MapFromDoc(doc, userId, isMine, myDisplayForMine);
+
+				// Optional: apply cutoff in-memory if provided (for partner "since" logic)
+				if(cutoffUtc.HasValue) {
+					var tsUtc = entry.Timestamp.ToUniversalTime();
+					if(tsUtc <= cutoffUtc.Value.ToUniversalTime())
+						continue;
+				}
+
+				list.Add(entry);
 			}
 
-			if(cutoffUtc.HasValue)
-				list = list.Where(e => e.Timestamp.ToUniversalTime() >= cutoffUtc.Value).ToList();
+			// Already ordered by Timestamp desc from the query, but just to be safe:
+			var final = list
+				.GroupBy(e => $"{e.OwnerUserId}/{e.Id}")
+				.Select(g => g.OrderByDescending(x => x.Timestamp).First())
+				.OrderByDescending(x => x.Timestamp)
+				.ToList();
 
-			return list;
+			return final;
 		}
+
 		// ---------------------------------------------------------------------
 		// Mapping helpers (REST doc -> ActivityEntry)
 		// ---------------------------------------------------------------------
@@ -275,13 +339,31 @@ namespace TaskMate.Services {
 		// Local feed merge & persistence
 		// ---------------------------------------------------------------------
 		private void ReplaceMine(IList<ActivityEntry> mine, string myDisplay) {
+			// Figure out which userId is "me" on this device
+			var myUserId = AppServices.Auth?.Uid
+						   ?? _settings.UserId
+						   ?? string.Empty;
+
+			// Remove only entries that are actually mine
 			for(int i = Feed.Count - 1; i >= 0; i--) {
-				var a = Feed[i].Actor;
-				if(string.Equals(a, myDisplay, StringComparison.OrdinalIgnoreCase)
-				 || string.Equals(a, "Me", StringComparison.OrdinalIgnoreCase)) {
+				var row = Feed[i];
+
+				// Old logic (problematic):
+				// var a = row.Actor;
+				// if (string.Equals(a, myDisplay, StringComparison.OrdinalIgnoreCase)
+				//     || string.Equals(a, "Me", StringComparison.OrdinalIgnoreCase)) {
+				//     Feed.RemoveAt(i);
+				// }
+
+				// New logic: use OwnerUserId / IsMine instead of Actor text
+				if(row.IsMine &&
+					!string.IsNullOrWhiteSpace(row.OwnerUserId) &&
+					string.Equals(row.OwnerUserId, myUserId, StringComparison.OrdinalIgnoreCase)) {
 					Feed.RemoveAt(i);
 				}
 			}
+
+			// Add the fresh "mine" entries we just fetched
 			foreach(var e in mine.OrderByDescending(x => x.Timestamp))
 				Feed.Add(e);
 

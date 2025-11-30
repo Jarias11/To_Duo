@@ -1,532 +1,232 @@
 [
   {
-    "Timestamp": "2025-11-21T21:41:40.5452028-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Chdfhdrft\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:59:23.033842-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cefawawfawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:50:21.943532-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Chdfhdrft\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:45:21.8008453-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cefawawfawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:45:10.8183394-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cfeahtfdghfth\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:37:32.7048902-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cefawawfawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:37:27.7864686-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cewafwe\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:32:59.2425136-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Chdfhdrft\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:32:29.1895174-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cvdszv\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:31:38.1990186-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cdfgdxz\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:31:19.157134-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cefawawfawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:30:54.2084839-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201C4tweew\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:23:05.7309379-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cefawfaw\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:22:59.6485118-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cefawewafaef\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:22:54.5720404-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cwfeafwe\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:22:51.0433095-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201CwfaEEfAWEF\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T20:22:37.9994561-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cefawawfawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T16:34:44.9295531-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cefawfawfaws\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T16:34:42.8188942-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Chdfhdrft\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T16:34:41.0356263-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cefawawfawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T16:34:36.7259857-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cfaewaf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T16:34:34.1219042-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cefawfawfaws\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T16:28:44.5922083-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cewafaewawf\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T15:17:13.3164482-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.complete",
-    "Message": "Completed \u201Cdvfv\u201D",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-21T15:02:18.912529-05:00",
+    "Timestamp": "2025-11-30T02:56:10.497888-05:00",
     "Actor": "Jeremy",
     "Kind": "chat.message",
-    "Message": "hunu",
+    "Message": "rgsegg",
     "IsMine": true,
-    "Id": "B3nF6XBlzcd9ywBPDpYQ",
+    "Id": "8Md29uYw4NxbGa0EbrVi",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "thumbsUp"
+    }
   },
   {
-    "Timestamp": "2025-11-21T00:18:30.666044-05:00",
+    "Timestamp": "2025-11-30T01:56:56.741344-05:00",
+    "Actor": "Jeremy",
+    "Kind": "task.complete",
+    "Message": "Completed \u201Cdvx\u201D",
+    "IsMine": true,
+    "Id": "vWgEkV4EfEGso8yxZD64",
+    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "shocked"
+    }
+  },
+  {
+    "Timestamp": "2025-11-30T01:50:02.12247-05:00",
+    "Actor": "Jeremy",
+    "Kind": "chat.message",
+    "Message": "wa",
+    "IsMine": true,
+    "Id": "o0WDvD1TWkVrR3zLmnOW",
+    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "shocked"
+    }
+  },
+  {
+    "Timestamp": "2025-11-30T01:49:24.440911-05:00",
+    "Actor": "Jeremy",
+    "Kind": "chat.message",
+    "Message": "hrkko",
+    "IsMine": true,
+    "Id": "8YLC8IVkyWs9tRHQedmE",
+    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "sad"
+    }
+  },
+  {
+    "Timestamp": "2025-11-22T21:58:23.781237-05:00",
+    "Actor": "Jeremy",
+    "Kind": "chat.message",
+    "Message": "GERARSE",
+    "IsMine": true,
+    "Id": "JyBAXhduleN9s2L0AO6s",
+    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "happy"
+    }
+  },
+  {
+    "Timestamp": "2025-11-22T21:50:24.442773-05:00",
     "Actor": "fdgfdsgfd",
     "Kind": "chat.message",
-    "Message": "gh",
+    "Message": "efef",
     "IsMine": false,
-    "Id": "CMgiywxXA8SRsSAOoEde",
+    "Id": "f1bviTgpysA5IoZnntgF",
     "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "shocked"
+    }
   },
   {
-    "Timestamp": "2025-11-21T00:18:16.338266-05:00",
+    "Timestamp": "2025-11-22T21:50:19.061913-05:00",
     "Actor": "Jeremy",
     "Kind": "chat.message",
-    "Message": "bitch",
+    "Message": "esss",
     "IsMine": true,
-    "Id": "mVtcga9346c8zDhIflY1",
+    "Id": "yyWCcMY7R6BwtIS3pCc8",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "thumbsUp"
+    }
   },
   {
-    "Timestamp": "2025-11-20T23:29:22.755969-05:00",
+    "Timestamp": "2025-11-22T21:50:08.765794-05:00",
     "Actor": "Jeremy",
     "Kind": "chat.message",
-    "Message": "b",
+    "Message": "gress",
     "IsMine": true,
-    "Id": "8T90I7AWOdrFfo8DyX3w",
+    "Id": "FYEOBfa7grl4Zd03Ffp4",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "thumbsDown"
+    }
   },
   {
-    "Timestamp": "2025-11-20T23:29:21.212281-05:00",
-    "Actor": "Jeremy",
-    "Kind": "chat.message",
-    "Message": "efawa",
-    "IsMine": true,
-    "Id": "L0ddVzk61xA70Zp9w8FK",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T23:29:20.021065-05:00",
-    "Actor": "Jeremy",
-    "Kind": "chat.message",
-    "Message": "feawa",
-    "IsMine": true,
-    "Id": "W7409vwyzifSBjCzQiLG",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T23:29:18.840423-05:00",
-    "Actor": "Jeremy",
-    "Kind": "chat.message",
-    "Message": "wafewaf",
-    "IsMine": true,
-    "Id": "7fa6jBCo7gbBxw8uohDr",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T23:29:16.618522-05:00",
-    "Actor": "Jeremy",
-    "Kind": "chat.message",
-    "Message": "wrfjwaufef",
-    "IsMine": true,
-    "Id": "3aUMCU5xzXTzsbxiK9hC",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T23:29:00.236047-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.accept",
-    "Message": "Accepted task \u201Cdvfv\u201D",
-    "IsMine": true,
-    "Id": "5IPa5hwXJvlc9yoBzI1Y",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T23:28:52.712489-05:00",
-    "Actor": "fdgfdsgfd",
-    "Kind": "task.request",
-    "Message": "Requested task \u201Cdvfv\u201D for Partner",
-    "IsMine": false,
-    "Id": "GUmcWpIWbp1DUcc8jHNo",
-    "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T23:28:38.537288-05:00",
-    "Actor": "fdgfdsgfd",
-    "Kind": "task.add",
-    "Message": "fdgfdsgfd Created task \u201Csdfedf\u201D",
-    "IsMine": false,
-    "Id": "5XEzy7njpOePrIHsoLYf",
-    "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T22:53:29.830939-05:00",
+    "Timestamp": "2025-11-22T21:41:37.562418-05:00",
     "Actor": "fdgfdsgfd",
     "Kind": "task.accept",
-    "Message": "Accepted task \u201Cdwda\u201D",
+    "Message": "Accepted task \u201Cgjhv jv c\u201D",
     "IsMine": false,
-    "Id": "TDdmZkQwfY1hR0ta6Oe9",
+    "Id": "qNRtyxOcAbTulBcF2eBY",
     "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "sad"
+    }
   },
   {
-    "Timestamp": "2025-11-20T22:13:38.834753-05:00",
+    "Timestamp": "2025-11-22T21:41:18.255384-05:00",
     "Actor": "Jeremy",
     "Kind": "task.request",
-    "Message": "Requested task \u201Cdwda\u201D for Partner",
+    "Message": "Requested task \u201Cgjhv jv c\u201D for Partner",
     "IsMine": true,
-    "Id": "Hrsa6ThwZ7rEljbECE8Q",
+    "Id": "Mt9WB8uKVOx8FycvPS57",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "happy"
+    }
   },
   {
-    "Timestamp": "2025-11-20T22:04:00.356538-05:00",
-    "Actor": "fdgfdsgfd",
-    "Kind": "chat.message",
-    "Message": "hgtht",
-    "IsMine": false,
-    "Id": "ROv5PwrNfIWMr2K95OoV",
-    "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T22:03:23.295746-05:00",
+    "Timestamp": "2025-11-22T21:41:05.260545-05:00",
     "Actor": "Jeremy",
     "Kind": "chat.message",
-    "Message": "bitch",
+    "Message": "fhgcxhxc",
     "IsMine": true,
-    "Id": "nbpH15YtSB4AgsKPUHer",
+    "Id": "gHzWwBDap1SkuxMa0PQH",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "sad"
+    }
   },
   {
-    "Timestamp": "2025-11-20T22:03:19.466774-05:00",
-    "Actor": "Jeremy",
-    "Kind": "chat.message",
-    "Message": "do u",
-    "IsMine": true,
-    "Id": "kFHBGsFvszec38DxxLVO",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T22:03:11.572663-05:00",
-    "Actor": "Jeremy",
-    "Kind": "chat.message",
-    "Message": "bitch",
-    "IsMine": true,
-    "Id": "zZf05ODShpOOyoDyT73I",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T22:02:59.465433-05:00",
+    "Timestamp": "2025-11-22T21:40:53.553001-05:00",
     "Actor": "Jeremy",
     "Kind": "pairing.connected",
     "Message": "Connected to PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
     "IsMine": true,
-    "Id": "N6dfp0o5oDLH3rddtiqH",
+    "Id": "Jj4gRBwRyKneNHeSQwrL",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "sad"
+    }
   },
   {
-    "Timestamp": "2025-11-20T22:02:59.342337-05:00",
+    "Timestamp": "2025-11-22T21:40:53.450356-05:00",
     "Actor": "Jeremy",
     "Kind": "pairing.accepted",
     "Message": "Accepted partner request from PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
     "IsMine": true,
-    "Id": "LnFXGdASyo9atQDzgk0c",
+    "Id": "S2wU8SJhPm1ZGK5BFhAs",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "sad"
+    }
   },
   {
-    "Timestamp": "2025-11-20T22:02:56.813469-05:00",
+    "Timestamp": "2025-11-22T21:40:45.764711-05:00",
     "Actor": "fdgfdsgfd",
     "Kind": "pairing.sent",
     "Message": "Sent partner request to FbkCqNhinmNyVqfkL0X9vLj9zNy1",
     "IsMine": false,
-    "Id": "zZkKJa3L5ZUPgvnyUzQh",
+    "Id": "FgQfHJ2gHkLDY1fFDXy7",
     "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
     "Reactions": {}
   },
   {
-    "Timestamp": "2025-11-20T22:02:44.122048-05:00",
-    "Actor": "Jeremy",
-    "Kind": "pairing.connected",
-    "Message": "Connected to PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "IsMine": true,
-    "Id": "ldHx2HUtzDBZtrEJG6oI",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "Timestamp": "2025-11-22T21:40:44.894488-05:00",
+    "Actor": "fdgfdsgfd",
+    "Kind": "pairing.sent",
+    "Message": "Sent partner request to FbkCqNhinmNyVqfkL0X9vLj9zNy1",
+    "IsMine": false,
+    "Id": "wHZ02Tbw1Q01Mn4Q2v9T",
+    "OwnerUserId": "PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
     "Reactions": {}
   },
   {
-    "Timestamp": "2025-11-20T22:02:43.975426-05:00",
-    "Actor": "Jeremy",
-    "Kind": "pairing.accepted",
-    "Message": "Accepted partner request from PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
-    "IsMine": true,
-    "Id": "h6mlG6lqTuO7DaK0EX5w",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T22:01:56.16161-05:00",
+    "Timestamp": "2025-11-22T21:39:48.63041-05:00",
     "Actor": "Jeremy",
     "Kind": "pairing.disconnected",
     "Message": "Disconnected from PjYksWjmL4ZB7DpQAi4N1R9N4Gw2",
     "IsMine": true,
-    "Id": "CloOW6xuh7DCv3NR4pGI",
+    "Id": "amxbptHa9GI9hjLq3bIv",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "sad"
+    }
   },
   {
-    "Timestamp": "2025-11-20T21:32:55.106294-05:00",
+    "Timestamp": "2025-11-22T21:39:39.307152-05:00",
     "Actor": "Jeremy",
-    "Kind": "pairing.sent",
-    "Message": "Sent partner request to C5ixWmZhd3b4H70PJ1ECvVxod7v2",
+    "Kind": "chat.message",
+    "Message": "hfcghf",
     "IsMine": true,
-    "Id": "UhOMgyXAECS9ARvyr9ku",
+    "Id": "qr9XkQ2Lo1txm0zcWEj2",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
     "Reactions": {}
   },
   {
-    "Timestamp": "2025-11-20T21:09:51.411159-05:00",
-    "Actor": "Jeremy",
-    "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cfaewaf\u201D",
-    "IsMine": true,
-    "Id": "mZWTOvenWNnpNqEDwtfY",
-    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-20T21:09:48.063037-05:00",
+    "Timestamp": "2025-11-22T21:36:33.920407-05:00",
     "Actor": "Jeremy",
     "Kind": "task.add",
-    "Message": "Jeremy Created task \u201Cewafaewawf\u201D",
+    "Message": "Jeremy Created task \u201Cghmvfmc\u201D",
     "IsMine": true,
-    "Id": "3vrfpBNGljG1jb9CIYGP",
+    "Id": "nrvsZJNt08eedxQ6nFdp",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
-    "Reactions": {}
+    "Reactions": {
+      "FbkCqNhinmNyVqfkL0X9vLj9zNy1": "thumbsUp"
+    }
   },
   {
-    "Timestamp": "2025-11-19T16:17:07.770604-05:00",
+    "Timestamp": "2025-11-22T21:33:13.020522-05:00",
     "Actor": "Jeremy",
-    "Kind": "pairing.sent",
-    "Message": "Sent partner request to BHtVMiepgxeTGdpwl8szhEFmg5z1",
+    "Kind": "task.add",
+    "Message": "Jeremy Created task \u201Cefawaw\u201D",
     "IsMine": true,
-    "Id": "sB9pyx2gNIu9kpsSflm4",
+    "Id": "P0e0lOkTbV6nnP5UKlP6",
     "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
     "Reactions": {}
   },
   {
-    "Timestamp": "2025-11-17T19:30:51.8182061-05:00",
-    "Actor": "JJ",
+    "Timestamp": "2025-11-22T21:24:59.277026-05:00",
+    "Actor": "Jeremy",
     "Kind": "task.add",
-    "Message": "JJ Created task \u201Cwafawefawfawf\u201D",
+    "Message": "Jeremy Created task \u201Cjklgjhlg\u201D",
     "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "eISZ3NRtVcgvGq9XhbZTlcpb4VD2",
-    "Reactions": {}
-  },
-  {
-    "Timestamp": "2025-11-17T19:30:35.2275844-05:00",
-    "Actor": "JJ",
-    "Kind": "pairing.sent",
-    "Message": "Sent partner request to vmvnDUSeKihOwSDFcLbd1egZctB3",
-    "IsMine": true,
-    "Id": null,
-    "OwnerUserId": "eISZ3NRtVcgvGq9XhbZTlcpb4VD2",
+    "Id": "IE3zpVzJqXwwAYl0vVlp",
+    "OwnerUserId": "FbkCqNhinmNyVqfkL0X9vLj9zNy1",
     "Reactions": {}
   }
 ]

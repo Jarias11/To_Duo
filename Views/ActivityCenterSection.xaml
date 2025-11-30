@@ -261,7 +261,22 @@
 												  Margin="0,4,6,0"
 												  Content="⋯"
 												  Foreground="{DynamicResource MutedTextBrush}"
-												  ToolTip="React"/>
+												  ToolTip="React">
+									<!-- <ToggleButton.Style>
+										<Style TargetType="ToggleButton">
+											<Setter Property="Visibility"
+													Value="Visible"/>
+											<Style.Triggers>
+												Hide while the entry has no Id yet (local echo)
+												<DataTrigger Binding="{Binding Id}"
+														Value="{x:Null}">
+													<Setter Property="Visibility"
+															Value="Collapsed"/>
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</ToggleButton.Style> -->
+									</ToggleButton>
 									<Popup PlacementTarget="{Binding ElementName=ReactToggle}"
 										   Placement="Top"
 										   StaysOpen="False"
@@ -277,26 +292,31 @@
 												<Button Content="😊"
 														Margin="2"
 														Padding="4"
+														Click="ReactionButton_Click"
 														Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 														CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=happy}"/>
 												<Button Content="😢"
 														Margin="2"
 														Padding="4"
+														Click="ReactionButton_Click"
 														Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 														CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=sad}"/>
 												<Button Content="👍"
 														Margin="2"
 														Padding="4"
+														Click="ReactionButton_Click"
 														Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 														CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=thumbsUp}"/>
 												<Button Content="👎"
 														Margin="2"
 														Padding="4"
+														Click="ReactionButton_Click"
 														Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 														CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=thumbsDown}"/>
 												<Button Content="😮"
 														Margin="2"
 														Padding="4"
+														Click="ReactionButton_Click"
 														Command="{Binding DataContext.ReactToActivityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 														CommandParameter="{Binding Path=., Converter={StaticResource TupleConverter}, ConverterParameter=shocked}"/>
 

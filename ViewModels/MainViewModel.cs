@@ -76,6 +76,25 @@ namespace TaskMate.ViewModels {
                 OnPropertyChanged();
             }
         }
+        private double _volumePercent;
+        public double VolumePercent {
+            get => _volumePercent;
+            set {
+                if(_volumePercent == value) return;
+                _volumePercent = value;
+
+                // convert 0–100 slider → 0.0–1.0 sound volume
+                float normalized = (float)(value / 100.0);
+
+                _settings.SoundVolume = normalized;
+                _settings.Save();
+
+                SoundService.SetGlobalVolume(normalized);
+
+                OnPropertyChanged();
+            }
+        }
+        private bool _connectionsPrimed;
 
 
 
@@ -92,7 +111,7 @@ namespace TaskMate.ViewModels {
         public string AuthButtonText => IsCreateAccount ? "Create account" : "Sign in";
 
 
-       
+
 
         public IReadOnlyList<KeyValuePair<TaskSortMode, string>> SortOptions { get; } =
         new[] {
@@ -280,6 +299,8 @@ namespace TaskMate.ViewModels {
             HasNewPending = _settings.UnreadPending;
             HasNewCompleted = _settings.UnreadCompleted;
             HasNewConnections = _settings.UnreadConnections;
+            VolumePercent = _settings.SoundVolume * 100.0;
+            SoundService.SetGlobalVolume(_settings.SoundVolume);
 
             OnPropertyChanged(nameof(PartnerId));
 
@@ -323,23 +344,24 @@ namespace TaskMate.ViewModels {
 
             // Bind orchestrator to the VM-owned collections
             _pairing.Attach(IncomingPartnerRequests, OutgoingPartnerRequests);
-            // Notify "Connections" tab when requests change
-            IncomingPartnerRequests.CollectionChanged += (_, __) => {
-                if(SelectedTopTab != 4) {
-                    HasNewConnections = true;
-                }
-            };
 
-            OutgoingPartnerRequests.CollectionChanged += (_, __) => {
-                if(SelectedTopTab != 4) {
-                    HasNewConnections = true;
-                }
-            };
 
             // Keep HasPendingOutgoing + ConnectionSummary updated without VM list math
             _pairing.OutgoingChanged += () => {
                 HasPendingOutgoing = _pairing.HasPendingOutgoing;
                 OnPropertyChanged(nameof(ConnectionSummary));
+
+                // Debounce the very first snapshot after startup
+                if(!_connectionsPrimed) {
+                    _connectionsPrimed = true;
+                    return;
+                }
+                if(IncomingPartnerRequests.Count == 0 && OutgoingPartnerRequests.Count == 0)
+                    return;
+
+                if(SelectedTopTab != 4) {
+                    HasNewConnections = true;
+                }
             };
 
             // If partner changes at runtime, realign everything (pairing + UI)
@@ -366,6 +388,10 @@ namespace TaskMate.ViewModels {
                 }
                 UpdateHeaderCounts();
             };
+            if(!string.IsNullOrWhiteSpace(PartnerId)) {
+                var since = _settings.PairedSinceUtc ?? DateTime.UtcNow;
+                _ = _activity.StartPartnerSinceAsync(PartnerId!, since);
+            }
 
             // ===== Commands =====
             AcceptPartnerInviteCommand = new RelayCommand<PartnerRequest>(async r => await _pairing.AcceptAsync(UserId, r!));

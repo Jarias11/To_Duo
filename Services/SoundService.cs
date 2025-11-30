@@ -16,12 +16,14 @@ namespace TaskMate.Services {
 
 		// ---- Audio config ----
 		private const int DesiredLatencyMs = 75;       // bump a touch to reduce crackle
-		private const float VolumeHover = 0.5f;
-		private const float VolumeCreate = 0.8f;
-		private const float VolumeComplete = 0.8f;
-		private const float VolumePending = 0.8f;
-		private const float VolumePartnerDisconnected = 0.8f;
-		private const float VolumeSent = 0.8f;
+
+		private static float _globalVolume = 0.6f;
+		// private const float VolumeHover = 0.5f;
+		// private const float VolumeCreate = 0.8f;
+		// private const float VolumeComplete = 0.8f;
+		// private const float VolumePending = 0.8f;
+		// private const float VolumePartnerDisconnected = 0.8f;
+		// private const float VolumeSent = 0.8f;
 
 		// Hover pitch randomization
 		private const float HoverMinSemi = -2.0f;
@@ -71,6 +73,7 @@ namespace TaskMate.Services {
 		}
 
 		public static void Enable(bool enabled) => _enabled = enabled;
+		public static void SetGlobalVolume(float v) => _globalVolume = Math.Clamp(v, 0f, 1f);
 
 		// === Public APIs (unchanged) ===
 		public static void PlayHover() {
@@ -88,36 +91,36 @@ namespace TaskMate.Services {
 
 			var src = new CachedSoundSampleProvider(_hoverCached);
 			var smb = new SmbPitchShiftingSampleProvider(src) { PitchFactor = factor };
-			var vol = new VolumeSampleProvider(smb) { Volume = VolumeHover };
+			var vol = new VolumeSampleProvider(smb) { Volume = _globalVolume };
 			AddToMixer(vol);
 		}
 
 		public static void PlayTaskCreated() {
 			if(!_enabled || _createCached == null) return;
-			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_createCached)) { Volume = VolumeCreate };
+			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_createCached)) { Volume = _globalVolume };
 			AddToMixer(vol);
 		}
 
 		public static void PlayTaskCompleted() {
 			if(!_enabled || _completeCached == null) return;
-			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_completeCached)) { Volume = VolumeComplete };
+			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_completeCached)) { Volume = _globalVolume };
 			AddToMixer(vol);
 		}
 
 		public static void PlayPendingPartnerRequest() {
 			if(!_enabled || _pendingCached == null) return;
-			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_pendingCached)) { Volume = VolumePending };
+			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_pendingCached)) { Volume = _globalVolume };
 			AddToMixer(vol);
 		}
 
 		public static void PlayPartnerDisconnected() {
 			if(!_enabled || _partnerDiscCached == null) return;
-			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_partnerDiscCached)) { Volume = VolumePartnerDisconnected };
+			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_partnerDiscCached)) { Volume = _globalVolume};
 			AddToMixer(vol);
 		}
 		public static void PlaySent() {
 			if(!_enabled || _sentCached == null) return;
-			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_sentCached)) { Volume = VolumeSent };
+			var vol = new VolumeSampleProvider(new CachedSoundSampleProvider(_sentCached)) { Volume = _globalVolume};
 			AddToMixer(vol);
 		}
 

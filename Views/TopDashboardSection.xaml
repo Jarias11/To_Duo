@@ -295,8 +295,7 @@
 							<Border Style="{StaticResource SubCard}"
 									Padding="4">
 								<StackPanel>
-									<TextBlock Text="{Binding ElementName=VolumeSlider, Path=Value,
-                                              StringFormat=Volume: {0:0}%}"
+									<TextBlock Text="{Binding VolumePercent, StringFormat=Volume: {0:0}%}"
 											   Style="{StaticResource NotebookSubtitle}"
 											   FontSize="15"
 											   FontStyle="Normal"
@@ -304,7 +303,7 @@
 									<Slider x:Name="VolumeSlider"
 											Minimum="0"
 											Maximum="100"
-											Value="50"
+											Value="{Binding VolumePercent, Mode=TwoWay}"
 											Height="22"
 											Foreground="{DynamicResource PrimaryTextBrush}"
 											Background="{DynamicResource ControlBackgroundBrush}"/>
@@ -338,7 +337,7 @@
 						 Tag="{Binding HasNewActivity}"/>
 				<TabItem Header="Task Builder"/>
 				<TabItem Header="Pending Tasks"
-					Tag="{Binding HasNewPending}"/>
+						 Tag="{Binding HasNewPending}"/>
 				<TabItem Header="Completed"
 						 Tag="{Binding HasNewCompleted}"/>
 				<TabItem Header="Connections"

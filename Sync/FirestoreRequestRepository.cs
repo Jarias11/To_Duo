@@ -74,24 +74,52 @@ namespace TaskMate.Sync {
 		public IDisposable Listen(string groupId, Action<IList<TaskItem>> onSnapshot) {
 			var cts = new CancellationTokenSource();
 			_ = Task.Run(async () => {
-				var last = new Dictionary<string, DateTimeOffset>();
+				var cache = new Dictionary<string, DateTimeOffset>();
+				DateTimeOffset? lastNewest = null;
+				var first = true;
+
 				while(!cts.IsCancellationRequested) {
 					try {
+						// Cheap head check: only newest request
+						var headDocs = await _rest.ListDocsAsync(
+							collectionPath: ColPath(groupId),
+							orderBy: "UpdatedAt desc",
+							pageSize: 1
+						).ConfigureAwait(false);
+
+						DateTimeOffset? newest = null;
+						if(headDocs.Count > 0) {
+							var headItem = MapFromDoc(headDocs[0]);
+							newest = new DateTimeOffset(headItem.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero);
+						}
+
+						if(!first && newest.HasValue && lastNewest.HasValue && newest.Value == lastNewest.Value) {
+							goto DelayOnly;
+						}
+
+						lastNewest = newest;
+						first = false;
+
+						// Full list only when changed
 						var items = await LoadAllAsync(groupId).ConfigureAwait(false);
-						bool changed = items.Count != last.Count ||
+
+						bool changed = items.Count != cache.Count ||
 									   items.Any(i =>
-										   !last.TryGetValue(i.Id.ToString(), out var prev) ||
+										   !cache.TryGetValue(i.Id.ToString(), out var prev) ||
 										   prev != new DateTimeOffset(i.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero));
 
 						if(changed) {
-							last = items.ToDictionary(
+							cache = items.ToDictionary(
 								i => i.Id.ToString(),
 								i => new DateTimeOffset(i.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero));
 							onSnapshot(items);
 						}
 					}
-					catch { /* keep polling */ }
+					catch {
+						// keep polling
+					}
 
+				DelayOnly:
 					try { await Task.Delay(8000, cts.Token).ConfigureAwait(false); } catch { }
 				}
 			}, cts.Token);

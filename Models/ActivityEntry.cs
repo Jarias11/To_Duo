@@ -7,6 +7,6 @@ namespace TaskMate.Models {
 		public bool IsMine { get; set; } = false;
 		public string Id { get; init; } = string.Empty;           // NEW: Firestore doc id
 		public string OwnerUserId { get; init; } = string.Empty;
-		public Dictionary<string, string> Reactions { get; init; } = new();
+		public Dictionary<string, string> Reactions { get; set; } = new();
 	}
 }

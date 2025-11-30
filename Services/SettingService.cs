@@ -1,10 +1,11 @@
+//SettingService.cs
 using TaskMate.Models;
 using TaskMate.Sync; // for AppTheme if that enum lives here; else adjust namespace
 
 namespace TaskMate.Services {
 	public sealed class SettingsService : ISettingsService {
 		private readonly UserSettings _model;
-
+		public float SoundVolume { get; set; } = 0.6f;
 		public bool UnreadActivity {
 			get => _model.UnreadActivity ?? false;
 			set => _model.UnreadActivity = value;

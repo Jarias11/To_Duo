@@ -47,25 +47,50 @@ namespace TaskMate.Sync {
 		private IDisposable StartPolling(string userId, Action<IList<TaskItem>> cb) {
 			var cts = new CancellationTokenSource();
 			_ = Task.Run(async () => {
-				var last = new Dictionary<string, DateTimeOffset>();
+				// Track the newest UpdatedAt we've seen
+				DateTimeOffset? lastNewest = null;
+				var cache = new Dictionary<string, DateTimeOffset>();
 				var first = true;
 
 				System.Diagnostics.Trace.WriteLine($"[FS] StartPolling for user '{userId}'");
 
 				while(!cts.IsCancellationRequested) {
 					try {
+						// 1) Cheap head check: only fetch the newest document (1 read)
+						var headDocs = await _rest.ListDocsAsync(
+							collectionPath: $"users/{userId}/tasks",
+							orderBy: "UpdatedAt desc",
+							pageSize: 1
+						).ConfigureAwait(false);
+
+						DateTimeOffset? newest = null;
+						if(headDocs.Count > 0) {
+							var headItem = MapFromDoc(headDocs[0]);
+							newest = new DateTimeOffset(headItem.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero);
+						}
+
+						// If nothing changed since last time and it's not the very first poll → skip full list
+						if(!first && newest.HasValue && lastNewest.HasValue && newest.Value == lastNewest.Value) {
+							goto DelayOnly;
+						}
+
+						lastNewest = newest;
+						first = false;
+
+						// 2) Full list only when something changed or on first run
 						var items = await RunListAsync(userId).ConfigureAwait(false);
 						System.Diagnostics.Trace.WriteLine($"[FS] RunListAsync ok – {items.Count} items");
 
-						bool changed = items.Count != last.Count ||
-									   items.Any(i => !last.TryGetValue(i.Id.ToString(), out var prev) ||
-													  prev != new DateTimeOffset(i.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero));
+						bool changed = items.Count != cache.Count ||
+									   items.Any(i =>
+										   !cache.TryGetValue(i.Id.ToString(), out var prev) ||
+										   prev != new DateTimeOffset(i.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero));
 
-						if(first || changed) {
-							first = false;
-							last = items.ToDictionary(
+						if(changed) {
+							cache = items.ToDictionary(
 								i => i.Id.ToString(),
 								i => new DateTimeOffset(i.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero));
+
 							cb(items);
 						}
 					}
@@ -73,6 +98,7 @@ namespace TaskMate.Sync {
 						System.Diagnostics.Trace.WriteLine("[FS] Poll error: " + ex);
 					}
 
+				DelayOnly:
 					try { await Task.Delay(8000, cts.Token).ConfigureAwait(false); } catch { }
 				}
 			}, cts.Token);

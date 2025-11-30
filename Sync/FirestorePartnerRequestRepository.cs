@@ -146,36 +146,62 @@ namespace TaskMate.Sync {
 
 
 		private IDisposable StartPolling(string collectionPath, Action<IList<PartnerRequest>> onSnapshot) {
-			var cts = new CancellationTokenSource();
-			_ = Task.Run(async () => {
-				var last = new Dictionary<string, DateTimeOffset>();
-				while(!cts.IsCancellationRequested) {
-					try {
-						var list = await QueryCollectionAsync(collectionPath).ConfigureAwait(false);
+	var cts = new CancellationTokenSource();
+	_ = Task.Run(async () => {
+		var last = new Dictionary<string, DateTimeOffset>();
+		DateTimeOffset? lastNewest = null;
+		var first = true;
 
-						bool changed = list.Count != last.Count ||
-									   list.Any(r => {
-										   var key = r.Id ?? (r.FromUserId + "_" + r.ToUserId);
-										   var ts = new DateTimeOffset(r.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero);
-										   return !last.TryGetValue(key, out var prev) || prev != ts;
-									   });
+		while(!cts.IsCancellationRequested) {
+			try {
+				// 1) Cheap head
+				var headDocs = await _rest.ListDocsAsync(
+					collectionPath: collectionPath,
+					orderBy: "UpdatedAt desc",
+					pageSize: 1
+				).ConfigureAwait(false);
 
-						if(changed) {
-							last = list.ToDictionary(
-								r => r.Id ?? (r.FromUserId + "_" + r.ToUserId),
-								r => new DateTimeOffset(r.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero)
-							);
-							onSnapshot(list);
-						}
-					}
-					catch { /* keep polling */ }
-
-					try { await Task.Delay(8000, cts.Token).ConfigureAwait(false); } catch { }
+				DateTimeOffset? newest = null;
+				if(headDocs.Count > 0) {
+					var head = MapFromDoc(headDocs[0]);
+					newest = new DateTimeOffset(head.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero);
 				}
-			}, cts.Token);
 
-			return new FirestoreListenerHandle(() => cts.Cancel());
+				if(!first && newest.HasValue && lastNewest.HasValue && newest.Value == lastNewest.Value) {
+					goto DelayOnly;
+				}
+
+				lastNewest = newest;
+				first = false;
+
+				// 2) Full list
+				var list = await QueryCollectionAsync(collectionPath).ConfigureAwait(false);
+
+				bool changed = list.Count != last.Count ||
+							   list.Any(r => {
+								   var key = r.Id ?? (r.FromUserId + "_" + r.ToUserId);
+								   var ts = new DateTimeOffset(r.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero);
+								   return !last.TryGetValue(key, out var prev) || prev != ts;
+							   });
+
+				if(changed) {
+					last = list.ToDictionary(
+						r => r.Id ?? (r.FromUserId + "_" + r.ToUserId),
+						r => new DateTimeOffset(r.UpdatedAt ?? DateTime.MinValue, TimeSpan.Zero));
+					onSnapshot(list);
+				}
+			}
+			catch {
+				/* keep polling */
+			}
+
+DelayOnly:
+			try { await Task.Delay(8000, cts.Token).ConfigureAwait(false); } catch { }
 		}
+	}, cts.Token);
+
+	return new FirestoreListenerHandle(() => cts.Cancel());
+}
 
 		private async Task<IList<PartnerRequest>> QueryCollectionAsync(string collectionPath) {
 			// Use precise path + orderBy, same as Personal repo
